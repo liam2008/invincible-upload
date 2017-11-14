@@ -1,0 +1,14 @@
+{
+    "apps" : [
+        {
+            "name"             : "invincible-web-server-shenzhen",
+            "script"           : "server.js",
+            "env_shenzhen" : {
+                "NODE_ENV": "shenzhen",
+                "DEBUG": "smartdo:*",
+                "PORT": 9802,
+                "DEBUG_COLORS": true
+            }
+        }
+    ]
+}

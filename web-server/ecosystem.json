@@ -1,0 +1,23 @@
+{
+    "apps" : [
+        {
+            "name"             : "invincible-web-server",
+            "script"           : "server.js",
+            "env_production" : {
+                "NODE_ENV": "production",
+                "DEBUG": "smartdo:*",
+                "DEBUG_COLORS": true
+            },
+            "env_development" : {
+                "NODE_ENV": "development",
+                "DEBUG": "smartdo:*",
+                "DEBUG_COLORS": true
+            },
+            "env_debug" : {
+                "NODE_ENV": "debug",
+                "DEBUG": "smartdo:*",
+                "DEBUG_COLORS": true
+            }
+        }
+    ]
+}

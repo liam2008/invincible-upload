@@ -1,0 +1,14 @@
+{
+    "apps" : [
+        {
+            "name"             : "invincible-web-server-hangzhou",
+            "script"           : "server.js",
+            "env_hangzhou" : {
+                "NODE_ENV": "hangzhou",
+                "DEBUG": "smartdo:*",
+                "PORT": 9801,
+                "DEBUG_COLORS": true
+            }
+        }
+    ]
+}

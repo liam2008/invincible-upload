@@ -1,0 +1,191 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        创建小组
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table datatable="ng" dt-options="dtOptions"
+                               class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+                            <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>小组名</th>
+                                <th>组长</th>
+                                <th>组员</th>
+                                <th>创建时间</th>
+                                <th>更新时间</th>
+                                <th>action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="value in tableData">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td>
+                                    {{value.name}}
+                                </td>
+                                <td>
+                                    {{value.leader.name}}
+                                </td>
+                                <td>
+                                    <span ng-repeat="memeber in value.members">{{memeber.account}}&nbsp;&nbsp;</span>
+                                </td>
+                                <td>
+                                    {{value.createdAt | date:'yyyy-mm-dd HH:mm:ss'}}
+                                </td>
+                                <td>
+                                    {{value.updatedAt | date:'yyyy-mm-dd HH:mm:ss'}}
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                                            data-target="#editRow" ng-click="edit(value)">编辑
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出框编辑框-->
+<div class="modal inmodal fade" id="editRow" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">编辑小组</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" name="formEdit" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            小组名
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="name" class="form-control" ng-model="editData.name"
+                                   ng-model-options="{ updateOn: 'blur'}">
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            组长
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="leader" class="form-control" ng-model="editData.leader">
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            组员
+                        </label>
+
+                        <div class="col-sm-10">
+                            <select multiple chosen class="chosen-select" ng-model="editData.selMember" width="670">
+                                <option value="">select</option>
+                                <option ng-value="member" ng-repeat="member in members">{{member}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出添加用户框-->
+<div class="modal inmodal fade" id="addTeamsModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">添加小组</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" name="formAdd" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>小组名
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="name" class="form-control" ng-model="addTeams.name" ng-model-options="{ updateOn: 'blur' }" required>
+
+                            <div class="m-t-xs" ng-show="addTeams.submitted && formAdd.name.$invalid">
+                                <small class="text-danger" ng-show="formAdd.name.$error.required">
+                                    小组名不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>组长
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="leader" class="form-control" ng-model="addTeams.leader"
+                                   ng-model-options="{ updateOn: 'blur' }" required>
+
+                            <div class="m-t-xs" ng-show="addTeams.submitted && formAdd.leader.$invalid">
+                                <small class="text-danger" ng-show="formAdd.leader.$error.required">
+                                    组长不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>组员
+                        </label>
+
+                        <div class="col-sm-10">
+                            <select multiple chosen class="chosen-select" ng-model="addTeams.selMember" width="670">
+                                <option ng-value="member" ng-repeat="member in members">{{member}}</option>
+                            </select>
+
+                            <div class="m-t-xs" ng-show="addTeams.submitted && !addTeams.selMember.length">
+                                <small class="text-danger" ng-show="!addTeams.selMember.length">
+                                    组员不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" ng-click="saveTeams()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div load-icon is-load="isLoad"></div>
+

@@ -1,0 +1,109 @@
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul side-navigation class="nav metismenu" id="side-menu">
+            <li class="nav-header">
+                <div class="profile-element" uib-dropdown>
+                    <img alt="image" class="img-circle" src="img/avatar.png" width="48px"/>
+                    <a uib-dropdown-toggle href>
+                            <span class="clear">
+                                <span class="block m-t-xs">
+                                    <strong class="font-bold">{{ account.account }}</strong>
+                                </span>
+                                <span class="text-muted text-xs block">
+                                    {{ account.scope }} <b class="caret"></b>
+                                </span>
+                            </span>
+                    </a>
+
+                    <ul uib-dropdown-menu class="animated fadeInRight m-t-xs">
+                        <li>
+                            <a data-toggle="modal" data-target="#editPassword">修改密码</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li><a href="javascript:void(0)" ng-click="logout()">登出</a></li>
+                    </ul>
+                </div>
+                <div class="logo-element">
+                    SD
+                </div>
+            </li>
+            <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle('nav.summary')">
+                <a ui-sref="main.summary"><i class="fa fa-home"></i> <span class="nav-label">首页</span> </a>
+            </li>
+
+            <li ng-repeat="navItem in navList" ng-class="{active: $state.includes(navItem.id)}" has-permission="{{navItem.id}}">
+                <a href="#"><i class="fa {{navItem.icon}}"></i> <span class="nav-label">{{navItem.title}}</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse" ng-class="{in: $state.includes(navItem.id)}">
+                    <li ng-repeat="node in navItem.nodes" ui-sref-active="active" has-permission="{{node.id}}" ng-click="getClickNavigatorMenuItemTitle(node.id)"><a ui-sref="{{node.id}}">{{node.title}}</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!--修改密码-->
+<div class="modal inmodal fade" id="editPassword" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">修改密码</h4>
+            </div>
+            <div class="modal-body">
+                <form name="formPassword" class="form-horizontal" role="form" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">用户名</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="account" ng-value="account.account" disabled/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">原密码</label>
+
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" name="password" ng-model="passwordData.password"
+                                   ng-model-options="{ updateOn: 'blur' }" required>
+                            <div class="m-t-xs" ng-show="formPassword.password.$invalid && formPassword.submitted">
+                                <small class="text-danger" ng-show="formPassword.password.$error.required">
+                                    数据不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">新密码</label>
+
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" name="newPassword" ng-model="passwordData.newPassword">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">确认密码</label>
+
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" name="confirmPassword"
+                                   ng-model="passwordData.confirmPassword" ng-model-options="{ updateOn: 'blur' }">
+                            <div class="m-t-xs"
+                                 ng-show="passwordData.confirmPassword!=passwordData.newPassword && passwordData.submitted">
+                                <small class="text-danger" ng-show="passwordData.confirmPassword!=passwordData.newPassword">
+                                    确认密码和新密码不同
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="resetPassword()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>

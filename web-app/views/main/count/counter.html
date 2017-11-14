@@ -1,0 +1,351 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        毛利率计算器
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <!--计算器-->
+                    <form name="formcount" class="form-horizontal" role="form" novalidate>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="col-lg-3 control-label">商品售价（USD$）</label>
+
+                                    <div class="col-lg-9">
+                                        <input type="text" name="price" class="form-control" placeholder="请输入商品售价"
+                                               ng-pattern="/^\d+(\.\d+)?$/" ng-model="count.data.price"
+                                               ng-model-options="{ updateOn: 'blur' }" required>
+
+                                        <div class="m-t-xs" ng-show="formcount.submitted && formcount.price.$invalid">
+                                            <small class="text-danger" ng-show="formcount.price.$error.required">
+                                                价格不能为空
+                                            </small>
+                                            <small class="text-danger" ng-show="formcount.price.$error.pattern">价格格式不对
+                                            </small>
+                                            <!--formcount.price.$pristine-->
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label class="col-lg-3 control-label">拿货成本（RMB￥）</label>
+
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control" name="cost" placeholder="请输入拿货成本"
+                                               ng-pattern="/^\d+(\.\d+)?$/" ng-model="count.data.cost"
+                                               ng-model-options="{ updateOn: 'blur' }" required>
+
+                                        <div class="m-t-xs" ng-show="formcount.cost.$invalid && formcount.submitted">
+                                            <small class="text-danger" ng-show="formcount.cost.$error.required">成本不能为空
+                                            </small>
+                                            <small class="text-danger" ng-show="formcount.cost.$error.pattern">成本格式不对
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-lg-3 control-label">重量（KG）</label>
+
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control" placeholder="请输入重量" name="weight"
+                                               ng-pattern="/^\d+(\.\d+)?$/" ng-model="count.data.weight"
+                                               ng-model-options="{ updateOn: 'blur' }" required>
+
+                                        <div class="m-t-xs" ng-show="formcount.weight.$invalid && formcount.submitted">
+                                            <small class="text-danger" ng-show="formcount.weight.$error.required">
+                                                重量不能为空
+                                            </small>
+                                            <small class="text-danger" ng-show="formcount.weight.$error.pattern">
+                                                重量格式不对
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-lg-3 control-label">佣金系数</label>
+
+                                    <div class="col-lg-9">
+                                        <select class="form-control" name="ratio" id="ratio" ng-model="count.ratio">
+                                            <option value="15%">15%</option>
+                                            <option value="8%">8%</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-lg-3 control-label">预计日销量</label>
+
+                                    <div class="col-lg-9">
+                                        <input type="text" class="form-control" name="valume" placeholder="请输入预计日销量"
+                                               ng-pattern="/^\+?[1-9][0-9]*$/" ng-model="count.data.valume"
+                                               ng-model-options="{ updateOn: 'blur' }" required>
+
+                                        <div class="m-t-xs" ng-show="formcount.valume.$invalid && formcount.submitted">
+                                            <small class="text-danger" ng-show="formcount.valume.$error.required">
+                                                销量不能为空
+                                            </small>
+                                            <small class="text-danger" ng-show="formcount.valume.$error.pattern">
+                                                销量格式是整数
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="col-lg-3 control-label">汇率</label>
+
+                                            <div class="col-lg-6">
+                                                <input type="text" class="form-control" name="exchangeRate"
+                                                       ng-model="count.exchangeRate" ng-pattern="/^\d+(\.\d+)?$/"
+                                                       ng-model-options="{ updateOn: 'blur' }" required>
+
+                                                <div class="m-t-xs"
+                                                     ng-show="formcount.exchangeRate.$invalid && formcount.submitted">
+                                                    <small class="text-danger"
+                                                           ng-show="formcount.exchangeRate.$error.required">汇率不能为空
+                                                    </small>
+                                                    <small class="text-danger"
+                                                           ng-show="formcount.exchangeRate.$error.pattern">汇率格式不对
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-3 control-label">美元/人民币</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="col-lg-3 control-label">头程运费</label>
+
+                                            <div class="col-lg-6">
+                                                <input type="text" class="form-control" name="freight"
+                                                       ng-model="count.freight" ng-pattern="/^\d+(\.\d+)?$/"
+                                                       ng-model-options="{ updateOn: 'blur' }" required>
+
+                                                <div class="m-t-xs"
+                                                     ng-show="formcount.freight.$invalid && formcount.submitted">
+                                                    <small class="text-danger"
+                                                           ng-show="formcount.weight.$error.required">运费不能为空
+                                                    </small>
+                                                    <small class="text-danger"
+                                                           ng-show="formcount.weight.$error.pattern">运费格式不对
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-1 control-label text-left">元/KG</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button class="btn btn-primary btn-md m-r-lg" ng-click="count.coculate()">计算</button>
+                            <button class="btn btn-white btn-md" ng-click="count.reset()">重置</button>
+                        </div>
+                    </form>
+
+                    <!--表格-->
+                    <div class="p-lg">
+                        <table class="table table-bordered">
+                            <tbody>
+                            <tr>
+                                <td>
+                                    商品售价（USD$）
+                                </td>
+                                <td>{{ (count.data.price || 0.00 ) | number:2}}</td>
+                                <td>
+                                    拿货成本（RMB￥）
+                                </td>
+                                <td>{{ (count.data.cost || 0.00 ) | number:2 }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>重量（KG）</td>
+                                <td>{{ (count.data.weight || 0.00 ) | number:2}}</td>
+                                <td>头程运费</td>
+                                <td>{{ (count.freight || 0.00 ) | number:2}}</td>
+                                <td>
+                                    商品头程运费（RMB￥）
+                                    <span ng-if="renderData.formula.merFriFreight">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.merFriFreight}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.merFriFreight || 0.00 ) | number:2 }}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    佣金系数
+                                </td>
+                                <td>{{count.ratio}}</td>
+                                <td>
+                                    佣金（USD$）
+                                    <span ng-if="renderData.formula.commission">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right" uib-tooltip="{{renderData.formula.commission}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td> {{ (renderData.commission || 0.00 ) | number:2 }} </td>
+                                <td>
+                                    Fulfillment cost（USD$）
+                                    <span ng-if="renderData.formula.fulfillmentCost">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.fulfillmentCost}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.fulfillmentCost || 0.00 ) | number:2 }}</td>
+                                <td>
+                                    平台费用（USD$）
+                                    <span ng-if="renderData.formula.platformCost">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.platformCost}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.platformCost || 0.00 ) | number:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    包材成本（RMB￥）
+                                </td>
+                                <td>0.00</td>
+                                <td>
+                                    成本（RMB￥）
+                                    <span ng-if="renderData.formula.cost">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right" uib-tooltip="{{renderData.formula.cost}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.cost || 0.00 ) | number:2 }}</td>
+                                <td>
+                                    实收（RMB￥）
+                                    <span ng-if="renderData.formula.netReceipts">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.netReceipts}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.netReceipts || 0.00 ) | number:2 }}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    毛利 (RMB￥）
+                                    <span ng-if="renderData.formula.profit">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right" uib-tooltip="{{renderData.formula.profit}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.profit|| 0.00 ) | number:2 }}</td>
+                                <td>
+                                    毛利率
+                                    <span ng-if="renderData.formula.profitRate">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right" uib-tooltip="{{renderData.formula.profitRate}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.profitRate*100|| 0.00 ) | number:2 }}%</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    预计日销量
+                                </td>
+                                <td>{{ count.data.valume || 0 }}</td>
+                                <td>
+                                    日毛利（RMB￥）
+                                    <span ng-if="renderData.formula.dailyProfit">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.dailyProfit}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.dailyProfit|| 0.00 ) | number:2 }}</td>
+                                <td>
+                                    月营业额（USD$）
+                                    <span ng-if="renderData.formula.monthTurnover">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.monthTurnover}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.monthTurnover|| 0.00 ) | number:2 }}</td>
+                                <td>
+                                    月利润（USD$）
+                                    <span ng-if="renderData.formula.monthProfit">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="badge badge-Primary cursor" class="btn btn-default"
+                                              tooltip-placement="right"
+                                              uib-tooltip="{{renderData.formula.monthProfit}}">
+                                            <i class="fa fa-question"></i>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ (renderData.monthProfit|| 0.00 ) | number:2 }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div load-icon is-load="isLoad"></div>

@@ -1,0 +1,31 @@
+{
+    "debug": {
+        "host"              : "127.0.0.1",
+        "db"                : "ADC",
+        "port"              : 27017
+    },
+
+    "development": {
+        "host"              : "192.168.1.124",
+        "db"                : "ADC",
+        "port"              : 27017
+    },
+
+    "production": {
+        "host"              : "112.74.177.233",
+        "db"                : "ADC",
+        "port"              : 27017
+    },
+
+    "hangzhou": {
+        "host"              : "127.0.0.1",
+        "db"                : "ADC",
+        "port"              : 27017
+    },
+
+    "shenzhen": {
+        "host"              : "127.0.0.1",
+        "db"                : "ADC",
+        "port"              : 27017
+    }
+}

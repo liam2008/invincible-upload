@@ -1,0 +1,46 @@
+var fs = require('fs');
+var path = require('path');
+var env = process.env.NODE_ENV || "development";
+var config = require('../config/db.invincible.json')[env];
+
+var debug = require('debug')('smartdo:mongo');
+var mongoose = require('mongoose');    //引用mongoose模块
+mongoose.Promise = global.Promise;
+var url = null;
+if (config.user) {
+    url = "mongodb://" + config.user + ":" + config.pass + "@" + config.host + ":" + config.port + "/" + config.db;
+}
+else {
+    url = "mongodb://" + config.host + ":" + config.port + "/" + config.db;
+}
+var mongo = mongoose.createConnection(url); //创建一个数据库连接
+
+var db = {
+    mongoose: mongoose,
+    mongo: mongo,
+    models: {}
+};
+
+mongo.on('error', function (err) {
+    debug(new Error(err));
+});
+
+mongo.once('open', function () {
+    debug("mongo is opened");
+});
+
+fs.readdirSync(__dirname)
+    .filter(function (file) {
+        return (file.indexOf(".") !== 0) && (file !== "index.js");
+    }).forEach(function (file) {
+        var modelFile = require(path.join(__dirname, file));
+        var schema = new mongoose.Schema(modelFile.schema);
+
+        db.models[modelFile.name] = mongo.model(modelFile.name, schema, modelFile.name);
+    });
+
+db.getModel = function (name) {
+    return this.models[name];
+};
+
+module.exports = db;

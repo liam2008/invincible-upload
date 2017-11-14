@@ -1,0 +1,257 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('mainController', [
+        '$scope',
+        'account',
+        'netManager',
+        'SweetAlert',
+        mainController
+    ]);
+
+    app.controller('loginController', [
+        '$scope',
+        '$location',
+        'netManager',
+        loginController
+    ]);
+
+    app.controller('unauthorizedController', [
+        '$scope',
+        '$interval',
+        '$state',
+        unauthorizedController
+    ]);
+
+    function loginController($scope, $location, netManager) {
+        $scope.username = "";
+        $scope.password = "";
+        $scope.loginFailure = false;
+
+        $scope.onFocus = function () {
+            $scope.loginFailure = false;
+        };
+
+        $scope.submit = function () {
+            if ($scope.username.length < 1) {
+                return;
+            }
+
+            var password = $scope.password || "";
+            var passwd = CryptoJS.MD5(password.toString()).toString(CryptoJS.enc.Base64);
+
+            netManager.login({
+                username: $scope.username,
+                password: passwd
+            }).then(function (result) {
+                if (result == true) {
+                    $location.path('/main/summary');
+                } else {
+                    $scope.loginFailure = true;
+                }
+            }).catch(function (e) {
+                switch (e.data.code) {
+                    case '1027':
+                        alert('该用户已被冻结，若有问题请联系管理员，谢谢！');
+                        break;
+                    case '1028':
+                        alert('该用户已被删除，若有问题请联系管理员，谢谢！');
+                        break;
+                }
+            });
+        };
+    }
+
+    function unauthorizedController($scope, $interval, $state) {
+        $scope.counts = 5;
+        var timer = $interval(function () {
+            $scope.counts--;
+            if ($scope.counts <= 0) {
+                $interval.cancel(timer);
+                $state.go('main.summary');
+            }
+        }, 1000);
+    }
+
+    function mainController($scope, account, netManager, SweetAlert) {
+        //定义默认参数
+        $scope.account = angular.copy(account);
+        var role = account.role || {};
+        $scope.account.scope = role.name || "普通用户";
+        $scope.navigatorMenuItem = '概述';
+
+        //导航栏
+        $scope.navList = [
+            {
+                "id": 'main.authority',
+                "title": "用户管理",
+                "selected": true,
+                "icon": 'fa-user-o',
+                "nodes": [
+                    {
+                        "id": 'main.authority.rolesManage',
+                        "title": "角色管理",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.authority.userManage',
+                        "title": "用户管理",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.authority.teamsManage',
+                        "title": "小组管理",
+                        "selected": true
+                    }
+                ]
+            },
+            {
+                "id": 'main.base',
+                "title": "基础信息管理",
+                "selected": true,
+                "icon": 'fa-pencil-square-o',
+                "nodes": [
+                    {
+                        "id": 'main.base.goodsManage',
+                        "title": "商品管理",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.base.shopManage',
+                        "title": "商店管理",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.base.stockManage',
+                        "title": "库存管理",
+                        "selected": true
+                    }
+                ]
+            },
+            {
+                "id": 'main.daily',
+                "title": "每日运营",
+                "selected": true,
+                "icon": 'fa-area-chart',
+                "nodes": [
+                    {
+                        "id": 'main.daily.import',
+                        "title": "信息导入",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.daily.list',
+                        "title": "每日信息",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.daily.report',
+                        "title": "每日报表",
+                        "selected": true
+                    }
+                ]
+            },
+            {
+                "id": 'main.count',
+                "title": "毛利率计算",
+                "selected": true,
+                "icon": 'fa-calculator',
+                "nodes": [
+                    {
+                        "id": 'main.count.counter',
+                        "title": "毛利率计算器",
+                        "selected": true
+                    },
+                    {
+                        "id": 'main.count.formula',
+                        "title": "公式说明",
+                        "selected": true
+                    }
+                ]
+            },
+            {
+                "id": 'main.rank',
+                "title": "排名",
+                "selected": true,
+                "icon": 'fa-bar-chart-o',
+                "nodes": [
+                    {
+                        "id": 'main.rank.sellerRank',
+                        "title": "卖家排名",
+                        "selected": true
+                    }
+                ]
+            },
+            {
+            	"id": 'main.purchase',
+                "title": "采购管理",
+                "selected": true,
+                "icon": 'fa fa-clipboard',
+                "nodes": [
+                	{
+                		"id": 'main.purchase.summary',
+                        "title": "采购汇总表",
+                        "selected": true
+                	},
+                	{
+                		"id": 'main.purchase.supplier',
+                        "title": "供应商管理",
+                        "selected": true
+                	}
+                ]
+            }
+        ];
+        $scope.getClickNavigatorMenuItemTitle = function (id) {
+            if (id === 'nav.summary') {
+                $scope.navigatorMenu = '';
+                $scope.navigatorMenuItem = '概述';
+            } else {
+                for (var i = 0, iLen = $scope.navList.length; i < iLen; i++) {
+                    for (var j = 0, jLen = $scope.navList[i].nodes.length; j < jLen; j++) {
+                        if ($scope.navList[i].nodes[j].id === id) {
+                            $scope.navigatorMenu = $scope.navList[i].title;
+                            $scope.navigatorMenuItem = $scope.navList[i].nodes[j].title;
+                            return;
+                        }
+                    }
+                }
+            }
+        };
+
+        //登出
+        $scope.logout = function () {
+            netManager.logout();
+        };
+
+        //改变密码
+        var passwordData = {};
+        $scope.passwordData = passwordData;
+        $scope.resetPassword = function () {
+            $scope.passwordData.submitted = true;
+            if (passwordData.newPassword === passwordData.confirmPassword) {
+                SweetAlert.swal({
+                        title: "你确定修改吗?",
+                        text: "你将修改此条密码!!!",
+                        type: "warning",
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false,
+                        closeOnCancel: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            var resetPasswordData = {
+                                curr_password: CryptoJS.MD5($scope.passwordData.password).toString(CryptoJS.enc.Base64),
+                                password:CryptoJS.MD5($scope.passwordData.confirmPassword).toString(CryptoJS.enc.Base64)
+                            };
+                            netManager.put('/me/password', resetPasswordData).then(function (res) {
+                                swal("保存成功!",'success');
+                            }, function (err) {
+                                swal("保存失败!",err.data.description, 'error');
+                            });
+                        }
+                    });
+            }
+        }
+    }
+}());

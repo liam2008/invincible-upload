@@ -1,0 +1,325 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        角色编辑
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table datatable="ng" dt-options="dtOptions"
+                               class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+                            <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>角色类型</th>
+                                <th>角色名</th>
+                                <th>创建时间</th>
+                                <th>更新时间</th>
+                                <th>action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="showItem in showList">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td>
+                                    {{showItem.type}}
+                                </td>
+                                <td>{{showItem.name}}</td>
+                                <td>{{showItem.createdAt  | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                                <td>{{showItem.updatedAt  | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                                <td>
+                                    <button id="edit" class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                                            data-target="#editRow" ng-click="edit($index)">编辑
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--弹出框编辑框-->
+<div class="modal inmodal fade" id="editRow" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">角色编辑</h4>
+            </div>
+            <div class="modal-body">
+                <form method="get" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">角色类型</label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static" name="type">{{(editData.type)}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">角色名</label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static" name="role">{{editData.name}}</p>
+                        </div>
+                    </div>
+
+                    <div class="hr-line-dashed"></div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">展示权限</label>
+
+                        <div class="col-sm-10">
+                            <div class="text-center p-md">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm" type="button" ng-class="{'btn-primary': editData.collapsedAll, 'btn-white': !editData.collapsedAll}" ng-click="collapseAll()">收缩所有</button>
+                                    <button class="btn btn-sm" type="button" ng-class="{'btn-primary': !editData.collapsedAll, 'btn-white':editData.collapsedAll}" ng-click="expandAll()">展开所有</button>
+                                </div>
+                            </div>
+
+                            <script type="text/ng-template" id="nodes_renderer.html">
+                                <div ui-tree-handle class="tree-node tree-node-content">
+                                    <a class="btn btn-primary btn-xs" ng-click="toggle(this)" ng-if="node.nodes && node.nodes.length > 0"><span class="fa" ng-class="{'fa-angle-right': collapsed, 'fa-angle-down': !collapsed}"></span></a>
+                                    <div class="radio-wrap">
+                                        <input icheck name="{{node.id}}" type="checkbox" ng-model="node.selected" ng-change="changeAuthority(node)"/>
+                                    </div>
+                                    {{node.title}}
+                                </div>
+                                <ol ui-tree-nodes="" ng-model="node.nodes" ng-class="{hidden: collapsed}">
+                                    <li ng-repeat="node in node.nodes" ui-tree-node ng-include="'nodes_renderer.html'"></li>
+                                </ol>
+                            </script>
+                            <div ui-tree id="tree-root">
+                                <ol ui-tree-nodes ng-model="navList" data-nodrag>
+                                    <li ng-repeat="node in navList" data-collapsed="true" ui-tree-node ng-include="'nodes_renderer.html'"></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveEdit(editData.addrid)">编辑</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出添加商品框-->
+<div class="modal inmodal fade" id="addGoodModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">添加商品</h4>
+            </div>
+            <div class="modal-body">
+                <form method="get" class="form-horizontal" name="addGoodsForm">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="ASIN">ASIN</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="ASIN" id="ASIN" ng-model="addGoods.asin"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="sellerSku">卖家sku</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="sellerSku" id="sellerSku"
+                                   ng-model="addGoods.sellerSku" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="name">英文名</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="name" id="name" ng-model="addGoods.name"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="shopName">所属店铺</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="shop_name" id="shopName"
+                                   ng-model="addGoods.shopName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="teamName">所属小组</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="team_name" id="teamName"
+                                   ng-model="addGoods.teamName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="state">商品销售状态</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control" name="state" id="state" ng-model="addGoods.state">
+                                <option ng-value="0">停售</option>
+                                <option ng-value="1">未开售</option>
+                                <option ng-value="2">推广期</option>
+                                <option ng-value="3">在售期</option>
+                                <option ng-value="4">清仓期</option>
+                                <option ng-value="5">归档</option>
+                                <option ng-value="6">备用</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectedSales">预计日销量</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="projected_sales" id="projectedSales"
+                                   ng-model="addGoods.projectedSales" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="storeSku">仓库SKU</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control" name="store_sku" id="storeSku" ng-model="addGoods.storeSku"
+                                    ng-change="addGoods.selstore()">
+                                <option ng-repeat="stockItem in stockList" ng-value="stockItem['store_sku']"
+                                        data-index="{{$index}}">{{stockItem['store_sku']}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="nameCn">中文名</label>
+
+                        <div class="col-sm-10">
+                            <input class="form-control" placeholder="plear" id="nameCn" ng-value="addGoods.nameCn"
+                                   ng-readonly="true">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label m-t-sm">FBA</label>
+
+                        <div class="col-sm-3 m-t-sm" ng-init="addGoods.fba='1'">
+                            <lable class="m-r-lg">
+                                <input type="radio" icheck ng-value="1" name="fba" ng-model="addGoods.fba"/>&nbsp;&nbsp;是
+                            </lable>
+
+                            <lable>
+                                <input type="radio" icheck ng-value="0" name="fba" ng-model="addGoods.fba"/>&nbsp;&nbsp;否
+                            </lable>
+                        </div>
+
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control" name="fnsku" id="fnsku" placeholder="fnsku"
+                                   ng-model="addGoods.fnsku" ng-disabled="!addGoods.fba"/>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" ng-click="addGoods.saveGoods()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div load-icon is-load="isLoad"></div>
+
+<style>
+    .angular-ui-tree-handle {
+        background: none repeat scroll 0 0 #f3f3f4;
+        border: 1px dashed #e7eaec;
+        color: inherit;
+        padding: 10px;
+        font-weight: normal;
+    }
+    .angular-ui-tree-handle:hover {
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .angular-ui-tree-placeholder {
+        background: #f0f9ff;
+        border: 1px dashed #bed2db;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+
+    .angular-ui-tree-nodes .angular-ui-tree-nodes .radio-wrap{
+        margin-right: 100px;
+    }
+    .group-title {
+        background-color: #687074 !important;
+        color: #FFF !important;
+    }
+    .tree-node {
+        background: none repeat scroll 0 0 #f3f3f4;
+        border: 1px dashed #e7eaec;
+        color: inherit;
+        padding: 10px;
+        border-radius: 3px;
+    }
+
+    .tree-node .btn {
+        min-width: 22px;
+        margin-right: 4px;
+    }
+
+    .tree-node-content {
+        margin: 5px 5px 5px 0;
+    }
+
+    .tree-handle {
+        background: none repeat scroll 0 0 #f3f3f4;
+        border: 1px dashed #e7eaec;
+        color: inherit;
+        padding: 10px;
+    }
+
+    .angular-ui-tree-handle:hover {
+    }
+
+    .angular-ui-tree-placeholder {
+        background: #f0f9ff;
+        border: 1px dashed #bed2db;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    .radio-wrap{
+        position:absolute;
+        right:20px;
+        top:10px;
+    }
+</style>
