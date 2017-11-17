@@ -1,0 +1,129 @@
+{
+    "development": {
+        "appenders": [
+            {
+                "type": "console",
+                "category": "console"
+            },
+
+            {
+                "type": "file",
+                "category": "access",
+                "filename": "/data/logs/invincible-server/access.log",
+                "maxLogSize": 102400000,
+                "backups": 100
+            },
+
+            {
+                "type": "dateFile",
+                "category": "application",
+                "filename": "/data/logs/invincible-server/application",
+                "pattern": "-yyyy-MM-dd.log",
+                "alwaysIncludePattern": true
+            }
+        ],
+
+        "replaceConsole": true,
+        "levels": {
+            "console": "ALL",
+            "access": "ALL",
+            "application": "ALL"
+        }
+    },
+
+    "production": {
+        "appenders": [
+            {
+                "type": "console",
+                "category": "console"
+            },
+
+            {
+                "type": "file",
+                "category": "access",
+                "filename": "/data/logs/invincible-server/access.log",
+                "maxLogSize": 102400000,
+                "backups": 100
+            },
+
+            {
+                "type": "dateFile",
+                "category": "application",
+                "filename": "/data/logs/invincible-server/application",
+                "pattern": "-yyyy-MM-dd.log",
+                "alwaysIncludePattern": true
+            }
+        ],
+
+        "replaceConsole": true,
+        "levels": {
+            "console": "ALL",
+            "access": "ALL",
+            "application": "ALL"
+        }
+    },
+
+    "hangzhou": {
+        "appenders": [
+            {
+                "type": "console",
+                "category": "console"
+            },
+
+            {
+                "type": "file",
+                "category": "access",
+                "filename": "/data/logs/invincible-server-hangzhou/access.log",
+                "maxLogSize": 102400000,
+                "backups": 100
+            },
+
+            {
+                "type": "dateFile",
+                "category": "application",
+                "filename": "/data/logs/invincible-server-hangzhou/application",
+                "pattern": "-yyyy-MM-dd.log",
+                "alwaysIncludePattern": true
+            }
+        ],
+
+        "replaceConsole": true,
+        "levels": {
+            "console": "ALL",
+            "access": "ALL",
+            "application": "ALL"
+        }
+    },
+
+    "shenzhen": {
+        "appenders": [
+            {
+                "type": "console",
+                "category": "console"
+            },
+
+            {
+                "type": "file",
+                "category": "access",
+                "filename": "/data/logs/invincible-server-shenzhen/access.log",
+                "maxLogSize": 102400000,
+                "backups": 100
+            },
+
+            {
+                "type": "dateFile",
+                "category": "application",
+                "filename": "/data/logs/invincible-server-shenzhen/application",
+                "pattern": "-yyyy-MM-dd.log",
+                "alwaysIncludePattern": true
+            }
+        ],
+
+        "replaceConsole": true,
+        "levels": {
+            "console": "ALL",
+            "access": "ALL",
+            "application": "ALL"
+        }
+    }
+}

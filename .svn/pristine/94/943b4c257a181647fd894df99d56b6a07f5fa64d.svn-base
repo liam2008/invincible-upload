@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--设置expires和Date的间隔-->
+    <meta http-equiv='expires' content='-1'/>
+
+    <!-- no caches -->
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-store">
+    <meta http-equiv="Cache" content="no-cache">
+
+
+    <!-- Page title set in pageTitle directive -->
+    <title page-title></title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font awesome -->
+    <link href="css/font-awesome.css" rel="stylesheet">
+
+    <!-- Main Inspinia CSS files -->
+    <link href="css/animate.css" rel="stylesheet">
+    <link id="loadBefore" href="css/style.css" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/basics.css">
+    <link rel="icon" href="img/favicon.ico" mce_href="img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="img/favicon.ico" mce_href="img/favicon.ico" type="image/x-icon">
+
+
+    <!-- load.js script.js head.js 异步的方式加载JS文件 -->
+    <script src="js/plugins/script.js/dist/script.js"></script>
+
+<body class="{{ $state.current.data.bgClass }}" landing-scrollspy id="page-top">
+
+<!-- Main view  -->
+<div ui-view></div>
+
+</body>
+
+<!-- jQuery and Bootstrap -->
+<script src="js/jquery/jquery-3.1.1.min.js"></script>
+<script src="js/plugins/jquery-ui/jquery-ui.min.js"></script>
+<script src="js/bootstrap/bootstrap.min.js"></script>
+
+<!-- MetsiMenu -->
+<script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
+
+<!-- SlimScroll -->
+<script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+
+<!-- Peace JS -->
+<script src="js/plugins/pace/pace.min.js"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="js/app.js"></script>
+
+<!-- Main Angular scripts-->
+<script src="js/angular/angular.min.js"></script>
+<script src="js/angular/angular-sanitize.js"></script>
+<script src="js/plugins/oclazyload/dist/ocLazyLoad.min.js"></script>
+<script src="js/angular-translate/angular-translate.min.js"></script>
+<script src="js/plugins/ui-router/angular-ui-router.min.js"></script>
+<!--<script src="js/bootstrap/ui-bootstrap-tpls-1.1.2.min.js"></script>-->
+<script src="js/plugins/angular-idle/angular-idle.js"></script>
+<script src="js/plugins/ui-bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+<script src="js/plugins/moment/moment.min.js"></script>
+
+<!--
+ You need to include this script on any page that has a Google Map.
+ When using Google Maps on your own site you MUST signup for your own API key at:
+ https://developers.google.com/maps/documentation/javascript/tutorial#api_key
+ After your sign up replace the key in the URL below..
+-->
+<!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQTpXj82d8UpCi97wzo_nKXL7nYrd4G70"></script>-->
+
+<!-- Anglar App Script -->
+<script src="js/invincible.js"></script>
+<script src="config/project.js"></script>
+<script src="scripts/app.js"></script>
+<script src="scripts/config.js"></script>
+<script src="scripts/services.js"></script>
+<script src="scripts/filters.js"></script>
+<script src="scripts/directives.js"></script>
+
+<script src="scripts/controllers.js"></script>
+
+
+<script>
+    $script([
+        './scripts/daily/import.js',
+        './scripts/daily/list.js',
+        './scripts/daily/report.js',
+        './scripts/daily/grossMarginCtrl.js',
+        './scripts/base/goodsManageCtrl.js',
+        './scripts/base/shopManageCtrl.js',
+        './scripts/base/stockManageCtrl.js',
+        './scripts/count/counterCtrl.js',
+        './scripts/count/formulaCtrl.js',
+        './scripts/rank/sellerRankCtrl.js'
+        
+    ], function () {
+        angular.bootstrap(document, ['app']);
+    });
+</script>
+</html>

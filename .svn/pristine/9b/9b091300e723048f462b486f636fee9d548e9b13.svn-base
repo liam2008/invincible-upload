@@ -1,0 +1,296 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        销售管理
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table datatable="ng" dt-options="dtOptions"
+                               class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+                            <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>ASIN</th>
+                                <th width="210">中文名</th>
+                                <th>MSKU</th>
+                                <th>库存SKU</th>
+                                <th>FNSKU</th>
+                                <th>店铺名</th>
+                                <th>小组名</th>
+                                <th>状态</th>
+                                <th>预计日销量</th>
+                                <th>标准价格</th>
+                                <th>编辑</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="value in tableData">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td>
+                                    <a ng-href="{{value.url}}" target="_blank" class="link">{{value.asin}}</a>
+                                </td>
+                                <td>{{value['name_cn']}}</td>
+                                <td>{{value['seller_sku']}}</td>
+                                <td>{{value['store_sku']}}</td>
+                                <td>{{value['fnsku']}}</td>
+                                <td>{{value['shop_name']}}</td>
+                                <td>{{value['team_name']}}</td>
+                                <td>{{productState[value.state]}}</td>
+                                <td>{{value['projected_sales']}}</td>
+                                <td>{{value['price']}}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                                            data-target="#editRow" ng-click="edit($index)">编辑
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出框编辑框-->
+<div class="modal inmodal fade" id="editRow" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">商品编辑</h4>
+            </div>
+            <div class="modal-body">
+                <form method="get" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Asin</label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static" name="asin">{{modalData['asin']}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">MSKU</label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static" name="seller_sku">{{modalData['seller_sku']}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">店铺名</label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static" name="shop_name">{{modalData['shop_name']}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">中文名</label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static" name="name_cn">{{modalData['name_cn']}}</p>
+                        </div>
+                    </div>
+
+                    <div class="hr-line-dashed"></div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">预计日销售</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="projected_sales"
+                                   ng-value="modalData['projected_sales']">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标准价格</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="price" ng-value="modalData['price']">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">小组名</label>
+
+                        <div class="col-sm-10">
+                            <select name="teamNames" class="form-control m-b">
+                                <option ng-repeat="teamName in teamNames" value="{{teamName._id}}">{{teamName._id}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">状态</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control m-b" ng-model="state" name="state">
+                                <option ng-value="0" ng-selected="modalData['state']==0">停售</option>
+                                <option ng-value="1" ng-selected="modalData['state']==1">未开售</option>
+                                <option ng-value="2" ng-selected="modalData['state']==3">推广期</option>
+                                <option ng-value="3" ng-selected="modalData['state']==3">在售期</option>
+                                <option ng-value="4" ng-selected="modalData['state']==4">清仓期</option>
+                                <option ng-value="5" ng-selected="modalData['state']==5">归档</option>
+                                <option ng-value="6" ng-selected="modalData['state']==6">备用</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveData()">编辑</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出添加商品框-->
+<div class="modal inmodal fade" id="addGoodModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">添加商品</h4>
+            </div>
+            <div class="modal-body">
+                <form method="get" class="form-horizontal" name="addGoodsForm">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="ASIN">ASIN</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="ASIN" id="ASIN" ng-model="addGoods.asin" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="sellerSku">卖家sku</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="sellerSku" id="sellerSku" ng-model="addGoods.sellerSku" required >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="name">英文名</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="name" id="name" ng-model="addGoods.name" required >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="shopName">所属店铺</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control m-b" name="shop_name" id="shopName" ng-model="addGoods.shopName" required>
+                                <option ng-repeat="shopName in shopNames" value="{{shopName._id}}">{{shopName._id}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="teamName">所属小组</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control m-b" name="team_name" id="teamName" ng-model="addGoods.teamName" required>
+                                <option ng-repeat="teamName in teamNames" value="{{teamName._id}}">{{teamName._id}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="state">商品销售状态</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control" name="state" id="state" ng-model="addGoods.state">
+                                <option ng-value="0">停售</option>
+                                <option ng-value="1">未开售</option>
+                                <option ng-value="2">推广期</option>
+                                <option ng-value="3">在售期</option>
+                                <option ng-value="4">清仓期</option>
+                                <option ng-value="5">归档</option>
+                                <option ng-value="6">备用</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectedSales">预计日销量</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="projected_sales" id="projectedSales" ng-model="addGoods.projectedSales" required >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="projectedSales">标准价格</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="projected_sales" id="correctPrice" ng-model="addGoods.price" required >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="storeSku">仓库SKU</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control" name="store_sku" id="storeSku" ng-model="addGoods.storeSku" ng-change="addGoods.selstore()">
+                                <option ng-repeat="stockItem in stockList" ng-value="stockItem['store_sku']" data-index="{{$index}}">{{stockItem['store_sku']}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="nameCn">中文名</label>
+
+                        <div class="col-sm-10">
+                            <input class="form-control" placeholder="plear" id="nameCn" ng-value="addGoods.nameCn" ng-readonly="true">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label m-t-sm">FBA</label>
+                        <div class="col-sm-3 m-t-sm" ng-init="addGoods.fba='1'">
+                            <lable class="m-r-lg">
+                                <input type="radio" icheck ng-value="1" name="fba" ng-model="addGoods.fba" />&nbsp;&nbsp;是
+                            </lable>
+
+                            <lable>
+                                <input type="radio" icheck ng-value="0" name="fba" ng-model="addGoods.fba"/>&nbsp;&nbsp;否
+                            </lable>
+                        </div>
+
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control" name="fnsku" id="fnsku" placeholder="fnsku" ng-model="addGoods.fnsku" ng-disabled="!addGoods.fba"/>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" ng-click="addGoods.saveGoods()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div load-icon is-load="isLoad"></div>

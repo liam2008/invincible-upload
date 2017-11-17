@@ -1,0 +1,12 @@
+<div class="middle-box text-center loginscreen animated fadeInDown">
+    <div class="wrapper wrapper-content">
+        <div class="middle-box text-center animated fadeInRightBig">
+            <h3 class="font-bold">你没有权限查看此页面</h3>
+
+            <div class="error-desc">
+                页面将在5s后返回主页面
+                <br><a ui-sref="main.summary" class="btn btn-primary m-t">返回（{{counts}}）</a>
+            </div>
+        </div>
+    </div>
+</div>

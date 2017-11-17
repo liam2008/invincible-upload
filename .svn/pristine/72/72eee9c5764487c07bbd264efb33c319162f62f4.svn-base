@@ -1,0 +1,413 @@
+var debug = require('debug')('smartdo:controller:base');
+var ServerError = require('../errors/server-error');
+var fs = require("fs");
+var moment = require('moment');
+var UUID = require('uuid');
+var DB = require('../models/invincible');
+var ADC = require('../models/adc');
+var Merchandise = DB.getModel('merchandise');
+var Product = DB.getModel('product');
+var Store = ADC.getModel('Stores');
+var StoreJournals = ADC.getModel('StoresJournals');
+var Shops = DB.getModel('shops');
+
+var Shared = require('../../shared/');
+var ERROR_CODE = Shared.ERROR;
+var MESSAGE = Shared.MESSAGE;
+
+/*
+ * UModules Dependencies
+ */
+
+module.exports = {
+    name: "base",
+
+    list: function (req, res, next) {
+        var results = [];
+        var store2namecn = {};
+        Merchandise.find({}, function(err, MerchandiseListResult) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            Product.find({}, function(err, ProductListResult) {
+                if(err) {
+                    debug(err);
+                    res.error(ERROR_CODE.FIND_FAILED);
+                    return;
+                }
+                ProductListResult.forEach(function(ProductResult) {
+                    store2namecn[ProductResult.store_sku] = ProductResult.name_cn;
+                });
+                MerchandiseListResult.forEach(function(Merchandises) {
+                    results.push({
+                        id: Merchandises.id,
+                        seller_sku: Merchandises.seller_sku,
+                        store_sku: Merchandises.store_sku,
+                        FBA: Merchandises.FBA,
+                        fnsku: Merchandises.fnsku,
+                        asin: Merchandises.asin,
+                        name_cn: store2namecn[Merchandises.store_sku],
+                        shop_name: Merchandises.shop_name,
+                        team_name: Merchandises.team_name,
+                        createdAt: Merchandises.createdAt,
+                        updatedAt: Merchandises.updatedAt,
+                        state: Merchandises.state,
+                        projected_sales: Merchandises.projected_sales,
+                        price: Merchandises.price || 0
+                    });
+                });
+                Merchandise.aggregate([
+                    { $group: {_id: '$team_name' }},
+                    { $sort: {_id: 1}}
+                ], function (err, team_name) {
+                    if (err) {
+                        debug(err);
+                        res.error(ERROR_CODE.NOT_EXISTS);
+                        return;
+                    }
+                    Product.find({}).sort({store_sku: 1}).exec(function (err, productListResult) {
+                        if (err) {
+                            debug(err);
+                            res.error(ERROR_CODE.FIND_FAILED);
+                            return;
+                        }
+                        Shops.aggregate([{ $group: {_id: '$name' }},{ $sort: {_id: 1}}], function (err, shopsNameResult) {
+                            if (err) {
+                                debug(err);
+                                res.error(ERROR_CODE.NOT_EXISTS);
+                                return;
+                            }
+                            var date = {
+                                list: results,
+                                team_name: team_name,
+                                stockList: productListResult,
+                                shopsNames: shopsNameResult
+                            };
+                            res.success(date);
+                        });
+                    })
+                })
+            })
+        })
+    },
+
+    update: function (req, res, next) {
+        Merchandise.findOne({
+            asin: req.body.asin,
+            seller_sku: req.body.seller_sku,
+            shop_name: req.body.shop_name
+        }, function(err, MerchandiseResult) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            debug("merchandise change : "+ MerchandiseResult.asin + " " + MerchandiseResult.seller_sku + " " + MerchandiseResult.shop_name
+                + " [ projected_sales : " + MerchandiseResult.projected_sales  + " -> "  + req.body.projected_sales
+                + " price : " + MerchandiseResult.price + " -> " + req.body.price
+                + " team_name : " + MerchandiseResult.team_name + " -> " + req.body.team_name
+                + " state : " + MerchandiseResult.state + " -> " + req.body.state
+                + " ]"
+            );
+            MerchandiseResult.projected_sales = req.body.projected_sales;
+            MerchandiseResult.price = req.body.price;
+            MerchandiseResult.team_name = req.body.team_name;
+            MerchandiseResult.state = req.body.state;
+            MerchandiseResult.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+            MerchandiseResult.save(function(err) {
+                if(err) {
+                    debug(err);
+                    res.error(ERROR_CODE.UPDATE_FAILED);
+                    return;
+                }
+                res.success(true);
+            })
+        })
+    },
+
+    saveMerchandise: function (req, res, next) {
+        Merchandise.findOne({
+                asin: req.body.asin,
+                seller_sku: req.body.seller_sku,
+                shop_name: req.body.shop_name
+            }, function(err, MerchandiseResult) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            if (!MerchandiseResult) {
+                //if (req.body.fnsku)
+                var merchandise = new Merchandise ({
+                    id: UUID.v4(),
+                    seller_sku: req.body.seller_sku,     // 卖家SKU
+                    store_sku: req.body.store_sku,     // 仓库SKU
+                    FBA: req.body.FBA,     // 是否FBA 1是 0否
+                    fnsku: req.body.fnsku,     // FNSKU
+                    asin: req.body.asin,     // ASIN
+                    name: req.body.name,     // 当地语言名字:英文\日文等
+                    shop_name: req.body.shop_name,     // 店铺名
+                    team_name: req.body.team_name,     // 小组名
+                    state: req.body.state,     // 状态 0:停售, 1:未开售, 2:推广期, 3:在售期, 4:清仓期 5:归档 6:备用
+                    price: req.body.price,     // 基准价格
+                    projected_sales: req.body.projected_sales,    // 预计销量
+                    createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                    updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                });
+                merchandise.save(function(err) {
+                    if(err) {
+                        debug(err);
+                        res.error(ERROR_CODE.CREATE_FAILED);
+                        return;
+                    }
+                    res.success(true);
+                })
+            }else {
+                res.success(false)
+            }
+        })
+    },
+
+    shops: function (req, res, next) {
+        Shops.find(function (err, shopsListResult) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            var results = [];
+            shopsListResult.forEach(function (shopsResult) {
+                var result = {
+                    id: shopsResult.id,
+                    name: shopsResult.name,
+                    site: shopsResult.site,
+                    sellerId: shopsResult.seller_id,
+                    createdAt: moment(shopsResult.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+                    updatedAt: moment(shopsResult.updatedAt).format('YYYY-MM-DD HH:mm:ss')
+                };
+                results.push(result)
+            });
+            res.success(results);
+        })
+    },
+
+    addShops: function (req, res, next) {
+        req.body.name = req.body.name.toUpperCase();
+        var date = moment().format('YYYY-MM-DD HH:mm:ss');
+        var names = req.body.name.split("-");
+        var site = names[2];
+        var newShop = new Shops({
+            id: UUID.v4(),
+            name: req.body.name,
+            site: site,
+            seller_id: req.body.sellerId,
+            createdAt: date,
+            updatedAt: date
+        });
+
+        newShop.save(function (err) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.CREATE_FAILED);
+                return;
+            }
+            res.success();
+        });
+    },
+
+    shopsOne: function (req, res, next, callback) {
+        var findRequire = {};
+        findRequire.id = req.body.id;
+        Shops.findOne(findRequire, function(err, ShopOne) {
+            callback(err, ShopOne)
+        });
+    },
+
+    updateShops: function (req, res, next) {
+        req.body.name = req.body.name.toUpperCase();
+        require('../controllers').base.shopsOne(req, res, next, function(err, ShopsOne) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            var name = req.body.name;
+            ShopsOne.name = req.body.name;
+            ShopsOne.site = (name.split("-"))[2];
+            ShopsOne.seller_id = req.body.sellerId;
+            ShopsOne.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+            ShopsOne.save(function (err) {
+                if (err) {
+                    debug(err);
+                    res.error(ERROR_CODE.UPDATE_FAILED);
+                    return;
+                }
+                res.success();
+            });
+        })
+    },
+
+    //Product货品
+    saveProduct: function (req, res, next) {
+        var time = moment().format('YYYY-MM-DD HH:mm:ss');
+        var product = new Product({
+            id: UUID.v4(),                                           // id 使用UUID
+            store_sku: req.body.store_sku,                    // 仓库SKU
+            name_cn: req.body.name_cn,                              // 英文名
+            createdAt: time,                           // 创建时间
+            updatedAt: time                           // 修改时间
+        });
+        product.save(function (err) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.CREATE_FAILED);
+                return;
+            }
+            res.success(true);
+        });
+    },
+
+    updateProduct: function (req, res, next) {
+        require('../controllers').base.ProductOne(req.body.id, function (err, productOne) {
+            if (err) {
+                debug(err);
+                return;
+            }
+            if(productOne) {
+                var time = moment().format('YYYY-MM-DD HH:mm:ss');
+                productOne.store_sku = req.body.store_sku;
+                productOne.name_cn = req.body.name_cn;                              // 英文名
+                productOne.updatedAt = time;                           // 修改时间
+                productOne.save(function (err) {
+                    if (err) {
+                        debug(err);
+                        res.error(ERROR_CODE.UPDATE_FAILED);
+                        return;
+                    }
+                    res.success(true);
+                });
+            }else {
+                res.success(false);
+            }
+        })
+    },
+
+    listProduct: function (req, res, callback) {
+        var results = [];
+        Store.find({}, function (err, storeListResult) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            var  storesNum = {};
+            for (var j = 0;j < storeListResult.length; j++) {
+                var row = storeListResult[j];
+                var key = row.id;
+                storesNum[key] = j
+            }
+            Product.find({}, function (err, productListResult) {
+                if (err) {
+                    debug(err);
+                    res.error(ERROR_CODE.FIND_FAILED);
+                    return;
+                }
+                for (var i = 0; i < productListResult.length; i++) {
+                    var rowProduct = productListResult[i];
+                    var key = rowProduct.id;
+                    var rowStore = storeListResult[storesNum[key]] || {};
+                    var unit =  rowStore.unit || "";
+                    var stock = rowStore.stock || "";
+                    var result = {
+                        id: rowProduct.id,
+                        store_sku: rowProduct.store_sku,
+                        name_cn: rowProduct.name_cn,
+                        unit: unit,
+                        stock: stock
+                    };
+                    results.push(result)
+                }
+                for (var a = 0; a < results.length; a++) {
+                    if (results[a].stock == "") {
+                        for (var b = a + 1; b< results.length; b++) {
+                            if (results[b].stock != "") {
+                                var temp = results[a];
+                                results[a] = results[b];
+                                results[b] = temp;
+                                break;
+                            }
+                        }
+                    }
+                }
+                var stockList = {stockList: results};
+                res.success(stockList);
+            })
+        });
+
+    },
+
+    removeProduct: function (req, res, next) {
+        // Product.remove({
+        //     store_sku: req.body.store_sku
+        // }, function (err) {
+        //     if (err) {
+        //         return err;
+        //     }
+        // });
+
+        res.success();
+    },
+
+    ProductOne: function (id, callback) {
+        var require = {};
+        if (id == null) {
+            require.id = id;
+        }
+        Product.findOne(require, function (err, productOne) {
+            if (err) {
+                return callback(err, null);
+            }
+            return callback(err, productOne);
+        });
+    },
+
+    StoreJournal: function (req, res, next) {
+        var require = {};
+        var results = {};
+        var subDay = 0;
+        var Moment = function() {
+            var now;
+            if (req.query.time) {
+                now = moment(req.query.time);
+            }else{
+                now = moment();
+                subDay = 1;
+                if(moment().format('HH') < 17){
+                    subDay = 2;
+                }
+            }
+            return now;
+        };
+
+        var date = Moment().subtract(subDay, 'day').format('YYYY-MM-DD');
+        var startTime = req.body.startTime || date;
+        var endTime = req.body.endTime || date;
+        require.id = req.body.id;
+        require.time = {};
+        require.time.$gte = startTime;
+        require.time.$lte = req.body.endTime || date;
+        StoreJournals.find(require, function (err, StoreJournalList) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            results.storeJournalList = StoreJournalList;
+            results.startTime = startTime;
+            results.endTime = endTime;
+            res.success(results);
+        });
+    }
+};

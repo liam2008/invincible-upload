@@ -1,0 +1,27 @@
+<style>
+    .title-dir{
+        display:inline;
+        padding-left:0 !important;
+        padding-bottom:0 !important;
+        position: absolute;
+        right:5px;
+        top:8px;
+    }
+    .title-dir li{
+        list-style: none;
+    }
+
+    .title-dir a{
+        font-size:20px;
+    }
+</style>
+<ul class="title-dir">
+    <li ng-show="orderDir=='-1'">
+        <a href="javascript:void(0)"><i class="fa fa-angle-up"></i></a>
+    </li>
+    <li ng-show="orderDir=='1'">
+        <a href="javascript:void(0)"><i class="fa fa-angle-down"></i></a>
+    </li>
+</ul>
+
+

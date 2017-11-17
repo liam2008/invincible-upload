@@ -1,0 +1,91 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>信息导入</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="input-group date  m-b-md">
+                                <input type="datetime" class="form-control" date-time ng-model="importDate" view="date"
+                                       auto-close="true" min-view="date" format="YYYY-MM-DD" id="importDate">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">店铺名称</label>
+
+                                <div class="col-sm-8">
+                                    <select class="form-control" ng-model="shopName" name="shopName"
+                                            ng-model="shopName">
+                                        <option ng-repeat="shopItem in shopNamelist" value="{{shopItem}}">{{shopItem}}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="pull-right">
+                                <div ng-hide="isreview">
+                                    <button type="button" class="btn btn-w-m btn-default" ng-click="fnReview()">预览
+                                    </button>
+                                </div>
+                                <div ng-show="isreview">
+                                    <button type="button" class="btn btn-w-m btn-default" ng-click="fnSave()">保存
+                                    </button>
+                                    <button type="button" class="btn btn-w-m btn-white" ng-click="fnCancel()">取消
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <textarea class="form-control" rows="15" placeholder="输入数据" spellcheck="false" id="setContnet"
+                                  ng-hide="isreview"></textarea>
+
+                        <!--表格-->
+                        <div class="wrapper wrapper-content animated fadeInRight" ng-show="isreview">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-condensed text-center">
+                                    <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>ASIN</th>
+                                        <th>商品名称</th>
+                                        <th>SKU</th>
+                                        <th>销量</th>
+                                        <th>净销售额</th>
+                                        <th>单价</th>
+                                        <th>可售库存</th>
+                                        <th>待收货库存</th>
+                                        <th>转库中库存</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="item in tableData">
+                                        <td>{{$index+1}}</td>
+                                        <td>{{item["ASIN"]}}</td>
+                                        <td>{{item["商品名称"]}}</td>
+                                        <td>{{item["SKU"]}}</td>
+                                        <td>{{item["昨日销量"]}}</td>
+                                        <td>{{item["昨日净销售额"]}}</td>
+                                        <td>{{item["昨日单价"]}}</td>
+                                        <td>{{item["可售库存"]}}</td>
+                                        <td>{{item["待收货库存"]}}</td>
+                                        <td>{{item["转库中库存"]}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

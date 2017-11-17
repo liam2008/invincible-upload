@@ -1,0 +1,142 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('mainController', [
+        '$scope',
+        'account',
+        'netManager',
+        mainController
+    ]);
+
+    app.controller('loginController', [
+        '$scope',
+        '$location',
+        'netManager',
+        loginController
+    ]);
+
+    app.controller('unauthorizedController', [
+        '$scope',
+        '$interval',
+        '$state',
+        unauthorizedController
+    ]);
+
+    function loginController($scope, $location, netManager) {
+        $scope.username = "";
+        $scope.password = "";
+        $scope.loginFailure = false;
+
+        $scope.onFocus = function () {
+            $scope.loginFailure = false;
+        };
+
+        $scope.submit = function () {
+            if ($scope.username.length < 1) {
+                return;
+            }
+
+            netManager.login({
+                username: $scope.username,
+                password: $scope.password
+            }).then(function (result) {
+                if (result == true) {
+                    $location.path('/main/summary');
+                } else {
+                    $scope.loginFailure = true;
+                }
+            }).catch(function (e) {
+                switch (e.data.code) {
+                    case '1027':
+                        alert('该用户已被冻结，若有问题请联系管理员，谢谢！');
+                        break;
+                    case '1028':
+                        alert('该用户已被删除，若有问题请联系管理员，谢谢！');
+                        break;
+                }
+            });
+        };
+    }
+
+    function unauthorizedController($scope, $interval, $state) {
+        $scope.counts = 5;
+        var timer = $interval(function () {
+            $scope.counts--;
+            if ($scope.counts <= 0) {
+                $interval.cancel(timer);
+                $state.go('main.summary');
+            }
+        }, 1000);
+    }
+
+    function mainController($scope, account, netManager) {
+        $scope.account = angular.copy(account);
+        switch (account.scope) {
+            case 4:
+                $scope.account.scope = '超级管理员';
+                break;
+            case 3:
+                $scope.account.scope = '高级管理员';
+                break;
+            case 2:
+                $scope.account.scope = '普通管理员';
+                break;
+            case 1:
+                $scope.account.scope = '代理商';
+                break;
+            default:
+                $scope.account.scope = '普通会员';
+        }
+
+
+        $scope.isHavingMenuItem = false;
+
+        $scope.navigatorMenuItem = '概览';
+
+        $scope.nav_summary = '概览';
+
+        $scope.nav_daily = '每日运营';
+        $scope.nav_daily_import = '信息导入';
+        $scope.nav_daily_list = '每日信息';
+        $scope.nav_daily_report = '每日报表';
+        $scope.nav_daily_grossMargin = '毛利率统计';
+
+        $scope.nav_base = '基础信息管理';
+        $scope.nav_base_goodsManage = '商品管理';
+        $scope.nav_base_shopManage = '商店管理';
+        $scope.nav_base_stockManage = '库存管理';
+
+        $scope.nav_count = '毛利率计算';
+        $scope.nav_count_counter = '毛利率计算器';
+        $scope.nav_count_formula = '公式说明';
+
+        $scope.nav_rank = '排名';
+        $scope.nav_rank_sellerRank = '卖家排名';
+
+        $scope.getClickNavigatorMenuItemTitle = function (title) {
+            $scope.navigatorMenuItem = title;
+            switch (title) {
+                case $scope.nav_summary :
+                    $scope.navigatorMenu = $scope.nav_summary;
+                    break;
+                case $scope.nav_daily_import || $scope.nav_daily_list || $scope.nav_daily_report || $scope.nav_daily_grossMargin:
+                    $scope.navigatorMenu = $scope.nav_daily;
+                    break;
+                case $scope.nav_base_goodsManage || $scope.nav_base_shopManage || $scope.nav_base_stockManage:
+                    $scope.navigatorMenu = $scope.nav_base;
+                    break;
+                case $scope.nav_count_counter || $scope.nav_count_formula:
+                    $scope.navigatorMenu = $scope.nav_count;
+                    break;
+                case $scope.nav_rank_sellerRank:
+                    $scope.navigatorMenu = $scope.nav_rank;
+                    break;
+                    break;
+            }
+        };
+
+        $scope.logout = function () {
+            netManager.logout();
+        };
+    }
+}());

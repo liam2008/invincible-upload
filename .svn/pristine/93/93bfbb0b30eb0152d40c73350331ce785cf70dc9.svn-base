@@ -1,0 +1,62 @@
+var fs = require("fs");
+var moment = require('moment');
+
+module.exports = {
+	name: "files",
+
+	fileManager: function(req, res) {
+		fs.readdir('public/pdf', function(err, files) {
+			var list = [];
+			for(var i = 0; i < files.length; i++) {
+				var item = files[i].split('@');
+				list.push({
+					time: moment(parseInt(item[0])).format('YYYY-MM-DD HH:mm:ss'),
+					name: item[1],
+					href: '/pdf/' + files[i]
+				})
+			};
+			res.json(list)
+		})
+	},
+
+	fileManagerUpload: function(req, res) {
+		var multiparty = require('multiparty');
+		var uploadDir = 'public/pdf/';
+		if(!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+		var form = new multiparty.Form({
+			uploadDir: uploadDir
+		});
+		form.parse(req, function(err, fields, files) {
+			var time = Date.now();
+			var name = files['file'][0]['originalFilename'];
+			fs.rename(files['file'][0]['path'], uploadDir + time + '@' + name, function(err) {
+				if(!err) res.json({
+					time: moment(time).format('YYYY-MM-DD HH:mm:ss'),
+					name: name,
+					href: '/pdf/' + time + '@' + name
+				})
+			})
+		})
+	},
+
+	fileManagerUpdate: function(req, res) {
+		var oldname = req.body.name;
+		var oldpath = 'public' + req.body.href;
+		var path = oldpath.replace(oldname, req.body.newname);
+		var suffix = oldname.substr(oldname.lastIndexOf('.'));
+		fs.rename(oldpath, path + suffix, function(err) {
+			if(!err) res.json({
+				time: req.body.time,
+				name: req.body.newname + suffix,
+				href: req.body.href.substring(0, req.body.href.indexOf('@')) + '@' + req.body.newname + suffix
+			})
+		})
+	},
+
+	fileManagerRemove: function(req, res) {
+		var fileName = 'public' + req.body.href;
+		var exists = fs.existsSync(fileName);
+		if(exists) fs.unlinkSync(fileName);
+		res.json(exists)
+	}
+}

@@ -1,0 +1,88 @@
+
+module.exports = function(grunt) {
+    grunt.initConfig({
+        pkg: grunt.file.readJSON("package.json"),
+        //files: require("./tools/export"),
+
+        sshconfig: {
+            "development": grunt.file.readJSON('../secret.json')
+        },
+
+        concat: {
+            options: {
+                banner: '/*! <%= pkg.file %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+            },
+            webapp: {
+                src: '<%= files %>',
+                dest: '../web-app/js/<%= pkg.name %>.js'
+            }
+        },
+
+        copy: {
+            webapp: {
+                files: [
+                    {
+                        expand: true,
+                        cwd:    "./",
+                        src:    [
+                            '**',
+                            '!scripts/*/',
+                            '!node_modules/**',
+                            '!Gruntfile.js'
+                        ],
+                        dest:   "../dist/web-app"
+                    }
+                ]
+            }
+        },
+
+        uglify: {
+            options: {
+                mangle: true
+            },
+            build: {
+                cwd:    "./",
+                src:    [
+                    'scripts/**/*.js'
+                ],
+                dest: '../dist/web-app/scripts.js',
+                ext: '.js'
+            }
+        },
+
+        jshint: {
+            build: {
+                src: '<%= files %>'
+            }
+        },
+
+        sftp: {
+            development: {
+                files: {
+                    "./": [
+                        '**',
+                        '!node_modules/**',
+                        '!Gruntfile.js'
+                    ]
+                },
+                options: {
+                    path: '/data/www/nginx/development/invincible-app',
+                    config: 'development',
+                    showProgress: true,
+                    createDirectories: true
+                }
+            }
+        }
+    });
+
+    //grunt.loadNpmTasks("grunt-contrib-jshint");
+    grunt.loadNpmTasks("grunt-contrib-concat");
+    grunt.loadNpmTasks("grunt-contrib-uglify");
+    grunt.loadNpmTasks("grunt-contrib-copy");
+    grunt.loadNpmTasks('grunt-ssh');
+
+    grunt.registerTask("default", ['copy']);
+    grunt.registerTask("webapp", ['concat:webapp']);
+    grunt.registerTask("scp", ['sftp:development']);
+    grunt.registerTask("deploy", ['scp']);
+};

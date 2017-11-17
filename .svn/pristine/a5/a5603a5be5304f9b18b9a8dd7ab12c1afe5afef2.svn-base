@@ -1,0 +1,139 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('stockManageCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'SweetAlert',
+        function ($scope, netManager, DTOptionsBuilder, SweetAlert) {
+            $scope.dtOptions = DTOptionsBuilder.newOptions()
+                .withDOM('<"html5buttons"B>lTfgitp')
+                .withButtons([
+                    {extend: 'excel', title: '产品库存管理'},
+                    {extend: 'copy', title: '产品库存管理'},
+                    {
+                        text: '添加产品库存',
+                        action: function (e, dt, node, config) {
+                            $('#addGoodModule').modal('show')
+                        }
+                    }
+                ]);
+            //渲染页面
+            init();
+
+            //修改保存数据
+            $scope.saveEdit = function () {
+                SweetAlert.swal({
+                        title: "你将编辑数据?",
+                        text: "你确定编辑此条数据!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            var comfirmData = {
+                                'store_sku': $scope.editData['store_sku'],
+                                'name_cn': $scope.editData['name_cn'],
+                                'id': $scope.editData['id']
+                            };
+                            console.log('send', comfirmData);
+                            netManager.post('/base/updateProduct', comfirmData).then(function (res) {
+                                if (res.status === 200) {
+                                    res.data ? swal("保存成功!", "success") : swal("保存失败!", "error");
+                                    init();
+                                }
+                            }, function (err) {
+                                console.err(err.code);
+                                swal("保存失败", "err.description", "error");
+                            });
+                        }
+                    });
+            };
+            //添加商品
+            var addStore = {};
+            $scope.saveStore = function () {
+                SweetAlert.swal({
+                        title: "你将添加产品库",
+                        text: "请确保数据无误!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            $("#addGoodModule").modal("hide");
+                            var addStoreData = {
+                                'store_sku': $scope.addStore['store_sku'],
+                                'name_cn': $scope.addStore['name_cn']
+                            };
+                            netManager.post('/base/saveProduct', addStoreData).then(function (res) {
+                                if (res.status === 200) {
+                                    res.data ? swal("保存成功!", "success") : swal("保存失败!", "error");
+                                    init();
+                                    //清除之前的数据
+                                    $scope.addStore = null;
+                                }
+                            }, function (err) {
+                                console.error(err.code);
+                                swal("保存失败", "err.description", "error");
+                            });
+                        }
+                    });
+
+            };
+            $scope.addStore = addStore;
+
+            //查看记录
+            var logData = {};
+            logData.dtOptions = DTOptionsBuilder.newOptions();
+            logData.checkLog = function (id) {
+                renderLogData(id);
+                $scope.logData.id = id;
+            };
+            logData.checkDateLog = function () {
+                var startDate = moment($scope.logData.startDate).format('YYYY-MM-DD');
+                var endDate = moment($scope.logData.endDate).format('YYYY-MM-DD');
+                renderLogData($scope.logData.id, startDate, endDate);
+            };
+            $scope.logData = logData;
+
+            //渲染日志页面
+            function renderLogData(id, startTime, endTime) {
+                var sendData = {
+                    'id': id,
+                    'startTime': startTime || moment(new Date()).format('YYYY-MM-DD'),
+                    'endTime': endTime || moment(new Date()).format('YYYY-MM-DD')
+                };
+                netManager.post('/base/StoreJournal', sendData).then(function (res) {
+                    $scope.logData.recordList = res.data.storeJournalList;
+                }, function (err) {
+                    console.error(err);
+                });
+
+            }
+
+            //初始化页面
+            function init() {
+                //控制加载load-icon
+                $scope.isLoad = true;
+                netManager.get('/base/product').then(function (res) {
+                    $scope.tableData = res.data.stockList;
+                    $scope.edit = function (index) {
+                        var editData = {};
+                        editData['store_sku'] = $scope.tableData[index]['store_sku'];
+                        editData['name_cn'] = $scope.tableData[index]['name_cn'];
+                        editData['id'] = $scope.tableData[index]['id'];
+                        $scope.editData = editData;
+                    };
+                    $scope.isLoad = false;
+                }, function (err) {
+                    console.error(err);
+                });
+            }
+        }
+    ]);
+
+
+}());

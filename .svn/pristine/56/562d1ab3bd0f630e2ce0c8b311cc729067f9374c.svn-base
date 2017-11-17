@@ -1,0 +1,14 @@
+
+module.exports = {
+    name: "user",
+    schema: {
+        id: String,
+        account: String,
+        password: String,
+        status: Number,
+        parentId: String,
+        scope: Number,
+        createdAt: Date,
+        updatedAt: Date
+    }
+};

@@ -1,0 +1,44 @@
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul side-navigation class="nav metismenu" id="side-menu">
+            <li class="nav-header">
+                <div class="profile-element" uib-dropdown>
+                    <img alt="image" class="img-circle" src="img/avatar.png" width="48px"/>
+                    <a uib-dropdown-toggle href>
+                            <span class="clear">
+                                <span class="block m-t-xs">
+                                    <strong class="font-bold">{{ account.account }}</strong>
+                                </span>
+                                <span class="text-muted text-xs block">
+                                    {{ account.scope }} <b class="caret"></b>
+                                </span>
+                            </span>
+                    </a>
+                </div>
+                <div class="logo-element">
+                    SD
+                </div>
+            </li>
+            <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_summary)">
+                <a ui-sref="main.summary"><i class="fa fa-home"></i> <span class="nav-label">首页</span> </a>
+            </li>
+            <li ng-class="{active: $state.includes('main.base')}" has-permission="main.base">
+                <a href="#"><i class="fa fa-pencil-square-o"></i> <span class="nav-label">基础信息管理</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse" ng-class="{in: $state.includes('main.base')}">
+                    <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_base_goodsManage)"><a ui-sref="main.base.goodsManage">商品管理</a></li>
+                    <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_base_shopManage)"><a ui-sref="main.base.shopManage">商店管理</a></li>
+                    <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_base_stockManage)"><a ui-sref="main.base.stockManage">产品库存管理</a></li>
+                </ul>
+            </li>
+            <li ng-class="{active: $state.includes('main.daily')}">
+                <a href="#"><i class="fa fa-area-chart"></i> <span class="nav-label">每日运营</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse" ng-class="{in: $state.includes('main.daily')}">
+                    <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_daily_import)" has-permission="main.daily.import"><a ui-sref="main.daily.import" >信息导入</a></li>
+                    <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_daily_list)" has-permission="main.daily.list"><a ui-sref="main.daily.list">每日信息</a></li>
+                    <li ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(nav_daily_report)" has-permission="main.daily.report"><a ui-sref="main.daily.report">每日报表</a></li>
+                </ul>
+            </li>
+        </ul>
+
+    </div>
+</nav>

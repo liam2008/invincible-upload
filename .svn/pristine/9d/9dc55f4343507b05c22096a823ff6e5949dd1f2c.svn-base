@@ -1,0 +1,9 @@
+
+var App = window.App || {};
+
+App.config = (function() {
+    return {
+        "server": "http://localhost:9800",
+        "version": +new Date()
+    };
+} ());

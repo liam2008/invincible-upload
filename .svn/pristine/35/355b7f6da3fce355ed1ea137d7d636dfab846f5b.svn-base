@@ -1,0 +1,32 @@
+{
+  "name": "invincible-app",
+  "version": "1.0.0",
+  "description": "Smartdo invincible app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Smartdo"
+  ],
+  "author": "Narwhale",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.1",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-strip": "~0.2.1",
+    "grunt-ssh": "^0.12.9"
+  },
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "grunt-ssh": "^0.12.9",
+    "moment": "^2.17.1",
+    "sprintf": "^0.1.5",
+    "uuid": "^3.0.1"
+  }
+}

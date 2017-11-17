@@ -1,0 +1,8 @@
+[
+    "libs/moment.js",
+    "libs/sprintf.js",
+    "libs/uuid.js",
+    "base/boot.js",
+    "consts/code.js",
+    "utils/utils.js"
+]

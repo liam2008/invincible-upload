@@ -1,0 +1,14 @@
+<div class="text-center pdf-toolbar">
+	<div class="btn-group" style="padding-top: 10px;">
+		<button id="prev" class="btn btn-white" ng-click="goPrevious()"><i class="fa fa-long-arrow-left"></i> <span class="hidden-xs">上一页</span></button>
+		<button id="next" class="btn btn-white" ng-click="goNext()"><span class="hidden-xs">下一页</span> <i class="fa fa-long-arrow-right"></i></button>
+		<button id="zoomfit" class="btn btn-white" ng-click="fit()"> 100%</button>
+		<span class="btn btn-white hidden-xs">页数: </span>
+		<div class="input-group">
+			<input type="text" class="form-control" min=1 ng-model="pageNum">
+			<div class="input-group-btn">
+				<button type="button" class="btn btn-white" id="page_count">/ {{pageCount}}</button>
+			</div>
+		</div>
+	</div>
+</div>

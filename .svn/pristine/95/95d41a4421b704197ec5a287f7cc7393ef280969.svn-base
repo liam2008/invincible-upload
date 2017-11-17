@@ -1,0 +1,591 @@
+var debug = require('debug')('smartdo:controller:purchase');
+var ServerError = require('../errors/server-error');
+var async = require('async');
+var moment = require('moment');
+var InvincibleDB = require('../models/invincible');
+var Purchase = InvincibleDB.getModel('purchase');
+var PurchaseDetail = InvincibleDB.getModel('purchaseDetail');
+var Product = InvincibleDB.getModel('product');
+var Merchandise = InvincibleDB.getModel('merchandise');
+var Supplier = InvincibleDB.getModel('supplier');
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+var Shared = require('../../shared/');
+var ERROR_CODE = Shared.ERROR;
+var MESSAGE = Shared.MESSAGE;
+var Utils = Shared.Utils;
+
+module.exports = {
+    name: "purchase",
+
+    purchaseList: function (req, res, next) {
+        var supIdRequire = [];
+        //var supplierID2Name = {};
+        var detIDRequire = [];
+        var purchases = [];
+
+        async.series([
+                // 找出对应供应商
+                function (callB) {
+                    if (req.query.supplierName) {
+                        var regSupplier = new RegExp(req.query.supplierName);
+                        Supplier.find({name: regSupplier}, function (err, supListFound) {
+                            if(err) {
+                                callB(err);
+                                res.error(ERROR_CODE.FIND_FAILED);
+                                return;
+                            }
+                            if (supListFound) {
+                                supListFound.forEach (function (supFound) {
+                                    supIdRequire.push(supFound._id);
+                                    //supplierID2Name[supFound._id] = supFound.name;
+                                })
+                            }
+                            callB(null);
+                        })
+                    }
+                },
+                // 找出对应商品中文名
+                function (callB) {
+                    if (req.query.proNameCn) {
+                        var regProNameCn = new RegExp(req.query.proNameCn);
+                        Product.find({name_cn: regProNameCn}, function (err, proListFound) {
+                            if(err) {
+                                callB(err);
+                                res.error(ERROR_CODE.FIND_FAILED);
+                                return;
+                            }
+                            if (proListFound) {
+                                var storeSkuReq = [];
+                                proListFound.forEach (function (productFound) {
+                                    storeSkuReq.push(productFound.store_sku)
+                                });
+                                if (storeSkuReq.length > 0) {
+                                    PurchaseDetail.find({store_sku: {$in: storeSkuReq}}, function (err, detListFound) {
+                                        if(err) {
+                                            callB(err);
+                                            res.error(ERROR_CODE.FIND_FAILED);
+                                            return;
+                                        }
+                                        if (detListFound) {
+                                            detListFound.forEach (function (detFound) {
+                                                detIDRequire.push(detFound._id);
+                                            });
+                                        }
+                                    })
+                                }
+                            }
+                            callB(null);
+                        })
+                    }
+                },
+                //
+                function (callB) {
+                    var findRequire = {};
+                    if (req.query.orderNumber) findRequire.order_number = req.query.orderNumber;
+                    if (req.query.contractNumber) findRequire.contract_number = req.query.contractNumber;
+                    if (supIdRequire.length > 0) findRequire.supplier = {$in: supIdRequire};
+                    if (req.query.contractNumber) findRequire.contract_number = req.query.contractNumber;
+                    if (detIDRequire.length > 0) findRequire.purDetails = {$in: detIDRequire};
+                    if (req.query.orderStatus) findRequire.contract_number = req.query.orderStatus;
+
+                    Purchase.find(findRequire).populate("supplier").sort({order_number: 1}).exec(function (err, purListFound) {
+                        if(err) {
+                            callB(err);
+                            res.error(ERROR_CODE.FIND_FAILED);
+                            return;
+                        }
+                        if (purListFound) {
+                            purListFound.forEach (function (purchaseFound) {
+                                var purResult = {
+                                    "orderNumber": purchaseFound.order_number,
+                                    "contractNumber": purchaseFound.contract_number,
+                                    "supplierName": purchaseFound.supplier.name,
+                                    "purTotalPrice": purchaseFound.purchase_total_price,
+                                    "orderStatus": purchaseFound.order_status,
+                                    "remark": purchaseFound.remarks
+                                };
+                                purchases.push(purResult);
+                            })
+                        }
+                        callB(null)
+                    })
+                }
+            ],
+            function (err) {
+                if (err) {
+                    debug(new Error(err));
+                    return;
+                }
+                res.success(purchases);
+            }
+        );
+    },
+
+    purchaseSave: function (req, res, next) {
+        var findRequire = {};
+        findRequire.order_number = req.body.orderNumber;
+        Purchase.findOne(findRequire, function (err, purOne) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            if (!purOne) {
+                var arr = req.body.purDetails || [];
+                var skuIds = [];
+                var orderStatus = 0;
+                var purTotalPrice = 0;
+                if (req.body.orderStatus) orderStatus = Utils.toNumber(req.body.orderStatus);
+
+                var iterator = function (json, cb) {
+                    if (json == null || json.storeSku == null) {
+                        cb(null);
+                        return;
+                    }
+
+                    var unitPrice = 0;
+                    if (json.unitPrice) unitPrice = Utils.toNumber(json.unitPrice);
+                    var purQuantity = 0;
+                    if (json.purQuantity) purQuantity = Utils.toNumber(json.purQuantity);
+                    var totalPrice = 0;
+                    if (json.totalPrice) totalPrice = Utils.toNumber(json.totalPrice);
+                    var delQuantity = 0;
+                    if (json.delQuantity) delQuantity = Utils.toNumber(json.delQuantity);
+                    purTotalPrice += totalPrice;
+                    var deliver = {};
+                    deliver[json.deliverDate] = delQuantity;
+
+                    //
+                    async.series([
+                            //
+                            function (callB) {
+                                var _id = new ObjectId(new Date());
+                                var newPurDetail = new PurchaseDetail ({
+                                    _id: _id,
+                                    store_sku: json.storeSku,                                                        // 库存SKU
+                                    unit_price: unitPrice,                                                 // 单价
+                                    purchase_quantity: purQuantity,                                          // 采购数量
+                                    total_price: totalPrice,                                                // 总金额(含运费)
+                                    contract_covenant_date: json.conCovDate,                                       // 合同约定交期
+                                    deliver: deliver,                                                    // 实际交期:交货数量
+                                    deliver_total: delQuantity,                                               // 已交货数量
+                                    logistics_number: json.logNumber,                                            // 物流追踪单号
+                                    salesman: json.salesman,                                                    // 业务员
+                                    updatedAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                    createdAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                                });
+                                newPurDetail.save(function (err) {
+                                    if (err) {
+                                        callB(err);
+                                        res.error(ERROR_CODE.CREATE_FAILED);
+                                        return;
+                                    }
+                                    skuIds.push(_id);
+                                    callB(null);
+                                })
+                            }
+                        ],
+                        function (err) {
+                            if (err) {
+                                cb(err);
+                                return;
+                            }
+                            // 添加采购单
+                            var orderTime = moment(req.body.orderTime).format('YYYY-MM-DD');
+                            var newPurchase = new Purchase ({
+                                order_number: req.body.orderNumber,                                               // 订单号
+                                contract_number: req.body.contractNumber,                                            // 合同号
+                                order_time: orderTime,                                                   // 下单时间
+                                supplier: req.body.supplierId,                                            // 供应商
+                                buyer: req.body.buyer,                                                      // 采购员
+                                purDetails: skuIds,                                                  // 库存SKU的ID
+                                order_status: orderStatus,                                               // 订单基本状态
+                                purchase_total_price: purTotalPrice,                                               // 订单总金额
+                                pickup_way: req.body.pickupWay,                                                 // 提货方式
+                                remarks: req.body.remark,                                                      // 详细备注
+                                updatedAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                createdAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                            });
+                            newPurchase.save(function (err) {
+                                if (err) {
+                                    cb(err);
+                                    res.error(ERROR_CODE.CREATE_FAILED);
+                                    return;
+                                }
+                                res.success(true);
+                                cb(null);
+                            });
+                        }
+                    );
+                };
+
+                async.eachSeries(arr, iterator, function (err) {
+                    if (err != null) {
+                        debug(err);
+                        return;
+                    }
+                });
+            }else {
+                res.success(false);
+            }
+        })
+    },
+
+    productList: function (req, res, next) {
+        var findRequire= {};
+        //if (req.query.storeSku) findRequire.store_sku = req.query.storeSku;
+        //if (req.query.nameCN) {
+        //    var proName = req.query.proName.trim();
+        //    proName = new RegExp(proName);
+        //    findRequire.name_cn = proName;
+        //}
+        Product.find(findRequire).sort({store_sku: 1}).exec(function (err, proListFound) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            findRequire = {};
+            //findRequire.name = proName;
+            Merchandise.find(findRequire, function (err, merListFound) {
+                if(err) {
+                    debug(err);
+                    res.error(ERROR_CODE.FIND_FAILED);
+                    return;
+                }
+                var results = [];
+                var storeSku2NameEn = {};
+                if (merListFound) {
+                    merListFound.forEach (function (merFound) {
+                        storeSku2NameEn[merFound.store_sku] = merFound.name;
+                    })
+                }
+                if (proListFound) {
+                    proListFound.forEach (function (proFound) {
+                        var result = {
+                            storeSku: proFound.store_sku,
+                            nameCN: proFound.name_cn,
+                            nameEn: storeSku2NameEn[proFound.store_sku]
+                        };
+                        results.push(result);
+                    })
+                }
+
+                res.success(results);
+            });
+        })
+    },
+
+    purchaseOne: function (req, res, next) {
+        var findRequire = {};
+        findRequire.order_number = req.query.orderNumber;
+        Purchase.findOne(findRequire, function (err, purOneFound) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            if (purOneFound) {
+                var purResult = {
+                    "purchaseId": purOneFound._id,
+                    "orderNumber": purOneFound.orderNumber,
+                    "contractNumber": purOneFound.contractNumber,
+                    "supplierId": purOneFound.supplierId,
+                    "orderTime": purOneFound.orderTime,
+                    "buyer": purOneFound.buyer,
+                    "orderStatus": purOneFound.orderStatus,
+                    "pickupWay": purOneFound.pickupWay,
+                    "remarks": purOneFound.remarks,
+                    "purDetails": []
+                };
+                findRequire = {};
+                findRequire.store_sku = {"$in": purOneFound.purDetails};
+                var storeSku2nameCN = {};
+                var storeSku2nameEN = {};
+
+                async.series([
+                        // 找出storeSku中文名
+                        function (callB) {
+                            Product.find(findRequire, function (err, proListFound) {
+                                if(err) {
+                                    callB(err);
+                                    res.error(ERROR_CODE.FIND_FAILED);
+                                    return;
+                                }
+                                if (proListFound) {
+                                    proListFound.forEach (function (productFound) {
+                                        storeSku2nameCN[productFound.store_sku] = productFound.name_cn;
+                                    })
+                                }
+                                callB(null);
+                            })
+                        },
+
+                        // 找出storeSku中文名
+                        function (callB) {
+                            Merchandise.find(findRequire, function (err, merListFound) {
+                                if(err) {
+                                    callB(err);
+                                    res.error(ERROR_CODE.FIND_FAILED);
+                                    return;
+                                }
+                                if (merListFound) {
+                                    merListFound.forEach (function (merchandiseFound) {
+                                        storeSku2nameEN[merchandiseFound.store_sku] = merchandiseFound.name;
+                                    })
+                                }
+                                callB(null);
+                            })
+                        },
+
+                        // 找出所有对应订单明细
+                        function (callB) {
+                            var detailResults = [];
+                            PurchaseDetail.find(findRequire).sort({store_sku: 1}).exec(function (err, detListFound) {
+                                if(err) {
+                                    callB(err);
+                                    res.error(ERROR_CODE.FIND_FAILED);
+                                    return;
+                                }
+                                if (detListFound) {
+                                    detListFound.forEach (function (detailFound) {
+                                        var detResult = {
+                                            "storeSkuId": detailFound._id,
+                                            "storeSku": detailFound.store_sku,
+                                            "proNameCN":storeSku2nameCN[detailFound.store_sku],
+                                            "proNameEN":storeSku2nameEN[detailFound.store_sku],
+                                            "unitPrice":detailFound.unit_price,
+                                            "purQuantity":detailFound.purchase_quantity,
+                                            "totalPrice":detailFound.total_price,
+                                            "conCovDate":detailFound.contract_covenant_date,
+                                            "delQuantity":detailFound.deliver,
+                                            "deliverDate":detailFound.deliver_total,
+                                            "salesman": detailFound.salesman,
+                                            "logNumber": detailFound.logistics_number
+                                        };
+                                        detailResults.push(detResult);
+                                    });
+                                    purResult.purDetails = detailResults;
+                                }
+                                callB(null);
+                            })
+                        }
+                ],
+                function (err) {
+                    if (err) {
+                        debug(new Error(err));
+                        return;
+                    }
+                    res.success(purResult);
+                })
+            }else {
+                res.error(ERROR_CODE.NOT_EXISTS);
+                return;
+            }
+        })
+    },
+
+    purUpdate: function (req, res, next) {
+        var findRequire = {};
+        findRequire._id = req.body.purchaseId;
+        Purchase.findOne(findRequire, function (err, purOneFound) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            if (purOneFound) {
+                var orderStatus = 0;
+                if (req.body.orderStatus) orderStatus = Utils.toNumber(req.body.orderStatus);
+
+                purOneFound.buyer = req.body.buyer || "";
+                purOneFound.order_status = orderStatus;
+                purOneFound.pickup_way = req.body.pickupWay || "";
+                purOneFound.remark = req.body.remark || "";
+
+                var editDelIDs = [];
+                if (req.body.purDetails) {
+                    req.body.purDetails.forEach (function (purDetail) {
+                        editDelIDs.push(purDetail.storeSkuId);
+                    })
+                }
+
+                var bothIDs = [];
+                // 订单状态为待处理
+                if (req.body.order_status == 0) {
+                    purOneFound.order_number = req.body.orderNumber;
+                    purOneFound.contract_number = req.body.contractNumber;
+                    purOneFound.supplier = req.body.supplierId;
+                    purOneFound.order_time = req.body.orderTime;
+
+                    if (purOneFound.purDetails) {
+                        var deleteIterator = function (storeSkuId, cb) {
+                            // 执行循环
+                            async.series([
+                                    // 删除已经不存在的订单详情
+                                    function (callB) {
+                                        if (editDelIDs.indexOf (storeSkuId) == -1) {
+                                            PurchaseDetail.remove({_id: storeSkuId}, function (err) {
+                                                if (err) {
+                                                    callB(err);
+                                                    res.error(ERROR_CODE.DELETE_FAILED);
+                                                    return;
+                                                }
+                                            })
+                                        }else {
+                                            bothIDs.push(json.storeSkuId);
+                                        }
+                                    }
+                                ],
+                                function (err) {
+                                    if (err) {
+                                        cb(err);
+                                        return;
+                                    }
+                                }
+                            );
+                        };
+
+                        async.eachSeries(purOneFound.purDetails, deleteIterator, function (err) {
+                            if (err != null) {
+                                debug(err);
+                                return;
+                            }
+                        });
+                    }
+                }else {
+                    bothIDs = editDelIDs;
+                }
+
+                findRequire = {};
+                findRequire._id = {$in: bothIDs};
+                PurchaseDetail.find(findRequire, function (err, detListFound) {
+                    if (err) {
+                        debug(err);
+                        res.error(ERROR_CODE.FIND_FAILED);
+                        return;
+                    }
+
+                    var arr = req.body.purDetails || [];
+                    var purTotalPrice = 0;
+
+                    var iterator = function (json, cb) {
+                        if (json == null || json.storeSku == null) {
+                            cb(null);
+                            return;
+                        }
+
+                        var unitPrice = 0;
+                        if (json.unitPrice) unitPrice = Utils.toNumber(json.unitPrice);
+                        var purQuantity = 0;
+                        if (json.purQuantity) purQuantity = Utils.toNumber(json.purQuantity);
+                        var totalPrice = 0;
+                        if (json.totalPrice) totalPrice = Utils.toNumber(json.totalPrice);
+                        var delQuantity = 0;
+                        if (json.delQuantity) delQuantity = Utils.toNumber(json.delQuantity);
+                        purTotalPrice += totalPrice;
+                        var deliver = {};
+                        deliver[json.deliverDate] = delQuantity;
+
+                        // 执行循环
+                        async.series([
+                                // 添加或修改
+                                function (callB) {
+                                    // 添加
+                                    if (bothIDs.indexOf(json.storeSkuId) == -1) {
+                                        var _id = new ObjectId(new Date());
+                                        var newPurDetail = new PurchaseDetail ({
+                                            _id: _id,
+                                            store_sku: json.storeSku,                                                        // 库存SKU
+                                            unit_price: unitPrice,                                                 // 单价
+                                            purchase_quantity: purQuantity,                                          // 采购数量
+                                            total_price: totalPrice,                                                // 总金额(含运费)
+                                            contract_covenant_date: json.conCovDate,                                       // 合同约定交期
+                                            deliver: deliver,                                                    // 实际交期:交货数量
+                                            deliver_total: delQuantity,                                               // 已交货数量
+                                            logistics_number: json.logNumber,                                            // 物流追踪单号
+                                            salesman: json.salesman,                                                    // 业务员
+                                            updatedAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+                                            createdAt: moment().format('YYYY-MM-DD HH:mm:ss')
+                                        });
+                                        newPurDetail.save(function (err) {
+                                            if (err) {
+                                                callB(err);
+                                                res.error(ERROR_CODE.CREATE_FAILED);
+                                                return;
+                                            }
+                                            callB(null);
+                                        })
+                                    }else {
+                                        // 修改
+                                        if (detListFound) {
+                                            detListFound.forEach (function (detFound) {
+                                                if (detFound._id == json.storeSkuId) {
+                                                    detFound.logistics_number = json.logNumber;
+                                                    detFound.salesman = json.salesman;
+                                                    if (req.body.order_status == 0) {
+                                                        detFound.store_sku = json.storeSku;                                                  // 库存SKU
+                                                        detFound.unit_price= json.unitPrice;                                                 // 单价
+                                                        detFound.purchase_quantity= json.purQuantity;                                          // 采购数量
+                                                        detFound.total_price= json.totalPrice;                                                // 总金额(含运费)
+                                                        detFound.contract_covenant_date= json.conCovDate;                                       // 合同约定交期
+                                                        detFound.deliver[json.deliverDate] = json.delQuantity;                                                    // 实际交期=交货数量
+                                                        detFound.deliver_total= purTotalPrice;                                              // 已交货数量
+                                                    }
+                                                    detFound.save(function (err) {
+                                                        if (err) {
+                                                            callB(err);
+                                                            res.error(ERROR_CODE.UPDATE_FAILED);
+                                                            return;
+                                                        }
+                                                        return false;
+                                                    })
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            ],
+                            function (err) {
+                                if (err) {
+                                    cb(err);
+                                    return;
+                                }
+                                purOneFound.purDetails = editDelIDs;
+                                purOneFound.save (function (err) {
+                                    if (err) {
+                                        debug(err);
+                                        res.error(ERROR_CODE.UPDATE_FAILED);
+                                        return;
+                                    }
+                                })
+                            }
+                        );
+                    };
+
+                    async.eachSeries(arr, iterator, function (err) {
+                        if (err != null) {
+                            debug(err);
+                            return;
+                        }
+                    });
+                })
+            }
+        })
+    },
+
+    detailList: function (req, res, next) {
+        var findRequire = {};
+        findRequire.order_number = req.query.orderNumber;
+        Purchase.findOne(findRequire, function (err, purOneFound) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.FIND_FAILED);
+                return;
+            }
+            res.success(purOneFound);
+        })
+    }
+};

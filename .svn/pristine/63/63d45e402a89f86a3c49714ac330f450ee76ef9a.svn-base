@@ -1,0 +1,259 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        创建用户
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table datatable="ng" dt-options="dtOptions"
+                               class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+                            <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>用戶名</th>
+                                <th>姓名</th>
+                                <th>角色</th>
+                                <th>创建者</th>
+                                <th>小组</th>
+                                <th>创建时间</th>
+                                <th>更新时间</th>
+                                <th>action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="value in tableData">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td>
+                                    {{value.account}}
+                                </td>
+                                <td>
+                                    {{value.name}}
+                                </td>
+                                <td>
+                                    {{value.role.name}}
+                                </td>
+                                <td>
+                                    {{value.creator.name}}
+                                </td>
+                                <td>
+                                    {{value.team?value.team:'-'}}
+                                </td>
+                                <td>
+                                    {{value.createdAt | date:'yyyy-mm-d'}}
+                                </td>
+                                <td>
+                                    {{value.updatedAt | date:'yyyy-mm-dd'}}
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                                            data-target="#editRow" ng-click="edit(value)">编辑
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出框编辑框-->
+<div class="modal inmodal fade" id="editRow" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">编辑用户</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" name="formEdit" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            用户名
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="account" class="form-control" ng-model="editData.account" disabled>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>姓名
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="name" class="form-control"  ng-model="editData.name" ng-model-options="{ updateOn: 'blur' }">
+
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="text-danger">*</span>密码</label>
+
+                        <div class="col-sm-10">
+                            <input type="password" name="password" class="form-control" ng-model="editData.password" >
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">角色</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control m-b" name="role" ng-model="editData.selRole">
+                                <option ng-repeat="role in editData.roles" value="{{role.value}}">{{role.name}}</option>
+                            </select>
+
+                        </div>
+                    </div>
+                    <!--todo:team-->
+                    <div ng-show="editData.selRole==='59fc32140ed72b7271f8d614'||editData.selRole==='59f984c2513ecc57ffc1ddcf'">
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">小组</label>
+
+                            <div class="col-sm-10">
+                                <select class="form-control m-b" name="team" ng-model="editData.role">
+                                    <option ng-repeat="role in editData.roles" value="{{role.type}}">{{role.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" ng-click="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出添加用户框-->
+<div class="modal inmodal fade" id="addUserModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">添加用戶</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" name="formAdd" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>用户名
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="account" class="form-control" placeholder="一般用公司邮箱" ng-pattern="/^[\w\d_]*$/" ng-model="addUser.account" ng-model-options="{ updateOn: 'blur' }" required>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.account.$invalid">
+                                <small class="text-danger" ng-show="formAdd.account.$error.required">
+                                    用户名不能为空
+                                </small>
+                                <small class="text-danger" ng-show="formAdd.account.$error.pattern">
+                                    用户名格式不对（大小写字母、数字、下划线）
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>姓名
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" name="name" class="form-control"  ng-model="addUser.name" ng-model-options="{ updateOn: 'blur' }" required>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.name.$invalid">
+                                <small class="text-danger" ng-show="formAdd.name.$error.required">
+                                    姓名不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="text-danger">*</span>密码</label>
+
+                        <div class="col-sm-10">
+                            <input type="password" name="password" class="form-control" ng-model="addUser.password" ng-model-options="{ updateOn: 'blur' }" required>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.password.$invalid">
+                                <small class="text-danger" ng-show="formAdd.password.$error.required">
+                                    密码不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="text-danger">*</span>确认密码</label>
+
+                        <div class="col-sm-10">
+                            <input type="password" name="confirmPassword" class="form-control" ng-model="addUser.confirmPassword" ng-model-options="{ updateOn: 'blur' }" required>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && addUser.password!=addUser.confirmPassword">
+                                <small class="text-danger" ng-show="addUser.password!=addUser.confirmPassword">
+                                    密码前后不一致
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="text-danger">*</span>角色</label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control m-b" name="role" ng-model="addUser.selRole">
+                                <option ng-repeat="role in addUser.roles" value="{{role.value}}">{{role.name}}</option>
+                            </select>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted">
+                                <small class="text-danger" ng-show="!addUser.selRole">
+                                    角色不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <!--todo:team-->
+                    <div ng-show="addUser.selRole==='59fc32140ed72b7271f8d614'||addUser.selRole==='59f984c2513ecc57ffc1ddcf'">
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">小组</label>
+
+                            <div class="col-sm-10">
+                                <select class="form-control m-b" name="team" ng-model="addUser.role">
+                                    <option ng-repeat="role in addUser.roles" value="{{role.value}}">{{role.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" ng-click="saveUser()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div load-icon is-load="isLoad"></div>
+

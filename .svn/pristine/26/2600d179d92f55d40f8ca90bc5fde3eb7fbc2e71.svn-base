@@ -1,0 +1,21 @@
+{
+    "debug": {
+        "host"              : "127.0.0.1",
+        "db"                : "db_smart_invincible",
+        "port"              : 27017
+    },
+
+    "development": {
+        "host"              : "192.168.2.22",
+        "db"                : "db_smart_invincible",
+        "port"              : 27017,
+        "user"              : "invincible",
+        "pass"              : "dev"
+    },
+
+    "production": {
+        "host"              : "112.74.177.233",
+        "db"                : "db_smart_invincible",
+        "port"              : 27017
+    }
+}

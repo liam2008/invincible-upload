@@ -1,0 +1,65 @@
+{
+    "development": {
+        "appenders": [
+            {
+                "type": "console",
+                "category": "console"
+            },
+
+            {
+                "type": "file",
+                "category": "access",
+                "filename": "/data/logs/invincible-server/access.log",
+                "maxLogSize": 102400000,
+                "backups": 100
+            },
+
+            {
+                "type": "dateFile",
+                "category": "application",
+                "filename": "/data/logs/invincible-server/application.log",
+                "pattern": "-yyyy-MM-dd",
+                "alwaysIncludePattern": true
+            }
+        ],
+
+        "replaceConsole": true,
+        "levels": {
+            "console": "ALL",
+            "access": "ALL",
+            "application": "ALL"
+        }
+    },
+
+    "production": {
+        "appenders": [
+            {
+                "type": "console",
+                "category": "console"
+            },
+
+            {
+                "type": "file",
+                "category": "access",
+                "filename": "/data/logs/invincible-server/access.log",
+                "maxLogSize": 102400000,
+                "backups": 100
+            },
+
+            {
+                "type": "dateFile",
+                "category": "application",
+                "filename": "/data/logs/invincible-server/application.log",
+                "pattern": "-yyyy-MM-dd",
+                "alwaysIncludePattern": true
+            }
+        ],
+
+        "replaceConsole": true,
+        "levels": {
+            "console": "ALL",
+            "access": "ALL",
+            "application": "ALL"
+        }
+    }
+}

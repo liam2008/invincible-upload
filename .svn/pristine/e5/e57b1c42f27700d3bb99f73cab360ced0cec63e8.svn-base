@@ -1,0 +1,127 @@
+'use strict';
+/**
+ * Module dependencies.
+ */
+var async = require('async');
+var UUID = require('uuid');
+var Promise = require('bluebird');
+var Moment = require('moment');
+
+/*
+ * Server Dependencies
+ */
+var debug = require('debug')('smartdo:auth-server');
+var app = require('../app');
+var tokenUtils = require('../utils/token-utils');
+var ServerError = require('../errors/server-error');
+
+var Shared = require('../../shared/');
+var ERROR_CODE = Shared.ERROR;
+var MESSAGE = Shared.MESSAGE;
+
+var DB = require('../models/invincible');
+var User = DB.getModel('user');
+
+/*
+ * UModules Dependencies
+ */
+
+/**
+ * Constructor.
+ */
+function AuthServer() {
+
+}
+
+AuthServer.prototype.authenticate = function() {
+    return function(req, res, next) {
+        var token = null;
+        
+        if (req.headers && req.headers.authorization) {
+            var parts = req.headers.authorization.split(' ');
+
+            if (parts.length == 2) {
+                var scheme = parts[0];
+                var credentials = parts[1];
+
+                if (/^Bearer$/i.test(scheme)) {
+                    token = credentials;
+                }
+            }
+        }
+        if (token == null) {
+            res.error(ERROR_CODE.UNAUTHORIZED_REQUEST);
+            return;
+        }
+
+        tokenUtils.verifyToken(token, function(err, decoded) {
+            if (err != null) {
+                debug("verifyToken Error: %j", err);
+                res.error(ERROR_CODE.INVALID_TOKEN);
+                return;
+            }
+
+            User.findOne({id: decoded.user.id}, function(err, record) {
+                if (record == null) {
+                    res.error(ERROR_CODE.INVALID_TOKEN);
+                    return;
+                }
+
+                req.token = decoded;
+                req.agent = record;
+                req.scope = record.scope;
+
+                next();
+            });
+        });
+    };
+};
+
+AuthServer.prototype.authorize = function() {
+
+};
+
+AuthServer.prototype.token = function() {
+    return function(req, res, next) {
+        var username = req.body.username;
+        var password = req.body.password;
+        
+        if (username == null) {
+            res.error(ERROR_CODE.MISSING_ARGUMENT);
+            return;
+        }
+        
+        if (password == null) {
+            res.error(ERROR_CODE.MISSING_ARGUMENT);
+            return;
+        }
+
+        User.findOne({account: username}, function(err, result) {
+            if (result == null) {
+                throw new ServerError(ERROR_CODE.NOT_EXISTS);
+            }
+
+            if (password != result.password) {
+                throw new ServerError(ERROR_CODE.INVALID_PASSWORD);
+            }
+
+            // 权限范围
+            var scope = result.scope;
+            var user = {
+                id:         result.id,
+                name:       result.account
+            };
+
+            Promise.promisify(tokenUtils.generateAccessToken)(user, scope, function(e, d) {
+                res.success(d);
+
+                next();
+            });
+        });
+    };
+};
+/**
+ * Export constructor.
+ */
+
+module.exports = new AuthServer();

@@ -1,0 +1,164 @@
+(function() {
+	var app = angular.module('app');
+	app.controller('summaryCtrl', ['$scope', 'netManager', 'DTOptionsBuilder',
+		function($scope, netManager, DTOptionsBuilder) {
+			$scope.dtOptions = DTOptionsBuilder.newOptions()
+				.withDOM('<"html5buttons"B>lTfgitp')
+				.withButtons([])
+				.withOption('language', {
+					"sProcessing": "处理中...",
+					"sLengthMenu": "显示 _MENU_ 项结果",
+					"sZeroRecords": "没有匹配结果",
+					"sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+					"sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+					"sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+					"sSearch": "搜索:",
+					"sEmptyTable": "表中数据为空",
+					"sLoadingRecords": "载入中...",
+					"oPaginate": {
+						"sFirst": "首页",
+						"sPrevious": "上页",
+						"sNext": "下页",
+						"sLast": "末页"
+					}
+				});
+			$scope.purList = [];
+			$scope.where = {
+				orderStatus: '请选择'
+			};
+			$scope.active = function(val) {
+				function selected(cb) {
+					if(!$scope.activeItem) {
+						alert('请选择其中一项')
+						$scope.activeShow = '';
+					} else {
+						cb()
+					}
+				};
+				$scope.activeShow = val.show;
+				if(val.activeItem) $scope.activeItem = val.activeItem;
+				if(val.show == '新增订单') {
+					$scope.purchase = {
+						orderStatus: '请选择',
+						purDetails: []
+					}
+				} else if(val.show == '编辑订单') {
+					selected(function() {
+						$scope.purchase = $scope.detailList
+						netManager.get('/purchase/purchaseOne', {
+							orderNumber: $scope.activeItem.orderNumber
+						}).then(function(res) {
+							$scope.purchaseOne = res.data
+						})
+					})
+				} else if(val.show == '订单跟进') {
+					selected(function() {
+						netManager.get('/purchase/statusList', {
+							orderNumber: $scope.activeItem.orderNumber
+						}).then(function(res) {
+							$scope.statusList = res.data
+						})
+					})
+				} else if(val.show == '订单详情') {
+					netManager.get('/purchase/detailList', {
+						orderNumber: $scope.activeItem.orderNumber
+					}).then(function(res) {
+						$scope.detailList = res.data
+					})
+				} else if(val.show == '添加备注') {}
+			};
+			$scope.search = function() {
+				netManager.get('/purchase/purList', $scope.where).then(function(res) {
+					$scope.purList = res.data
+				})
+			};
+			$scope.check = function(index, val) {
+				$scope.checked = index;
+				$scope.activeItem = val;
+			};
+			$scope.submitSave = function() {
+				var totalPrice = 0;
+				for(var i = 0; i < $scope.purchase.purDetails.length; i++) {
+					totalPrice += parseFloat($scope.purchase.purDetails[i]['totalPrice']);
+					if(typeof $scope.purchase.purDetails[i]['salesman'] == 'string') {
+						$scope.purchase.purDetails[i]['salesman'] = $scope.purchase.purDetails[i]['salesman'].split(',')
+					}
+				};
+				netManager.post('/purchase/purSave', $scope.purchase).then(function(res) {
+					$scope.purList.push({
+						orderNumber: $scope.purchase.orderNumber,
+						contractNumber: $scope.purchase.contractNumber,
+						supplierId: $scope.purchase.supplierId,
+						orderStatus: $scope.purchase.orderStatus,
+						remark: $scope.purchase.remark,
+						totalPrice: totalPrice
+					});
+					$scope.activeShow = null
+				})
+			};
+			$scope.submitStatus = function() {
+				var data = {
+					orderNumber: $scope.activeItem.orderNumber,
+					orderStatus: $scope.statusList.orderStatus,
+					delivers: []
+				};
+				for(var i = 0; i < $scope.statusList.purDetails.length; i++) {
+					data.delivers.push({
+						deliverId: $scope.statusList.purDetails[i]['deliverId'],
+						delQuantity: $scope.statusList.purDetails[i]['delQuantity'],
+						deliverDate: $scope.statusList.purDetails[i]['deliverDate']
+					})
+				};
+				netManager.post('/purchase/statusUpdate', data).then(function(res) {
+					$scope.activeItem.orderStatus = data.orderStatus;
+					$scope.activeShow = null
+				})
+			};
+			$scope.submitRemark = function(val) {
+				netManager.get('/purchase/addRemark', {
+					orderNumber: $scope.activeItem.orderNumber,
+					remark: val
+				}).then(function(res) {
+					$scope.activeItem.remark = val;
+					$scope.activeShow = null
+				})
+			};
+			$scope.skuModal = function(val) {
+				netManager.get('/purchase/productList').then(function(res) {
+					$scope.productList = res.data;
+					$('#skuModal').modal('show')
+				})
+				$scope.submitSku = function(sku) {
+					val.storeSku = sku.storeSku;
+					val.proNameCN = sku.nameCN;
+					val.proNameEN = sku.nameEN;
+					$('#skuModal').modal('hide')
+				}
+				$scope.skuChange = function(val) {
+					$scope.skuChangeList = [];
+					for(var i = 0; i < $scope.productList.length; i++) {
+						if($scope.productList[i]['storeSku']) var storeSku = $scope.productList[i]['storeSku'].indexOf(val) != -1;
+						if($scope.productList[i]['nameCN']) var nameCN = $scope.productList[i]['nameCN'].indexOf(val) != -1;
+						if($scope.productList[i]['nameEN']) var nameEN = $scope.productList[i]['nameEN'].indexOf(val) != -1;
+						if(storeSku || nameCN || nameEN) {
+							$scope.skuChangeList.push($scope.productList[i])
+						}
+					}
+				}
+			};
+			netManager.get('/purchase/purList').then(function(res) {
+				$scope.purList = res.data
+			});
+			//采购汇总
+			$scope.purList = [{
+				orderNumber: "1110001705",
+				contractNumber: "2017051501",
+				supplierName: "深圳亿瑞家居智能有限公司",
+				purTotalPrice: "278620",
+				orderStatus: "待处理",
+				remark: "2017-10-10：采用物流直拉方式，已经交货完成。不备现货，可以分批提货。（备品有5台，其中1台拿回来拍照，剩余压到1280001869订单一起出。45天后生产完所有产品，按照甲方要求出货。）",
+			}];
+
+		}
+	])
+})();

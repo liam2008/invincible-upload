@@ -1,0 +1,298 @@
+(function () {
+    var app = angular.module('app');
+    app.controller('DailyReportController', ['$scope', 'netManager',
+        function ($scope, netManager) {
+            //初始化
+            getData();
+
+            //查询日期
+            $scope.checkDateTable = function () {
+                var checkDate = $('input[type="datetime"]').val();
+                getData(checkDate);
+            };
+
+            //统计总计
+            $scope.statistics = function (tableList) {
+                var staData = {
+                    monthSales: 0,
+                    averageSales: 0,
+                    dailySales: 0,
+                    relativelyYesMultiplicationPrice: 0,
+                    monthCount: 0,
+                    averageCount: 0,
+                    dailyCount: 0,
+                    relativelyYesMultiplicationCount: 0,
+                    sumLoss: 0
+                };
+                for (var i = 0; i < tableList.length; i++) {
+                    staData.monthSales += tableList[i].monthSales;
+                    staData.averageSales += tableList[i].averageSales;
+                    staData.dailySales += tableList[i].dailySales;
+                    staData.relativelyYesMultiplicationPrice += tableList[i].relativelyYesMultiplicationPrice;
+                    staData.monthCount += tableList[i].monthCount;
+                    staData.averageCount += tableList[i].averageCount;
+                    staData.dailyCount += tableList[i].dailyCount;
+                    staData.sumLoss += tableList[i]['stockLoss'] === '-' ? 0 : parseFloat(tableList[i]['stockLoss']);
+                    staData.relativelyYesMultiplicationCount += tableList[i].relativelyYesMultiplicationCount;
+                }
+                $scope.staData = staData;
+            };
+
+            //请求得到的数据
+            function getData(checkDate) {
+                $scope.isLoad = true;
+                var sendData = checkDate ? {time: checkDate} : checkDate;
+                netManager.get('/daily/show', sendData).then(function (res) {
+                    $scope.$broadcast('resData', res.data);
+                    $scope.isLoad = false;
+                });
+            }
+
+        }
+    ]);
+
+    //表格
+    app.controller('reportTableCtrl', ['$scope', 'netManager',
+        function ($scope, netManager) {
+            var now = new Date();
+            var hours = now.getHours();
+            if (hours < 17) {
+                $scope.tableDate = now.setDate(now.getDate() - 2)
+            } else {
+                $scope.tableDate = now.setDate(now.getDate() - 1)
+            }
+
+            $scope.$on('resData', function (event, data) {
+                $scope.tableDate = data.date;
+                $scope.tableList = data.result;
+                $scope.$parent.statistics(data.result);
+
+                //点击查看细节
+                $scope.fnLossDetail = function (sendData) {
+                    sendData.time = $('input[type="datetime"]').val();
+                    netManager.get('/daily/PopupList', sendData).then(function (res) {
+                        var val = res.data;
+                        val.map(function (val, index) {
+                            val.url = Smartdo.Utils.getUrl(val['shop_name'], val['asin']);
+                        });
+                        $scope.dataList = val;
+                    }, function (err) {
+                        console.error(err);
+                    });
+                }
+            });
+        }
+    ]);
+
+    //饼状图
+    app.controller('reportPieCtrl', ['$scope',
+        function ($scope) {
+            $scope.$on('resData', function (event, data) {
+                var resData = data.result;
+                var salesPercent = [], countsPercent = [], labels = [];
+                for (var i = 0; i < resData.length; i++) {
+                    salesPercent.push(resData[i].dailySales);
+                    countsPercent.push(resData[i].dailyCount);
+                    labels.push(resData[i].teamName);
+                }
+                $scope.salesPercent = salesPercent;
+                $scope.countsPercent = countsPercent;
+                $scope.pieOptions = {
+                    legend: {
+                        display: true,
+                        position: 'right'
+                    }
+                };
+                $scope.labels = labels;
+
+            });
+        }
+    ]);
+
+    //线图
+    app.controller('lineCtrl', ['$scope',
+        function ($scope) {
+            var lineSale = {
+                selectVal: '0',
+                isShow: true
+            };
+            var lineCount = {
+                selectVal: '0',
+                isShow: false
+            };
+            $scope.lineSale = lineSale;
+            $scope.lineCount = lineCount;
+
+            /*
+             * _datasetIndex
+             *
+             * */
+            $scope.lineOptions = {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    datasetFill: false,
+                    onClick: function (e, legendItem) {
+                        var index = legendItem.datasetIndex;
+                        var ci = this.chart;
+                        var len = ci.data.datasets.length;
+                        //debugger;
+                        var meta = ci.getDatasetMeta(index);
+                        meta.clickTimes = ci.getDatasetMeta(index).clickTimes ? ++ci.getDatasetMeta(index).clickTimes : 1;
+
+                        if (meta.clickTimes % 2 === 0) {
+                            for (var i = 0; i < len; i++) {
+                                ci.getDatasetMeta(i).hidden = false;
+                            }
+                        } else {
+                            for (var i = 0; i < len; i++) {
+                                if (i === index) {
+                                    ci.getDatasetMeta(index).hidden = false;
+                                } else {
+                                    ci.getDatasetMeta(i).hidden = true;
+                                }
+                            }
+                        }
+
+                        ci.update();
+
+                        var meta = ci.getDatasetMeta(index);
+
+                        // See controller.isDatasetVisible comment
+                        meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                    }
+                },
+                scales: {
+                    yAxes: [
+                        {
+                            id: 'y-axis-1',
+                            type: 'linear',
+                            display: true,
+                            position: 'left'
+                        }
+                    ]
+                },
+                elements: {
+                    line: {
+                        fill: false
+                    }
+                },
+                tooltips: {
+                    mode: 'nearest'
+                }
+            };
+
+            var saleData, countData, nowMonthStart;
+            $scope.$on('resData', function (event, data) {
+                saleData = data.lineDatePrice;
+                countData = data.lineDateCount;
+                nowMonthStart = data.nowMonthStart;
+                $scope.lineSale = $.extend({}, $scope.lineSale, getLineData(saleData, $scope.lineSale.selectVal, nowMonthStart));
+                $scope.lineCount = $.extend({}, $scope.lineCount, getLineData(countData, $scope.lineCount.selectVal, nowMonthStart));
+            });
+
+            //监控日期选择
+            $scope.$watch('lineSale.selectVal', function (newVal, oldVal) {
+                $scope.lineSale = $.extend({}, $scope.lineSale, getLineData(saleData, newVal, nowMonthStart));
+            });
+
+            $scope.$watch('lineCount.selectVal', function (newVal, oldVal) {
+                $scope.lineCount = $.extend({}, $scope.lineCount, getLineData(countData, newVal, nowMonthStart));
+            });
+
+            //线图定义
+            $scope.selTab = function ($event) {
+                if ($event.target.nodeName === 'A') {
+                    var $li = $($event.target).parent();
+                    var $index = $li.data('index');
+                    if ($index == 0) {
+                        $scope.lineSale.isShow = true;
+                        $scope.lineCount.isShow = false;
+                    } else {
+                        $scope.lineSale.isShow = false;
+                        $scope.lineCount.isShow = true;
+                    }
+                }
+            };
+
+            function updateDataset(e, datasetIndex) {
+                var index = datasetIndex;
+                var ci = e.view.weightChart;
+                var meta = ci.getDatasetMeta(index);
+
+                // See controller.isDatasetVisible comment
+                meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+
+                // We hid a dataset ... rerender the chart
+                ci.update();
+            };
+
+            /**
+             *
+             * @param renderData 传递要渲染的参数
+             * @param 选择的方式 传递要渲染的日期，arry
+             */
+            function getLineData(resData, selectVal, nowMonthStart) {
+                var obj = {
+                    labels: [],
+                    series: [],
+                    data: []
+                };
+                nowMonthStart = nowMonthStart || 0;
+                for (var key in resData) {
+                    if (key !== 'time') {
+                        obj.series.push(key);
+                        if (selectVal == "0") {
+                            obj.data.push(resData[key].slice(30, 60));
+                        } else if (selectVal == "1") {
+                            obj.data.push(resData[key].slice(nowMonthStart));
+                        } else if (selectVal == "2") {
+                            obj.data.push(resData[key].slice(45, 60));
+                        } else if (selectVal == "3") {
+                            obj.data.push(resData[key].slice(0, 60));
+                        }
+                    } else {
+                        if (selectVal == "0") {
+                            obj.labels = resData[key].slice(30, 60);
+                        } else if (selectVal == "1") {
+                            obj.labels = resData[key].slice(nowMonthStart);
+                        } else if (selectVal == "2") {
+                            obj.labels = resData[key].slice(45, 60);
+                        } else if (selectVal == "3") {
+                            obj.labels = resData[key].slice(0, 60)
+                        }
+                    }
+                }
+                return obj;
+            }
+        }
+    ]);
+
+    //销量柱状图
+    app.controller('reportBarCtrl', ['$scope',
+        function ($scope) {
+            $scope.$on('resData', function (event, data) {
+                var bar = {
+                    option: {
+                        legend: {
+                            display: true,
+                            position: 'right'
+                        }
+                    },
+                    labels: [],
+                    series: ['每日销量'],
+                    data: [
+                        []
+                    ]
+                };
+                $scope.bar = bar;
+                var barData = data.barData;
+                for (var key in barData) {
+                    $scope.bar.data[0].push(barData[key].y);
+                    $scope.bar.labels.push(barData[key].date);
+                }
+            });
+        }
+    ]);
+
+}());

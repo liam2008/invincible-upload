@@ -1,0 +1,13 @@
+
+module.exports = {
+    name: "teams",
+    schema: {
+        id:         String,     // uuid
+        name:       String,     // 小组名称
+        leader:     String,     // 小组长
+        members:    [],         // 小组成员
+        createdAt:  Date,       // 创建时间
+        updatedAt:  Date,       // 修改时间
+        deletedAt:  Date        // 删除时间
+    }
+};

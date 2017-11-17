@@ -1,0 +1,187 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        卖家排名
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <form role="form" class="form-inline">
+                        <div class="row">
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label for="From" class="form-label">站点</label>
+                                    <select class="form-control" name="From" id="From" ng-model="sellerData.From">
+                                        <option value="">全部</option>
+                                        <option value="usa">美国站(USA)</option>
+                                        <option value="uk">英国站(UK)</option>
+                                        <option value="japan">日本站(JAPAN)</option>
+                                        <option value="germany">德国站(GERMANY)</option>
+
+                                        <option value="canada">加拿大站(CANADA)</option>
+                                        <option value="france">法国站(FRANCE)</option>
+                                        <option value="italy">意大利站(ITALY)</option>
+                                        <option value="india">印度站(INDIA)</option>
+
+                                        <option value="spain">西班牙站(SPAIN)</option>
+                                        <option value="mexico">墨西哥站(MEXICO)</option>
+                                        <option value="china">中国站(CHINA)</option>
+                                        <option value="brazil">巴西站(BRAZIL)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label for="IsFba" class="form-label">FBA</label>
+                                    <select class="form-control" name="IsFba" id="IsFba" ng-model="sellerData.IsFba">
+                                        <option value="">全部</option>
+                                        <option value="true">是</option>
+                                        <option value="null">否</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <div class="input-group date  m-b-md">
+                                    <input type="datetime" class="form-control" date-time ng-model="sellerData.month"
+                                           view="month"
+                                           auto-close="true" min-view="month" format="YYYY-MM" id="month">
+                                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-1">
+                                <button class="btn btn-white" type="submit" ng-click="sellerAction.checkData()">查询
+                                </button>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="input-group pull-right">
+                                    <input type="text" class="form-control" ng-model="sellerData.seaContent">
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-primary"
+                                                ng-click="sellerAction.searchData()">搜索
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="hr-line-dashed"></div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-condensed text-center">
+                            <thead>
+                            <tr>
+                                <td rowspan="2" style="vertical-align:middle;">序号</td>
+                                <td rowspan="2" style="vertical-align:middle;">MarketPlace</td>
+                                <td rowspan="2" style="vertical-align:middle;">StoreName</td>
+                                <td rowspan="2" style="vertical-align:middle;">SellerID</td>
+                                <td rowspan="2" style="vertical-align:middle;">FBA</td>
+                                <td rowspan="2" style="vertical-align:middle;">Growth</td>
+
+                                <td width="165" rowspan="2" style="vertical-align:middle;" class="cursor"
+                                    ng-repeat="orderItem in orderData.list" ng-click="orderData.setOrder($index)">
+                                    {{orderItem.title}}
+                                    <i ng-show="orderItem.isShow" class="fa m-l fa-2x"
+                                       ng-class="{true:'fa-angle-up',false:'fa-angle-down'}[!orderItem.orderReverse]"></i>
+                                </td>
+
+                                <td colspan="5" style="vertical-align:middle;">feedback</td>
+                                <td rowspan="2" style="vertical-align:middle;">操作</td>
+                            </tr>
+                            <tr>
+                                <td style="vertical-align:middle;">Total</td>
+                                <td style="vertical-align:middle;">12m</td>
+                                <td style="vertical-align:middle;">3m</td>
+                                <td style="vertical-align:middle;">1m</td>
+                                <td style="vertical-align:middle;">Pos%</td>
+                                <tbody>
+                            <tr ng-repeat="dataItem in sellerData.mainList">
+                                <td>{{$index+1}}</td>
+                                <td>{{dataItem.From | uppercase}}</td>
+                                <td>{{dataItem.SellerName}}</td>
+                                <td>
+                                    <a ng-href="{{dataItem.url}}" target="_blank" class="link">
+                                        {{dataItem.SellerId}}
+                                    </a>
+                                </td>
+                                <td>{{dataItem.IsFba?'是':'否'}}</td>
+                                <td>{{dataItem.Growth?dataItem.Growth+'%':'-'}}</td>
+                                <td>{{dataItem.MonthRank}}</td>
+                                <td>{{dataItem.YearRank}}</td>
+                                <td>{{dataItem.LifetimeRank}}</td>
+                                <td>{{dataItem.Lifetime}}</td>
+                                <td>{{dataItem.M12}}</td>
+                                <td>{{dataItem.M3}}</td>
+                                <td>{{dataItem.M1}}</td>
+                                <td>{{dataItem.Pos}}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                                            data-target="#sellerDetail"
+                                            ng-click="sellerAction.viewDetail(dataItem['_id'])">查看详情
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="text-right">
+                            <ul uib-pagination total-items="pageData.totalItems" ng-model="pageData.currentPage"
+                                num-pages="pageData.numPages" max-size="pageData.maxSize" class="pagination-sm"
+                                ng-change="pageData.pageChanged()"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出框编辑框-->
+<div class="modal inmodal fade" id="sellerDetail" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">卖家排名详情</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover table-condensed text-center">
+                    <thead>
+                    <tr>
+                        <td style="vertical-align:middle;">#</td>
+                        <td style="vertical-align:middle;">30 days</td>
+                        <td style="vertical-align:middle;">60 days</td>
+                        <td style="vertical-align:middle;">120 months</td>
+                        <td style="vertical-align:middle;">Lifetime</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="detailItem in sellerData.detailList"
+                        ng-class="{'text-danger':$index===2,'text-success':$first}">
+                        <td>{{regName[$index%regName.length]}}</td>
+                        <td>{{detailItem[0]}}<span ng-if="!$last">%</span></td>
+                        <td>{{detailItem[1]}}<span ng-if="!$last">%</span></td>
+                        <td>{{detailItem[2]}}<span ng-if="!$last">%</span></td>
+                        <td>{{detailItem[3]}}<span ng-if="!$last">%</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div load-icon is-load="isLoad"></div>

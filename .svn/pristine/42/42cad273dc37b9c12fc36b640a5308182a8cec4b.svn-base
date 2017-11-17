@@ -1,0 +1,30 @@
+var express = require('express');
+var router = express.Router();
+var table = require('../utils/table-utils');
+var async = require('async');
+var moment = require('moment');
+var UUID = require('uuid');
+var Entities = require('html-entities').XmlEntities;        //由于title是xml格式 要转义
+var debug = require('debug')('smartdo:route:daily');
+var app = require('../app');
+
+var controller = require('../controllers').daily;
+
+module.exports = {
+    path: "/daily",
+    route: router
+};
+
+router.use(app.authServer.authenticate());
+
+router.get('/list', controller.list);
+
+router.get('/show', controller.report);
+
+router.post('/import/confirm', controller.saveDailySell);
+
+router.get('/import', controller.import);
+
+router.get('/PopupList', controller.PopupList);
+
+router.get('/profitShow', controller.profitShow);

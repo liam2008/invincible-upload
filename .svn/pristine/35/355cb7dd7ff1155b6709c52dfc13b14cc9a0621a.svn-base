@@ -1,0 +1,48 @@
+/*
+ * Base Dependencies
+ */
+
+
+/*
+ * Server Dependencies
+ */
+var debug = require('debug')('smartdo:controller:users');
+var ServerError = require('../errors/server-error');
+var uuid = require('uuid');
+
+/*
+ * UModules Dependencies
+ */
+
+var testObject = function (obj) {
+    for(var key in obj){
+        if(obj[key] === ''){
+            return GE.OBJECT_HAVING_NULL_VALUE;
+            break;
+        }
+    }
+};
+
+module.exports = {
+    name: "users",
+
+    list: function(req, res, next) {
+        res.success();
+    },
+
+    get: function(req, res, next) {
+        res.success();
+    },
+
+    create: function(req, res, next) {
+        res.success();
+    },
+
+    update: function(req, res, next) {
+        res.success();
+    },
+
+    delete: function(req, res, next) {
+        res.success();
+    }
+};

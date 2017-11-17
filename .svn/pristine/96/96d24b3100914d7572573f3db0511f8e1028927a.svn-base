@@ -1,0 +1,315 @@
+var debug = require('debug')('smartdo:controller:daily');
+var ServerError = require('../errors/server-error');
+var uuid = require('uuid');
+var moment = require('moment');
+var UUID = require('uuid');
+var DB = require('../models/invincible');
+var Merchandise = DB.getModel('merchandise');
+var Product = DB.getModel('product');
+var Shops = DB.getModel('shops');
+
+var Shared = require('../../shared/');
+var ERROR_CODE = Shared.ERROR;
+var MESSAGE = Shared.MESSAGE;
+
+/*
+ * UModules Dependencies
+ */
+
+module.exports = {
+    name: "base",
+
+    list: function (req, res, next) {
+        var results = [];
+        var store2namecn = {};
+        Merchandise.find({}, function(err, MerchandiseListResult) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.NOT_EXISTS);
+                return;
+            }
+            Product.find({}, function(err, ProductListResult) {
+                if(err) {
+                    debug(err);
+                    res.error(ERROR_CODE.NOT_EXISTS);
+                    return;
+                }
+                ProductListResult.forEach(function(ProductResult) {
+                    store2namecn[ProductResult.store_sku] = ProductResult.name_cn;
+                });
+                MerchandiseListResult.forEach(function(Merchandises) {
+                    results.push({
+                        id: Merchandises.id,
+                        seller_sku: Merchandises.seller_sku,
+                        store_sku: Merchandises.store_sku,
+                        FBA: Merchandises.FBA,
+                        fnsku: Merchandises.fnsku,
+                        asin: Merchandises.asin,
+                        name_cn: store2namecn[Merchandises.store_sku],
+                        shop_name: Merchandises.shop_name,
+                        team_name: Merchandises.team_name,
+                        createdAt: Merchandises.createdAt,
+                        updatedAt: Merchandises.updatedAt,
+                        state: Merchandises.state,
+                        projected_sales: Merchandises.projected_sales,
+                        price: Merchandises.price || 0
+                    });
+                });
+                Merchandise.distinct("team_name", function (err, team_name) {
+                    var date = {
+                        list: results,
+                        team_name: team_name
+                    };
+                    res.success(date);
+                })
+            })
+        })
+    },
+
+    update: function (req, res, next) {
+        Merchandise.findOne({
+            asin: req.body.asin,
+            seller_sku: req.body.seller_sku,
+            shop_name: req.body.shop_name
+        }, function(err, MerchandiseResult) {
+            if(err) {
+                debug(err);
+                res.error(ERROR_CODE.NOT_EXISTS);
+                return;
+            }
+            console.log("merchandise change : "+ MerchandiseResult.asin + " " + MerchandiseResult.seller_sku + " " + MerchandiseResult.shop_name
+                + " [ projected_sales : " + MerchandiseResult.projected_sales  + " -> "  + req.body.projected_sales
+                + " price : " + MerchandiseResult.price + " -> " + req.body.price
+                + " team_name : " + MerchandiseResult.team_name + " -> " + req.body.team_name
+                + " state : " + MerchandiseResult.state + " -> " + req.body.state
+                + " ]"
+            );
+            MerchandiseResult.projected_sales = req.body.projected_sales;
+            MerchandiseResult.price = req.body.price;
+            MerchandiseResult.team_name = req.body.team_name;
+            MerchandiseResult.state = req.body.state;
+            MerchandiseResult.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+            MerchandiseResult.save(function(err) {
+                if(err) {
+                    debug(err);
+                    res.error(ERROR_CODE.UPDATE_FAILED);
+                    return;
+                }
+                res.success();
+            })
+        })
+    },
+
+    saveMerchandise: function (req, res, next) {
+        Merchandise.findOne({
+                asin: req.body.asin,
+                seller_sku: req.body.seller_sku,
+                shop_name: req.body.shop_name
+            }, function(err, MerchandiseResult) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.NOT_EXISTS);
+                return;
+            }
+            if (!MerchandiseResult) {
+                //if (req.body.fnsku)
+                var merchandise = new Merchandise ({
+                    seller_sku: req.body.seller_sku,     // 卖家SKU
+                    store_sku: req.body.store_sku,     // 仓库SKU
+                    FBA: req.body.FBA,     // 是否FBA 1是 0否
+                    fnsku: req.body.fnsku,     // FNSKU
+                    asin: req.body.asin,     // ASIN
+                    name: req.body.name,     // 当地语言名字:英文\日文等
+                    shop_name: req.body.shop_name,     // 店铺名
+                    team_name: req.body.team_name,     // 小组名
+                    state: req.body.state,     // 状态 0:停售, 1:未开售, 2:推广期, 3:在售期, 4:清仓期 5:归档 6:备用
+                    price: req.body.price,     // 基准价格
+                    projected_sales: req.body.projected_sales    // 预计销量
+                });
+                merchandise.save(function(err) {
+                    if(err) {
+                        debug(err);
+                        res.error(ERROR_CODE.CREATE_FAILED);
+                        return;
+                    }
+                    res.success(true);
+                })
+            }else {
+                res.success(false)
+            }
+        })
+    },
+
+    shops: function (req, res, next) {
+        Shops.find(function (err, shopsListResult) {
+            if(err) {
+                debug(err);
+                return;
+            }
+            var results = [];
+            shopsListResult.forEach(function (shopsResult) {
+                var result = {
+                    id: shopsResult.id,
+                    name: shopsResult.name,
+                    site: shopsResult.site,
+                    createdAt: moment(shopsResult.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+                    updatedAt: moment(shopsResult.updatedAt).format('YYYY-MM-DD HH:mm:ss')
+                };
+                results.push(result)
+            });
+            res.success(results);
+        })
+    },
+
+    addShops: function (req, res, next) {
+        var date = moment().format('YYYY-MM-DD HH:mm:ss');
+        var name = req.body.shopName;
+        var newShop = new Shops({
+            id: UUID.v4(),
+            name: req.body.shopName,
+            site: name.substring(req.body.name.length - 2, req.body.name.length),
+            createdAt: date,
+            updatedAt: date
+        });
+
+        newShop.save(function (err) {
+            if (err) {
+                debug(err);
+                res.error(ERROR_CODE.CREATE_FAILED);
+                return;
+            }
+            res.success();
+        });
+    },
+
+    shopsOne: function (req, res, next, callback) {
+        var findRequire = {};
+        findRequire.id = req.body.id;
+        Shops.findOne(findRequire, function(err, ShopOne) {
+            callback(err, ShopOne)
+        });
+    },
+
+    updateShops: function (req, res, next) {
+        require('../controllers').base.shopsOne(req, res, next, function(err, ShopsOne) {
+            if (err) {
+                debug(err);
+                return;
+            }
+            var name = req.body.name;
+            ShopsOne.name = req.body.name;
+            debug((name.split("-"))[2]);
+            ShopsOne.site = (name.split("-"))[2];
+            ShopsOne.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+            ShopsOne.save(function (err) {
+                if (err) {
+                    debug(err);
+                    res.error(ERROR_CODE.UPDATE_FAILED);
+                    return;
+                }
+                res.success();
+            });
+        })
+    },
+
+    //Product货品
+    saveProduct: function (req, res, next) {
+        this.ProductOne(req.body.store_sku, function (err, productOne) {
+            if (err) {
+                debug(err);
+                return;
+            }
+            if(!productOne) {
+                var time = moment().format('YYYY-MM-DD HH:mm:ss');
+                var product = new Product({
+                    id: UUID.v4(),                                           // id 使用UUID
+                    store_sku: req.body.store_sku,                    // 仓库SKU
+                    name_cn: req.body.name,                              // 英文名
+                    createdAt: time,                           // 创建时间
+                    updatedAt: time                           // 创建时间
+                });
+                product.save(function (err) {
+                    if (err) {
+                        debug(err);
+                        res.error(ERROR_CODE.CREATE_FAILED);
+                        return;
+                    }
+                    res.success(true);
+                });
+            }else {
+                res.success(false);
+            }
+        })
+    },
+
+    updateProduct: function (req, res, next) {
+        this.ProductOne(req.body.store_sku, function (err, productOne) {
+            if (err) {
+                debug(err);
+                return;
+            }
+            if(productOne) {
+                var time = moment().format('YYYY-MM-DD HH:mm:ss');
+                var product = {
+                    id: productOne.id,                                           // id 使用UUID
+                    store_sku: req.body.store_sku,                    // 仓库SKU
+                    name_cn: req.body.name,                              // 英文名
+                    createdAt: time,                           // 创建时间
+                    updatedAt: time                           // 创建时间
+                };
+                product.save(function (err) {
+                    if (err) {
+                        debug(err);
+                        res.error(ERROR_CODE.UPDATE_FAILED);
+                        return;
+                    }
+                    res.success(true);
+                });
+            }else {
+                res.success(false);
+            }
+        })
+    },
+
+    listProduct: function (req, callback) {
+        var results = [];
+        Product.find({}, function (err, productListResult) {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+            for (var i = 0; i < productListResult.length; i++) {
+                var row = productListResult[i];
+                var result = {
+                    store_sku: row.store_sku,
+                    name_cn: row.name_cn
+                };
+                results.push(result)
+            }
+            res.success(results);
+        });
+    },
+
+    removeProduct: function (req, res, next) {
+        // Product.remove({
+        //     store_sku: req.body.store_sku
+        // }, function (err) {
+        //     if (err) {
+        //         return err;
+        //     }
+        // });
+
+        res.success();
+    },
+
+    ProductOne: function (store_sku, callback) {
+        Product.findOne({
+            store_sku: store_sku
+        }, function (err, productOne) {
+            if (err) {
+                return callback(err, null);
+            }
+            return callback(err, productOne);
+        });
+    }
+};

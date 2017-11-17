@@ -1,0 +1,124 @@
+(function () {
+    'use strict';
+
+    var app = angular.module('app');
+
+    app.factory('netManager', [
+        '$http',
+        '$location',
+        '$window',
+        function ($http, $location, $window) {
+            var token = "";
+            var server = App.config.server;
+            var service = {};
+            service.login = function (inputData) {
+                var data = inputData || {};
+                var api = '/token';
+                return $http({
+                    method: 'POST',
+                    url: server + api,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    transformRequest: function (obj) {
+                        var str = [];
+                        for (var p in obj) {
+                            if (obj.hasOwnProperty(p)) {
+                                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                            }
+                        }
+                        return str.join("&");
+                    },
+                    data: data
+                }).then(function (response) {
+                    $window.localStorage.setItem('token', response.data);
+                    return true;
+                }).catch(function (e) {
+                    return false;
+                });
+            };
+
+            service.logout = function () {
+                $window.localStorage.removeItem('token');
+                $location.path('/login');
+            };
+
+            service.isLoggedIn = function () {
+                return $window.localStorage.token != null;
+            };
+
+            service.get = function (api, params) {
+                return $http({
+                    method: 'GET',
+                    url: server + api,
+                    params: params
+                });
+            };
+
+            service.post = function (api, data) {
+                return $http.post(server + api, data);
+            };
+
+            service.put = function (api, data) {
+                return $http({
+                    method: 'PUT',
+                    url: server + api,
+                    data: data
+                });
+            };
+
+            service.delete = function (api) {
+                return $http({
+                    method: 'DELETE',
+                    url: server + api
+                });
+            };
+
+            service.jsonp = function (api, data) {
+                return $http({
+                    method: 'jsonp',
+                    url: api+"?jsonp=JSON_CALLBACK",
+                    data:data
+                });
+            };
+
+            return service;
+        }
+    ]);
+
+    //用户权限
+    app.factory('angularPermission', ['$rootScope', 'netManager', function ($rootScope, netManager) {
+        var userPermissionList;
+        return {
+            setPermissions: function (permissions) {
+                userPermissionList = this.formatPermission(permissions);
+                $rootScope.$broadcast('permissionsChanged');
+            },
+            hasPermission: function (permission) {
+                for (var i = 0; i < userPermissionList.length; i++) {
+                    if (userPermissionList[i] === '*' || userPermissionList[i] === permission) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            formatPermission:function(userPermissionList){//得到的是子栏目，判断是否添加母栏目
+                var newPermission = [];
+                var hash = {};
+                if(userPermissionList.length>0 && userPermissionList[0]!=='*'){
+                    for(var i=0;i<userPermissionList.length;i++){
+                        hash[userPermissionList[i].replace(/(\.[^\.]+)$/, '')]=0;
+                    }
+                    for(var key in hash){
+                        newPermission.push(key);
+                    }
+                    return newPermission.concat(userPermissionList);
+                }
+                return userPermissionList;
+            }
+        };
+    }]);
+
+}());
+
+

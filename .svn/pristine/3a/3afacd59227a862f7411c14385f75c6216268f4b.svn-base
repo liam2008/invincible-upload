@@ -1,0 +1,120 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('userManageCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'SweetAlert', '$q',
+        function ($scope, netManager, DTOptionsBuilder, SweetAlert, $q) {
+            $scope.dtOptions = DTOptionsBuilder.newOptions()
+                .withDOM('<"html5buttons"B>lTfgitp')
+                .withButtons([
+                    {
+                        text: '添加用戶',
+                        action: function (e, dt, node, config) {
+                            $scope.formAdd.submitted = false;
+                            getRoles().then(function (roles) {
+                                $scope.addUser = {};
+                                $scope.addUser.roles = roles;
+                                $('#addUserModule').modal('show');
+                            });
+                        }
+                    }
+                ]);
+
+            init();
+
+            //编辑
+            var editData = {};
+            $scope.edit = function (editItem) {
+                $scope.editData = {};
+
+                //得到角色信息
+                getRoles().then(function (rolse) {
+                    $scope.editData.roles = rolse;
+                });
+                //得到编辑信息
+                $scope.editData = angular.extend({},editItem);
+                console.log($scope.editData);
+            };
+            $scope.saveEdit = function () {
+                var editData = {
+                    account: $scope.editData.account,
+                    name: $scope.editData.name,
+                    password: CryptoJS.MD5($scope.editData.password).toString(CryptoJS.enc.Base64),
+                    team: $scope.editData.team,
+                    role: $scope.editData.selRole
+                };
+                console.log('eidtData', editData);
+                netManager.put('/users/' + $scope.editData['_id'], editData).then(function (res) {
+                    if (res.status===200) {
+                        $('#editRow').modal('hide');
+                        SweetAlert.swal("编辑成功!", "success");
+                    } else {
+                        SweetAlert.swal("编辑失败!", "error")
+                    }
+                }, function (err) {
+                    console.error(err);
+                    SweetAlert.swal("编辑失败!", "error")
+                });
+            };
+            $scope.editData = editData;
+
+            //添加
+            var addUser = {};
+            $scope.saveUser = function () {
+                $scope.formAdd.submitted = true;
+                if ($scope.formAdd.$valid && addUser.password === addUser.confirmPassword && $scope.addUser.selRole) {
+                    var saveUserData = {
+                        account: $scope.addUser.account,
+                        name: $scope.addUser.name,
+                        password: CryptoJS.MD5(addUser.password).toString(CryptoJS.enc.Base64),
+                        role: $scope.addUser.selRole,
+                        team: $scope.addUser.team
+                    };
+                    netManager.post('/users', saveUserData).then(function (res) {
+                        if(res.status===200){
+                            $('#addUserModule').modal('hide');
+                            SweetAlert.swal("保存成功!", "success");
+                        }
+                    }, function (err) {
+                        console.error(err);
+                        SweetAlert.swal("保存失败!", 'error');
+                    });
+                }
+            };
+            $scope.addUser = addUser;
+
+            //初始化页面
+            function init() {
+                netManager.get('/users').then(function (res) {
+                    $scope.tableData = res.data;
+                    console.log($scope.tableData);
+                    $scope.isLoad = false;
+                }, function (err) {
+                    console.error(err);
+                });
+            }
+
+            //请求角色
+            function getRoles() {
+                var dfd = $q.defer();
+                //请求角色
+                netManager.get('/roles').then(function (res) {
+                    console.log('roles', res.data);
+                    var roles = [];
+                    for (var i = 0; i < res.data.length; i++) {
+                        roles.push({
+                            name: res.data[i].name,
+                            value: res.data[i]['_id']
+                        });
+                    }
+                    dfd.resolve(roles);
+                }, function (err) {
+                    console.error(err);
+                    dfd.reject(err)
+                });
+
+                return dfd.promise;
+            }
+        }
+    ]);
+
+}());

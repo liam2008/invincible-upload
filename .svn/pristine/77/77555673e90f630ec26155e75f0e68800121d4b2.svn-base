@@ -1,0 +1,172 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('sellerRankCtrl', ['$scope', 'netManager', 'DTOptionsBuilder','DTColumnDefBuilder', 'SweetAlert',
+        function ($scope, netManager, DTOptionsBuilder,DTColumnDefBuilder, SweetAlert) {
+
+            //数据
+            var sellerData = {};
+            sellerData.mainList = [];
+            sellerData.detailList = [];
+            $scope.sellerData = sellerData;
+
+            //操作
+            var sellerAction = {};
+            sellerAction.viewDetail = function(id){
+                /*$scope.sellerData.detailList = [
+                    [
+                        "94",
+                        "95",
+                        "98"
+                    ],
+                    [
+                        "1",
+                        "2",
+                        "3",
+                        "4"
+                    ],
+                    [
+                        "93",
+                        "94",
+                        "95",
+                        "98"
+                    ],
+                    [
+                        "93",
+                        "94",
+                        "95",
+                        "98"
+                    ]
+                ];*/
+                netManager.get('/sellerRank/popupList',{'_id':id}).then(function (res) {
+                    $scope.sellerData.detailList = res.data;
+                }, function (err) {
+                    console.error(err);
+                });
+            };
+            sellerAction.checkData = function(){
+                init();
+            };
+            sellerAction.searchData = function(){
+                init();
+            };
+            $scope.sellerAction = sellerAction;
+
+            //分页设定
+            var pageData = {
+                'maxSize': 5
+            };
+            pageData.currentPage = 1;
+            pageData.pageChanged = function(){
+                init();
+            };
+            $scope.pageData = pageData;
+
+            //排序设置
+            var orderData = {};
+            orderData.list = [{
+                "title" : "Month Rank",
+                "value" : "MonthRank",
+                "isShow": false,
+                "orderReverse":false
+            },{
+                "title" : "Year Rank",
+                "value" : "YearRank",
+                "isShow": false,
+                "orderReverse":false
+            },{
+                "title" : "Lifetime Rank",
+                "value" : "LifetimeRank",
+                "isShow": false,
+                "orderReverse":false
+            }];
+            orderData.itemInfo = {
+                orderPredicate : "",//排序的值
+                orderReverse : false//正反序
+            };
+            orderData.setOrder = function($index){
+                orderData.list.map(function(val,key){
+                    if(key === $index){
+                        val.isShow = true;
+                        val.orderReverse = !val.orderReverse;
+
+                        orderData.itemInfo.orderPredicate = val.value;
+                        orderData.itemInfo.orderReverse = val.orderReverse;
+                    }else{
+                        val.isShow = false;
+                    }
+                });
+
+                init();
+            };
+            $scope.orderData = orderData;
+
+            //验证
+            $scope.regName = ['Positive','Neutral','Negative','Count'];
+
+            init();
+
+            //初始化页面
+            function init() {
+                $scope.isLoad = true;
+                /*改造排列传值*/
+                var sortData = {};
+                if(!orderData.itemInfo.orderPredicate){
+                    sortData = '';
+                } else{
+                    sortData[orderData.itemInfo.orderPredicate] = orderData.itemInfo.orderReverse? 1: -1
+                }
+                console.log('sortData', sortData);
+                var sendData = {
+                    'From':$scope.sellerData['From'],
+                    'IsFba':$scope.sellerData['IsFba'],
+                    'allKeyword':$scope.sellerData['seaContent'],
+                    'current':$scope.pageData.currentPage,
+                    'sort':angular.toJson(sortData)
+                };
+                console.log(sendData);
+                netManager.get('/sellerRank/rankList',sendData).then(function (res) {
+                    $scope.sellerData.mainList = res.data;
+                    $scope.pageData.totalItems = res.data.totalItems;
+                    $scope.isLoad = false;
+                }, function (err) {
+                    console.error(err);
+                });
+               /* $scope.sellerData.mainList = [
+                    {
+                        "_id": "id",
+                        "From": "MarketPlace",
+                        "SellerName": "StoreName",
+                        "SellerId": "SellerID",
+                        "IsFba": "FBA",
+                        "Growth": "Growth",
+                        "MonthRank": "1",
+                        "YearRank": "Year Rank",
+                        "LifetimeRank": "Lifetime Rank",
+                        "Lifetime": "Total",
+                        "M12": "12m",
+                        "M3": "3m",
+                        "M1": "1m",
+                        "Pos": "Pos%"
+                    },
+                    {
+                        "_id": "id2",
+                        "From": "MarketPlace",
+                        "SellerName": "StoreName",
+                        "SellerId": "aDad",
+                        "IsFba": "aDad",
+                        "Growth": "aDad",
+                        "MonthRank": "2",
+                        "YearRank": "Year Rank",
+                        "LifetimeRank": "asdf Rank",
+                        "Lifetime": "asdfsadfuhyol",
+                        "M12": "1zvszvd2m",
+                        "M3": "3asfm",
+                        "M1": "1asdfoyum",
+                        "Pos": "Pertyrtos%"
+                    }
+                ];*/
+            }
+        }
+    ]);
+}());

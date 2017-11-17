@@ -1,0 +1,111 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('stockManageCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'SweetAlert',
+        function ($scope, netManager, DTOptionsBuilder, SweetAlert) {
+            //控制加载load-icon
+            //$scope.isLoad = true;
+            $scope.dtOptions = DTOptionsBuilder.newOptions()
+                .withDOM('<"html5buttons"B>lTfgitp')
+                .withButtons([
+                    {extend: 'excel', title: '产品库存管理'},
+                    {extend: 'copy', title: '产品库存管理'},
+                    {
+                        text: '添加产品库存',
+                        action: function (e, dt, node, config) {
+                            $('#addGoodModule').modal('show')
+                        }
+                    }
+                ]);
+            //渲染页面
+            init();
+
+            //修改保存数据
+            $scope.saveEdit = function () {
+                SweetAlert.swal({
+                        title: "你将编辑数据?",
+                        text: "你确定编辑此条数据!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            var comfirmData = {
+                                'store_sku':$scope.editData['store_sku'],
+                                'name_cn':$scope.editData['name_cn']
+                            };
+                            console.log('send', comfirmData);
+                            netManager.post('/base/updateProduct', comfirmData).then(function (res) {
+                                console.log(res);
+                                if (res.status === 200) {
+                                    res.data ? swal("保存成功!", "success"):swal("保存失败!", "error");
+                                    init();
+                                }
+                            }, function (err) {
+                                console.err(err.code);
+                                swal("保存失败", "err.description", "error");
+                            });
+                        }
+                    });
+            };
+            //添加商品
+            var addStore = {};
+            addStore.saveStore = function () {
+                SweetAlert.swal({
+                        title: "你将添加产品库",
+                        text: "请确保数据无误!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            $("#addGoodModule").modal("hide");
+                            var addStoreData = {
+                                'store_sku':$scope.addStore['store_sku'],
+                                'name_cn':$scope.addStore['name_cn']
+                            };
+                            console.log('send', addStoreData);
+                            netManager.post('/base/saveProduct', addStoreData).then(function (res) {
+                                if (res.status === 200) {
+                                    res.data ? swal("保存成功!", "success"):swal("保存失败!", "error");
+                                    init();
+                                    //清除之前的数据
+                                    $scope.addStore = null;
+                                }
+                            }, function (err) {
+                                console.err(err.code);
+                                swal("保存失败", "err.description", "error");
+                            });
+                        }
+                    });
+
+            };
+            $scope.addStore = addStore;
+
+            //初始化页面
+            function init() {
+                netManager.get('/base/list').then(function (res) {
+                    $scope.tableData = res.data.list;
+                    $scope.edit = function (index) {
+                        console.log(res.data.list[index]);
+                        var editData = {};
+                        editData['store_sku'] = $scope.tableData[index]['store_sku'];
+                        editData['name_cn'] = $scope.tableData[index]['name_cn'];
+                        $scope.editData = editData;
+                    };
+                    $scope.isLoad = false;
+                }, function (err) {
+                    console.error(err);
+                });
+            }
+        }
+    ]);
+
+
+}());
