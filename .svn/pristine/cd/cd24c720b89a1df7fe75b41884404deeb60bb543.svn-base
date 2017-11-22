@@ -1,0 +1,70 @@
+<div class="wrapper wrapper-content  animated fadeInRight">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>知识库</h5>
+				</div>
+				<div class="ibox-content">
+					<div class="m-b-lg">
+						<div class="input-group">
+							<input placeholder="请输入文件名搜索" class="form-control" ng-change="search()" ng-model="keyword">
+							<span class="input-group-btn"><button class="btn btn-white" ng-click="search()"> 搜 索</button></span>
+						</div>
+						<div class="m-t-md">
+							<div class="pull-right">
+								<button class="btn btn-sm btn-white" ng-click="search(keyword='')">全部</button>
+								<button class="btn btn-sm btn-white" ng-click="search(keyword='pdf')">PDF</button>
+								<button class="btn btn-sm btn-white" ng-click="search(keyword='mp4')">MP4</button>
+							</div>
+							<strong>文件数量：{{ (searchList || list).length }}</strong>
+						</div>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-hover issue-tracker">
+							<tbody>
+								<tr ng-repeat="item in searchList || list">
+									<td>
+										<i ng-if="item.type=='pdf'" class="fa fa-file-pdf-o"></i>
+										<i ng-if="item.type=='mp4'" class="fa fa-file-video-o"></i>
+									</td>
+									<td class="issue-info">名称：{{ item.name }}</td>
+									<td>格式：{{ item.type }}</td>
+									<td>时间：{{ item.time }}</td>
+									<td class="text-right">
+										<button class="btn btn-primary btn-outline btn-sm" ng-click="viewer(item)"> 学习</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="pdf-modal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ modalName }}</h4>
+			</div>
+			<ng-pdf template-url="./views/common/pdf_viewer.html"></ng-pdf>
+			<canvas id="pdf-canvas"></canvas>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="mp4-modal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ modalName }}</h4>
+			</div>
+			<div class="modal-body">
+				<video controls></video>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,209 @@
+<style>
+	.input-group {
+		width: 240px;
+	}
+	
+	.form-group {
+		margin-left: 20px;
+	}
+	
+	.daterangepicker .ranges {
+		width: 180px;
+	}
+	
+	.daterangepicker .ranges .input-mini {
+		width: 84px;
+	}
+	
+	.ibox-content {
+		position: relative;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+	
+	.loading {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border: none;
+		padding-top: 150px;
+		background-color: rgba(255, 255, 255, .9);
+		z-index: 10;
+	}
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>SKU毛利率</h5>
+					<div ibox-tools></div>
+				</div>
+				<div class="ibox-content">
+					<blockquote class="loading" ng-if="loading">
+						<div class="sk-spinner sk-spinner-fading-circle">
+							<div class="sk-circle1 sk-circle"></div>
+							<div class="sk-circle2 sk-circle"></div>
+							<div class="sk-circle3 sk-circle"></div>
+							<div class="sk-circle4 sk-circle"></div>
+							<div class="sk-circle5 sk-circle"></div>
+							<div class="sk-circle6 sk-circle"></div>
+							<div class="sk-circle7 sk-circle"></div>
+							<div class="sk-circle8 sk-circle"></div>
+							<div class="sk-circle9 sk-circle"></div>
+							<div class="sk-circle10 sk-circle"></div>
+							<div class="sk-circle11 sk-circle"></div>
+							<div class="sk-circle12 sk-circle"></div>
+						</div>
+					</blockquote>
+					<article class="form-inline m-b-xs" spellcheck="false">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							<input class="form-control date-picker" date-range-picker ng-model="where.daterange" options="{separator:' 至 ',locale:{format:'YYYY-MM-DD',fromLabel:'开始',toLabel:'结束',applyLabel:'应用',cancelLabel:'取消'}}">
+						</div>
+						<div class="form-group">
+							<label>小组&nbsp;</label>
+							<select class="form-control" ng-model="where.group_name">
+								<option value>全部</option>
+								<option ng-repeat="item in teamName" value="{{item.group_name?item.group_name:'other'}}">{{ item.group_name?item.group_name:'其它' }}</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>店铺&nbsp;</label>
+							<select class="form-control" ng-model="where.store_name">
+								<option value>全部</option>
+								<option ng-repeat="item in storeName">{{ item.store_name }}</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>SKU&nbsp;</label>
+							<input class="form-control" placeholder="SKU" ng-model="where.sku">
+						</div>
+						<button class="btn btn-primary" ng-click="load()">查 询</button>
+					</article>
+					<table class="table table-striped table-bordered table-hover" datatable="ng" dt-options="dtOptions">
+						<thead>
+							<tr>
+								<th>小组</th>
+								<th>店铺</th>
+								<th>SKU</th>
+								<th>毛利润</th>
+								<th>毛利率</th>
+								<th>销量</th>
+								<th>销售额</th>
+								<th>退款数量</th>
+								<th>退款金额</th>
+								<th>实际销售额</th>
+								<th>佣金</th>
+								<th>佣金占比</th>
+								<th>Ful Cost</th>
+								<th>Ful Cost占比</th>
+								<th>合仓费</th>
+								<th>合仓占比</th>
+								<th>FBA仓储费</th>
+								<th>广告费</th>
+								<th>广告占比</th>
+								<th>刷单费</th>
+								<th>刷单占比</th>
+								<th>产品单价<span class="text-danger">（¥）</span></th>
+								<th>产品成本</th>
+								<th>成本占比</th>
+								<th>头程单价<span class="text-danger">（¥）</span></th>
+								<th>头程费用</th>
+								<th>头程占比</th>
+								<th>尾程费用</th>
+								<th>尾程占比</th>
+								<th>提款手续费</th>
+								<th>手续费占比</th>
+								<th>不良品数量</th>
+								<th>不良品成本</th>
+								<th>不良品占比</th>
+								<th>其他成本</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in list">
+								<td>{{ item.group_name?item.group_name:'其它' }}</td>
+								<td>{{ item.store_name }}</td>
+								<td>{{ item.sku?item.sku:'-' }}</td>
+								<td>{{ item.gross_profit }}</td>
+								<td style="background-color: #f0f9eb">{{ item.gross_profit_rate=='0.00%'?'0':item.gross_profit_rate }}</td>
+								<td>{{ item.sales_quantify }}</td>
+								<td>{{ item.sales_volume }}</td>
+								<td>{{ item.refund_quantify }}</td>
+								<td>{{ item.refund_volume }}</td>
+								<td>{{ item.actual_sales_volume }}</td>
+								<td>{{ item.selling_fees }}</td>
+								<td style="background-color: #f0f9eb">{{ item.selling_fees_rate=='0.00%'?'0':item.selling_fees_rate }}</td>
+								<td>{{ item.ful_cost }}</td>
+								<td style="background-color: #f0f9eb">{{ item.ful_cost_rate=='0.00%'?'0':item.ful_cost_rate }}</td>
+								<td>{{ item.merge_inventory_fees }}</td>
+								<td style="background-color: #f0f9eb">{{ item.merge_inventory_fees_rate=='0.00%'?'0':item.merge_inventory_fees_rate }}</td>
+								<td>{{ item.fba_inventory_fees }}</td>
+								<td>{{ item.ad_fee }}</td>
+								<td style="background-color: #f0f9eb">{{ item.ad_fee_rate=='0.00%'?'0':item.ad_fee_rate }}</td>
+								<td>{{ item.promotion_fees }}</td>
+								<td style="background-color: #f0f9eb">{{ item.promotion_fees_rate=='0.00%'?'0':item.promotion_fees_rate }}</td>
+								<td>{{ item.product_unit_price }}</td>
+								<td>{{ item.product_cost }}</td>
+								<td style="background-color: #f0f9eb">{{ item.product_cost_rate=='0.00%'?'0':item.product_cost_rate }}</td>
+								<td>{{ item.first_ship_unit_price }}</td>
+								<td>{{ item.first_ship_fees }}</td>
+								<td style="background-color: #f0f9eb">{{ item.first_ship_fees_rate=='0.00%'?'0':item.first_ship_fees_rate }}</td>
+								<td>{{ item.last_ship_fees }}</td>
+								<td style="background-color: #f0f9eb">{{ item.last_ship_fees_rate=='0.00%'?'0':item.last_ship_fees_rate }}</td>
+								<td>{{ item.withdrawal_service_fee }}</td>
+								<td style="background-color: #f0f9eb">{{ item.withdrawal_service_fee_rate=='0.00%'?'0':item.withdrawal_service_fee_rate }}</td>
+								<td>{{ item.rejects_quantify }}</td>
+								<td>{{ item.rejects_cost }}</td>
+								<td style="background-color: #f0f9eb">{{ item.rejects_cost_rate=='0.00%'?'0':item.rejects_cost_rate }}</td>
+								<td>{{ item.other_cost }}</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th>合计</th>
+								<th>#</th>
+								<th>#</th>
+								<th>{{ total.gross_profit }}</th>
+								<th>{{ total.gross_profit_rate }}</th>
+								<th>{{ total.sales_quantify }}</th>
+								<th>{{ total.sales_volume }}</th>
+								<th>{{ total.refund_quantify }}</th>
+								<th>{{ total.refund_volume }}</th>
+								<th>{{ total.actual_sales_volume }}</th>
+								<th>{{ total.selling_fees }}</th>
+								<th>{{ total.selling_fees_rate }}</th>
+								<th>{{ total.ful_cost }}</th>
+								<th>{{ total.ful_cost_rate }}</th>
+								<th>{{ total.merge_inventory_fees }}</th>
+								<th>{{ total.merge_inventory_fees_rate}}</th>
+								<th>{{ total.fba_inventory_fees }}</th>
+								<th>{{ total.ad_fee }}</th>
+								<th>{{ total.ad_fee_rate }}</th>
+								<th>{{ total.promotion_fees }}</th>
+								<th>{{ total.promotion_fees_rate }}</th>
+								<th>#</th>
+								<th>{{ total.product_cost }}</th>
+								<th>{{ total.product_cost_rate }}</th>
+								<th>#</th>
+								<th>{{ total.first_ship_fees }}</th>
+								<th>{{ total.first_ship_fees_rate }}</th>
+								<th>{{ total.last_ship_fees }}</th>
+								<th>{{ total.last_ship_fees_rate }}</th>
+								<th>{{ total.withdrawal_service_fee }}</th>
+								<th>{{ total.withdrawal_service_fee_rate }}</th>
+								<th>{{ total.rejects_quantify }}</th>
+								<th>{{ total.rejects_cost }}</th>
+								<th>{{ total.rejects_cost_rate }}</th>
+								<th>{{ total.other_cost }}</th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

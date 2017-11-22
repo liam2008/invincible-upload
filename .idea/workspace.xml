@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d7987f59-abbd-4723-ab6b-4d6fc0d91926" name="Default" comment="" />
+    <list default="true" readonly="true" id="d7987f59-abbd-4723-ab6b-4d6fc0d91926" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+    </list>
     <ignored path="invincible-upload.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -64,8 +66,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -86,6 +86,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -99,148 +101,6 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload" />
     </key>
-  </component>
-  <component name="RestoreUpdateTree" date="Moments ago" ActionInfo="_Update">
-    <UpdatedFiles>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Updated from server" />
-        <option name="myStatusName" value="Changed on server" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="CHANGED_ON_SERVER" />
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated" />
-          <option name="myStatusName" value="Changed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UPDATED" />
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\css\plugins\chosen\bootstrap-chosen.css</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\authority\rolesManageCtrl.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\authority\userManageCtrl.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\base\goodsManageCtrl.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\purchase\summary.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\config.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\controllers.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\main\authority\rolesManage.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\main\authority\userManage.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\main\base\goodsManage.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\main\purchase\summary.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\navigation.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\index.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-server\controllers\purchase.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-server\controllers\supplier.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-server\routes\purchase.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-server\routes\supplier.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-server\package.json</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\README.md</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Created" />
-          <option name="myStatusName" value="Created" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CREATED" />
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\chartJs</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\chartJs\Chart.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\chartJs\Chart.min.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\chartJs\angular-chart.min.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\plugins\chartJs</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\plugins\chosen</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\plugins\chosen\angular-chosen.min.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\plugins\chosen\chosen.jquery.min.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\authority\teamsManageCtrl.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\scripts\purchase\supplier.js</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\main\authority\teamsManage.html</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\views\main\purchase\supplier.html</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Deleted" />
-          <option name="myStatusName" value="Deleted" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="true" />
-          <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\plugins\chartJs</PATH>
-          <PATH vcs="svn" revision="460">C:\Users\Administrator\Desktop\2017-smartdo\资料\invincible-upload\web-app\js\plugins\chosen</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Restored" />
-          <option name="myStatusName" value="Will be restored" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="RESTORED" />
-        </FILE-GROUP>
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Modified" />
-        <option name="myStatusName" value="Modified" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MODIFIED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Skipped" />
-        <option name="myStatusName" value="Skipped" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SKIPPED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with conflicts" />
-        <option name="myStatusName" value="Will be merged with conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_CONFLICTS" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with tree conflicts" />
-        <option name="myStatusName" value="Merged with tree conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with property conflicts" />
-        <option name="myStatusName" value="Will be merged with property conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged" />
-        <option name="myStatusName" value="Will be merged" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Not in repository" />
-        <option name="myStatusName" value="Not in repository" />
-        <option name="mySupportsDeletion" value="true" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="UNKNOWN" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally added" />
-        <option name="myStatusName" value="Locally added" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_ADDED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally removed" />
-        <option name="myStatusName" value="Locally removed" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_REMOVED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Switched" />
-        <option name="myStatusName" value="Switched" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SWITCHED" />
-      </FILE-GROUP>
-    </UpdatedFiles>
   </component>
   <component name="RunManager">
     <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
@@ -273,12 +133,19 @@
       <method />
     </configuration>
     <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <pass-parent-envs>true</pass-parent-envs>
+      <envs />
       <method />
     </configuration>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
   <component name="SvnConfiguration" cleanupOnStartRun="true">
     <configuration>C:\Users\Administrator\AppData\Roaming\Subversion</configuration>
+    <supportedVersion>125</supportedVersion>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -302,22 +169,22 @@
     <layout>
       <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2081138" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972974" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32972974" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972974" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972974" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
