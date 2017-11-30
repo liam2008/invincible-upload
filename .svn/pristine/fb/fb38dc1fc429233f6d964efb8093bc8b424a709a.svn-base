@@ -1,5 +1,5 @@
 (function () {
-    var app = angular.module('app.store.storeLog', []);
+    var app = angular.module('app.base.storeLog', []);
     app.controller('storeLogCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'SweetAlert',
         function ($scope, netManager, DTOptionsBuilder, SweetAlert) {
             //控制加载load-icon
@@ -25,7 +25,7 @@
                     time: registerItem.time || moment().format('YYYY-MM-DD'),
                     enter: registerItem.enter || 0,
                     unit: registerItem.unit || 0,
-                    note: registerItem.note || 0,
+                    note: registerItem.note || '',
                     output: registerItem.output || 0
                 };
                 $scope.registerData = registerData;

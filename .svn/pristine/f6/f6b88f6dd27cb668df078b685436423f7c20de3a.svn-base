@@ -1,0 +1,2 @@
+node makeUUID.js
+pause

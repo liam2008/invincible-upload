@@ -1,0 +1,281 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>
+                        仓库出入库管理
+                    </h5>
+
+                    <div ibox-tools></div>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table datatable="ng" dt-options="dtOptions"
+                               class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+                            <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>库存SKU</th>
+                                <th>中文名称</th>
+                                <th>单位</th>
+                                <th>当前库存</th>
+                                <th>最近出入库时间</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="value in tableData">
+                                <td>
+                                    {{$index+1}}
+                                </td>
+                                <td> {{value['sku']?value['sku']:'-'}}</td>
+                                <td> {{value['name']?value['name']:'-'}}</td>
+                                <td> {{value['unit']?value['unit']:'-'}}</td>
+                                <td> {{value['stock']?value['stock']:'0'}}</td>
+                                <td>{{value['updatedAt']?value['updatedAt']:'-'}}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                                            data-target="#registerLog" ng-click="register(value)">出入库登记
+                                    </button>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-info btn-outline" type="button" data-toggle="modal"
+                                            data-target="#journalLog" ng-click="journal(value['id'])">出入库日志
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--编辑 出入库登记-->
+<div class="modal inmodal fade" id="registerLog" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">出入库登记</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" name="registerForm" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            库存SKU
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" placeholder="库存SKU" name="sku"
+                                   ng-model="registerData.sku" readonly/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            中文名称
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" placeholder="库存SKU" name="sku"
+                                   ng-model="registerData.name" readonly/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            当前库存
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="stock" ng-model="registerData.stock"
+                                   readonly/>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            单位
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="unit" placeholder="单位"
+                                   ng-model="registerData.unit"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>出入库日期
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group date  m-b-xs">
+                                <input type="datetime" class="form-control" date-time ng-model="registerData.time"
+                                       view="date"
+                                       auto-close="true" min-view="date" format="YYYY-MM-DD" id="time">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                            <div ng-show="registerForm.submitted && !registerData.time">
+                                <small class="text-danger">
+                                    出入库日期不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>入库数量
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group date  m-b-md">
+                                <input type="text" class="form-control" name="enter" placeholder="入库数量"
+                                       pattern="[0-9]+$" ng-model="registerData.enter" required/>
+
+                                <div class="m-t-xs" ng-show="registerForm.submitted && registerForm.enter.$invalid">
+                                    <small class="text-danger" ng-show="registerForm.enter.$error.required">
+                                        入库数量不能为空
+                                    </small>
+                                    <small class="text-danger" ng-show="registerForm.enter.$error.pattern">
+                                        入库数量格式不对
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>出库数量
+                        </label>
+
+                        <div class="col-sm-10">
+                            <div class="input-group date  m-b-md">
+                                <input type="text" class="form-control" name="output" placeholder="出库数量"
+                                       pattern="[0-9]+$" ng-model="registerData.output" required/>
+
+                                <div class="m-t-xs" ng-show="registerForm.submitted && registerForm.output.$invalid">
+                                    <small class="text-danger" ng-show="registerForm.output.$error.required">
+                                        出库数量不能为空
+                                    </small>
+                                    <small class="text-danger" ng-show="registerForm.output.$error.pattern">
+                                        出库数量格式不对
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">
+                            备注信息
+                        </label>
+
+                        <div class="col-sm-10">
+                            <textarea type="text" class="form-control" rows="5" name="note" ng-model="registerData.note"
+                                      placeholder="备注信息"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" ng-click="saveERegister()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--编辑 出入库日志-->
+<div class="modal inmodal fade" id="journalLog" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg"  style="width:60%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">出入库日志</h4>
+
+                <div class="form-group m-t-xs">
+                    <div class="row m-t-md">
+                        <div class="col-lg-4">
+                            <div class="col-lg-4">
+                                <label class="m-t-sm">开始日期</label>
+                            </div>
+                            <div class="input-group col-lg-8 date">
+                                <input type="datetime" class="form-control" date-time ng-model="journalData.startTime"
+                                       view="date" auto-close="true" min-view="date" format="YYYY-MM-DD" id="start">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="col-lg-4">
+                                <label class="m-t-sm">结束日期</label>
+                            </div>
+
+                            <div class="input-group col-lg-8 date">
+                                <input type="datetime" class="form-control" date-time ng-model="journalData.endTime"
+                                       view="date"
+                                       auto-close="true" min-view="date" format="YYYY-MM-DD">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <button class="btn btn-w-m btn-default" ng-click="checkLog()">查询</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table datatable="ng" dt-options="dtOptionsLog"
+                           class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+                        <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>日期</th>
+                            <th>库存SKU</th>
+                            <th>中文名称</th>
+                            <th>单位</th>
+                            <th>期初库存</th>
+                            <th>入库</th>
+                            <th>出库</th>
+                            <th>本期库存</th>
+                            <th>备注</th>
+                            <th>记录时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="value in journalList">
+                            <td>
+                                {{$index+1}}
+                            </td>
+                            <td>{{value['time']?value['time']:'-'}}</td>
+                            <td>{{value['sku']?value['sku']:'-'}}</td>
+                            <td>{{value['name']?value['name']:'-'}}</td>
+                            <td> {{value['unit']?value['unit']:'-'}}</td>
+                            <td>{{value['stocked']?value['stocked']:'0'}}</td>
+                            <td>{{value['enter']?value['enter']:'-'}}</td>
+                            <td>{{value['output']?value['output']:'-'}}</td>
+                            <td>{{value['stock']?value['stock']:'0'}}</td>
+                            <td>{{value['note']?value['note']:'-'}}</td>
+                            <td>{{value['updatedAt']?value['updatedAt']:'-'}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div load-icon is-load="isLoad"></div>

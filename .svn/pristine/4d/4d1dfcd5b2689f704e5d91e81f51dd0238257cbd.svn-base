@@ -1,0 +1,724 @@
+<style>
+	.form-inline label {
+		min-width: 85px;
+		margin: 7px 0;
+		text-align: right;
+		vertical-align: top;
+	}
+	
+	.form-inline .form-group {
+		padding-bottom: 4px;
+	}
+	
+	.form-inline .form-control {
+		width: 177px;
+	}
+	
+	.form-inline .input-group .form-control {
+		width: 139px;
+	}
+	
+	.table label {
+		width: 100%;
+		margin: 0;
+		cursor: pointer;
+	}
+	
+	.table th {
+		white-space: nowrap;
+	}
+	
+	#info td:first-child,
+	#skuModal td {
+		max-width: 360px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.dropdown {
+		position: relative;
+		cursor: pointer;
+	}
+	
+	.dropdown-nav {
+		width: 360px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.dropdown-content {
+		display: none;
+		position: absolute;
+		left: 0;
+		top: 32px;
+		width: 360px;
+		max-height: 300px;
+		margin: 2px 0;
+		padding-left: 0;
+		overflow-y: auto;
+		background-color: #fff;
+		box-shadow: 0 0 10px #ccc;
+		border-radius: 4px;
+		z-index: 3;
+	}
+	
+	.remarks {
+		max-height: 300px;
+		margin: 10px 30px;
+		padding-left: 0;
+		overflow-y: auto;
+	}
+	
+	.remarks li,
+	.dropdown-content li {
+		margin-bottom: 2px;
+		padding: 5px 10px;
+		background-color: #fafafa;
+		border-radius: 2px;
+		list-style: none;
+	}
+	
+	.dropdown:hover .dropdown-nav {
+		color: #1ab394;
+	}
+	
+	.dropdown:hover .dropdown-content,
+	.dropdown:hover .dropdown-menu {
+		display: block;
+	}
+	
+	.pull-rigth {
+		float: right;
+		margin-right: 20px;
+	}
+	
+	span.form-control,
+	span.form-control {
+		width: auto!important;
+		height: auto;
+		background-color: inherit;
+		border: none;
+	}
+	
+	.ibox-content textarea.form-control {
+		width: 640px;
+		resize: none;
+	}
+	
+	.select-disabled {
+		background-color: inherit!important;
+		-webkit-appearance: none!important;
+		cursor: default!important;
+		border: none!important;
+	}
+	
+	button.btn[disabled],
+	button.btn[disabled]:hover {
+		color: inherit;
+		background: #eee;
+		border: 1px solid #e5e6e7;
+		opacity: 1;
+	}
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row" spellcheck="false">
+		<div class="col-lg-12">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>{{activeShow?activeShow:'采购汇总表'}}</h5>
+					<button class="close" ng-if="activeShow" ng-click="active({})">&times;</button>
+				</div>
+				<section class="ibox-content" ng-if="!activeShow">
+					<article class="row form-inline m-b">
+						<div class="col-xs-8">
+							<div class="form-group">
+								<label>订单号&nbsp;</label>
+								<input class="form-control" ng-model="where.orderNumber">
+							</div>
+							<div class="form-group">
+								<label>合同号&nbsp;</label>
+								<input class="form-control" ng-model="where.contractNumber">
+							</div>
+							<div class="form-group">
+								<label>供应商&nbsp;</label>
+								<div class="btn-group">
+									<button class="btn btn-default" ng-click="supplierModal(where)">{{ where.supplierName||'点击选择供应商' }}</button>
+									<button class="btn btn-default" ng-click="removeSupplier(where)">清空</button>
+								</div>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-primary" ng-click="search()">搜 索</button>
+							</div>
+							<br>
+							<div class="form-group">
+								<label>库存SKU&nbsp;</label>
+								<input class="form-control" ng-model="where.storeSku">
+							</div>
+							<div class="form-group">
+								<label>商品中文名&nbsp;</label>
+								<input class="form-control" ng-model="where.proNameCN">
+							</div>
+							<div class="form-group">
+								<label>订单状态&nbsp;</label>
+								<select class="form-control" ng-model="where.orderStatus">
+									<option value>请选择</option>
+									<option value="10">待处理</option>
+									<option value="20">大货生产中</option>
+									<option value="30">生产完成待确认</option>
+									<option value="40">部分交货</option>
+									<option value="50">部分入库</option>
+									<option value="60">完全交货</option>
+									<option value="70">完全入库-订单完成</option>
+									<option value="80">订单取消</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-xs-4 text-right">
+							<button class="btn btn-primary" ng-click="active({show:'新增订单'})">新 增</button>
+							<button class="btn btn-info" ng-click="active({show:'编辑订单'})">编 辑</button>
+							<button class="btn btn-success" ng-click="active({show:'订单跟进'})">订单跟进</button>
+						</div>
+					</article>
+					<table class="table table-striped" datatable="ng" dt-options="dtOptions">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>订单号</th>
+								<th>合同号</th>
+								<th>供应商</th>
+								<th>订单总额</th>
+								<th>是否报关</th>
+								<th>订单状态</th>
+								<th width="360">备注</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="(index,item) in purList">
+								<td>
+									<button ng-click="check(index,item)" class="btn btn-xs {{checked==index?'btn-info':'btn-white'}}"><i class="fa fa-check"></i></button>
+								</td>
+								<td>
+									<a ng-click="check(index,item);active({show:'订单详情'})" href="javascript:;">{{ item.orderNumber }}</a>
+								</td>
+								<td>{{ item.contractNumber }}</td>
+								<td>{{ item.supplierName }}</td>
+								<td>{{ '¥'+item.purTotalPrice }}</td>
+								<td>
+									<select class="select-disabled" ng-model="item.isDeclare" disabled>
+										<option value>请选择</option>
+										<option value="0">否</option>
+										<option value="1">是</option>
+									</select>
+								</td>
+								<td>
+									<select class="select-disabled" ng-init="orderStatus=''+item.orderStatus" ng-model="orderStatus" disabled>
+										<option value>请选择</option>
+										<option value="10">待处理</option>
+										<option value="20">大货生产中</option>
+										<option value="30">生产完成待确认</option>
+										<option value="40">部分交货</option>
+										<option value="50">部分入库</option>
+										<option value="60">完全交货</option>
+										<option value="70">完全入库-订单完成</option>
+										<option value="80">订单取消</option>
+									</select>
+								</td>
+								<td class="dropdown">
+									<div class="dropdown-nav">{{ item.remarks[item.remarks.length-1]?item.remarks[item.remarks.length-1]:'-' }}</div>
+									<ol class="dropdown-content" ng-if="item.remarks[item.remarks.length-1]">
+										<li ng-repeat="item in item.remarks | orderBy:item:'desc'">{{ item }}</li>
+									</ol>
+								</td>
+								<td><button class="btn btn-link btn-xs" ng-click="check(index,item);active({show:'添加备注'})">添加备注</button></td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+				<!-- 订单详情 -->
+				<section class="ibox-content" ng-if="activeShow=='订单详情'" id="info">
+					<nav class="row form-inline m-b">
+						<div class="form-group">
+							<label>下单时间：</label>
+							<span class="form-control">{{ detailList.orderTime }}</span>
+						</div>
+						<div class="form-group">
+							<label>订单号：</label>
+							<span class="form-control">{{ detailList.orderNumber }}</span>
+						</div>
+						<div class="form-group">
+							<label>合同号：</label>
+							<span class="form-control">{{ detailList.contractNumber }}</span>
+						</div>
+						<div class="form-group">
+							<label>供应商：</label>
+							<span class="form-control">{{ detailList.supplierName }}</span>
+						</div>
+						<br>
+						<div class="form-group">
+							<label>订单状态：</label>
+							<select class="select-disabled form-control" ng-model="detailList.orderStatus" disabled>
+								<option value="10">待处理</option>
+								<option value="20">大货生产中</option>
+								<option value="30">生产完成待确认</option>
+								<option value="40">部分交货</option>
+								<option value="50">部分入库</option>
+								<option value="60">完全交货</option>
+								<option value="70">完全入库-订单完成</option>
+								<option value="80">订单取消</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>是否报关：</label>
+							<select class="select-disabled form-control" ng-model="detailList.isDeclare" disabled>
+								<option value>请选择</option>
+								<option value="0">否</option>
+								<option value="1">是</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>采购员：</label>
+							<span class="form-control">{{ detailList.buyer?detailList.buyer:'-' }}</span>
+						</div>
+						<br>
+						<div class="form-group">
+							<label>提货方式：</label>
+							<span class="form-control" style="width:auto;white-space:pre;">{{ detailList.pickupWay?detailList.pickupWay:'-' }}</span>
+						</div>
+						<br>
+						<div class="form-group">
+							<label>备注信息：</label>
+							<span class="dropdown form-control">
+								<div class="dropdown-nav">{{ detailList.remarks[detailList.remarks.length-1]||'-' }}</div>
+								<ol class="dropdown-content">
+									<li ng-repeat="item in detailList.remarks | orderBy:item:'desc'">{{ item }}</li>
+								</ol>
+							</span>
+						</div>
+					</nav>
+					<table class="table table-hover">
+						<tr class="active">
+							<th>商品信息</th>
+							<th>单价</th>
+							<th>采购数量</th>
+							<th>总金额(含运费)</th>
+							<th>合同约定交期</th>
+							<th>已交货数量</th>
+							<th>实际交期</th>
+							<th>业务员</th>
+							<th>物流追踪单号</th>
+						</tr>
+						<tr ng-repeat="item in detailList.purDetails">
+							<td>库存SKU：{{ item.storeSku }}<br>中文名：{{ item.proNameCN }}<br>英文名：{{ item.proNameEN }}</td>
+							<td><span class="form-control">{{ '¥'+item.unitPrice }}</span></td>
+							<td><span class="form-control">{{ item.purQuantity }}</span></td>
+							<td><span class="form-control">{{ '¥'+item.totalPrice }}</span></td>
+							<td><span class="form-control">{{ item.conCovDate }}</span></td>
+							<td><span class="form-control">{{ item.deliverTotal }}</span></td>
+							<td><span class="form-control">{{ item.deliverDate }}</span></td>
+							<td><span class="form-control">{{ item.salesman!=''?item.salesman.join('、'):'-' }}</span></td>
+							<td><span class="form-control">{{ item.logNumber?item.logNumber:'-' }}</span></td>
+						</tr>
+						<tr class="active">
+							<th></th>
+							<th></th>
+							<th class="text-right">合计总金额(含运费)：</th>
+							<th><span style="padding-left: 12px;">{{ '¥'+detailList.purTotalPrice }}</span></th>
+							<th colspan="5"></th>
+						</tr>
+					</table>
+				</section>
+				<!-- /订单详情 -->
+				<!-- 新增订单 -->
+				<section class="ibox-content" ng-if="activeShow=='新增订单'" id="save">
+					<nav class="row form-inline m-b">
+						<button class="btn btn-primary pull-rigth" ng-click="submitSave()">保 存</button>
+						<div class="form-group {{purchase.orderNumber?'':'has-warning'}}">
+							<label>订单号<sup class="text-warning">*</sup>&nbsp;</label>
+							<input class="form-control" ng-model="purchase.orderNumber" placeholder="订单号">
+						</div>
+						<div class="form-group {{purchase.contractNumber?'':'has-warning'}}">
+							<label>合同号<sup class="text-warning">*</sup>&nbsp;</label>
+							<input class="form-control" ng-model="purchase.contractNumber" placeholder="合同号">
+						</div>
+						<div class="form-group">
+							<label>供应商<sup class="text-warning">*</sup>&nbsp;</label>
+							<div class="btn-group">
+								<button class="btn btn-default" ng-click="supplierModal(purchase)" style="{{ purchase.supplierName?'':'border-color:#f8ac59;' }}">{{ purchase.supplierName||'点击选择供应商' }}</button>
+								<button class="btn btn-default" ng-click="removeSupplier(purchase)" style="{{ purchase.supplierName?'':'border-color:#f8ac59;' }}">清空</button>
+							</div>
+						</div>
+						<br>
+						<div class="form-group">
+							<label>下单时间&nbsp;</label>
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+								<input class="form-control" id="orderTime" ng-model="purchase.orderTime" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+							</div>
+						</div>
+						<div class="form-group">
+							<label>订单状态&nbsp;</label>
+							<select class="form-control" ng-model="purchase.orderStatus">
+								<option value="10">待处理</option>
+								<option value="20">大货生产中</option>
+								<option value="30">生产完成待确认</option>
+								<option value="40">部分交货</option>
+								<option value="50">部分入库</option>
+								<option value="60">完全交货</option>
+								<option value="70">完全入库-订单完成</option>
+								<option value="80">订单取消</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>是否报关&nbsp;</label>
+							<select class="form-control" ng-model="purchase.isDeclare">
+								<option value="0">否</option>
+								<option value="1">是</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>采购员&nbsp;</label>
+							<input class="form-control" ng-model="purchase.buyer">
+						</div>
+						<br>
+						<div class="form-group">
+							<label>提货方式&nbsp;</label>
+							<textarea class="form-control" rows="3" ng-model="purchase.pickupWay"></textarea>
+						</div>
+						<br>
+						<div class="form-group">
+							<label>备注信息&nbsp;</label>
+							<textarea class="form-control" rows="3" ng-model="purchase.remark"></textarea>
+						</div>
+					</nav>
+					<table class="table table-hover">
+						<tr class="active">
+							<th>商品信息<sup class="text-warning">*</sup></th>
+							<th width="120">单价</th>
+							<th width="120">采购数量</th>
+							<th width="120">总金额(含运费)</th>
+							<th width="180">合同约定交期</th>
+							<th width="120">交货数量</th>
+							<th width="180">实际交期</th>
+							<th>业务员<span class="text-warning">（多个请用、分割）</span></th>
+							<th width="180">物流追踪单号</th>
+							<th width="52"><button ng-click="purchase.purDetails.push({unitPrice:0,purQuantity:0,totalPrice:0})" class="btn btn-info btn-xs">添加</button></th>
+						</tr>
+						<tr ng-repeat="item in purchase.purDetails">
+							<td>
+								<div class="dropdown">
+									<button class="btn btn-white" ng-click="skuModal(item)" style="{{ item.storeSku?'':'border-color:#f8ac59;' }}">{{ item.storeSku||'点击选择商品' }}</button>
+									<ul class="dropdown-menu">
+										<li ng-if="item.proNameCN">
+											<a href="javascript:;">{{ item.proNameCN }}</a>
+										</li>
+										<li ng-if="item.proNameEN">
+											<a href="javascript:;">{{ item.proNameEN }}</a>
+										</li>
+									</ul>
+								</div>
+							</td>
+							<td><input class="form-control" ng-model="item.unitPrice"></td>
+							<td><input class="form-control" ng-model="item.purQuantity"></td>
+							<td><input class="form-control" ng-model="item.totalPrice" ng-change="TotalPrice()"></td>
+							<td>
+								<div class="input-group">
+									<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+									<input class="form-control conCovDate" ng-model="item.conCovDate" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+								</div>
+							</td>
+							<td class="{{ item.purQuantity<item.delQuantity?'has-warning':'' }}"><input class="form-control" ng-model="item.delQuantity"></td>
+							<td>
+								<div class="input-group">
+									<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+									<input class="form-control deliverDate" ng-model="item.deliverDate" data-mask="9999-99-99">
+								</div>
+							</td>
+							<td><input class="form-control salesman" placeholder="nameA、nameB、nameC"></td>
+							<td><input class="form-control" ng-model="item.logNumber"></td>
+							<td class="text-center"><button ng-click="purchase.purDetails.splice(purchase.purDetails.indexOf(item),1);TotalPrice();" class="btn btn-danger btn-xs">删除</button></td>
+						</tr>
+						<tr class="text-center" ng-if="!purchase.purDetails.length">
+							<td class="text-warning" colspan="10">至少保留一条商品信息</td>
+						</tr>
+						<tr class="active">
+							<th></th>
+							<th></th>
+							<th class="text-right">合计总金额(含运费)：</th>
+							<th><span style="padding-left: 12px;">{{ '¥'+purTotalPrice }}</span></th>
+							<th colspan="6"></th>
+						</tr>
+					</table>
+				</section>
+				<!-- /新增订单 -->
+				<!-- 编辑订单 -->
+				<section class="ibox-content" ng-if="activeShow=='编辑订单'" id="update">
+					<nav class="row form-inline m-b">
+						<button class="btn btn-primary pull-rigth" ng-click="submitSave()">保 存</button>
+						<div class="form-group {{purchase.orderNumber?'':'has-warning'}}">
+							<label>订单号<sup class="text-danger">*</sup>&nbsp;</label>
+							<input class="form-control" ng-model="purchase.orderNumber" ng-disabled="purchase.orderStatus!='10'" placeholder="订单号">
+						</div>
+						<div class="form-group {{purchase.contractNumber?'':'has-warning'}}">
+							<label>合同号<sup class="text-danger">*</sup>&nbsp;</label>
+							<input class="form-control" ng-model="purchase.contractNumber" ng-disabled="purchase.orderStatus!='10'" placeholder="合同号">
+						</div>
+						<div class="form-group">
+							<label>供应商<sup class="text-danger">*</sup>&nbsp;</label>
+							<button class="btn btn-default" ng-click="supplierModal(purchase.supplier)" ng-disabled="purchase.orderStatus!='10'" style="{{ purchase.supplier.supplierName?'':'border-color:#f8ac59;' }}">{{ purchase.supplier.supplierName||'点击选择供应商' }}</button>
+						</div>
+						<br>
+						<div class="form-group">
+							<label>下单时间&nbsp;</label>
+							<div class="input-group">
+								<span class="input-group-addon {{purchase.orderStatus!='10'?'bg-muted':''}}"><i class="fa fa-calendar"></i></span>
+								<input class="form-control" id="orderTime" ng-model="purchase.orderTime" ng-disabled="purchase.orderStatus!='10'" ng-disabled="parseInt(purchase.orderStatus)>30" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+							</div>
+						</div>
+						<div class="form-group">
+							<label>订单状态&nbsp;</label>
+							<select class="form-control" ng-model="purchase.orderStatus" disabled>
+								<option value="10">待处理</option>
+								<option value="20">大货生产中</option>
+								<option value="30">生产完成待确认</option>
+								<option value="40">部分交货</option>
+								<option value="50">部分入库</option>
+								<option value="60">完全交货</option>
+								<option value="70">完全入库-订单完成</option>
+								<option value="80">订单取消</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>是否报关&nbsp;</label>
+							<select class="form-control" ng-model="purchase.isDeclare" ng-disabled="purchase.orderStatus=='70'||purchase.orderStatus=='80'">
+								<option value="0">否</option>
+								<option value="1">是</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>采购员&nbsp;</label>
+							<input class="form-control" ng-model="purchase.buyer" ng-disabled="purchase.orderStatus=='70'||purchase.orderStatus=='80'">
+						</div>
+						<br>
+						<div class="form-group">
+							<label>提货方式&nbsp;</label>
+							<textarea class="form-control" rows="3" ng-model="purchase.pickupWay"></textarea>
+						</div>
+						<br>
+						<div class="form-group" ng-if="activeItem.remarks.length">
+							<label>最新备注&nbsp;</label>
+							<span class="dropdown form-control">
+								<div class="dropdown-nav">{{ activeItem.remarks[activeItem.remarks.length-1] }}</div>
+								<ol class="dropdown-content">
+									<li ng-repeat="item in activeItem.remarks | orderBy:item:'desc'">{{ item }}</li>
+								</ol>
+							</span>
+						</div>
+						<br ng-if="activeItem.remarks.length">
+						<div class="form-group">
+							<label>追加备注&nbsp;</label>
+							<textarea class="form-control" rows="3" ng-model="purchase.remark"></textarea>
+						</div>
+					</nav>
+					<table class="table table-hover">
+						<tr class="active">
+							<th>商品信息<sup class="text-warning">*</sup></th>
+							<th width="120">单价</th>
+							<th width="120">采购数量</th>
+							<th width="120">总金额(含运费)</th>
+							<th width="180">合同约定交期</th>
+							<th width="120">交货数量</th>
+							<th width="180">实际交期</th>
+							<th>业务员<span class="text-warning">（多个请用、分割）</span></th>
+							<th width="180">物流追踪单号</th>
+							<th width="52" ng-if="purchase.orderStatus=='10'"><button ng-click="purchase.purDetails.push({unitPrice:0,purQuantity:0,totalPrice:0})" class="btn btn-info btn-xs">添加</button></th>
+						</tr>
+						<tr ng-repeat="item in purchase.purDetails">
+							<td>
+								<div class="dropdown">
+									<button class="btn btn-white" ng-click="skuModal(item)" ng-disabled="purchase.orderStatus!='10'" style="{{ item.storeSku?'':'border-color:#f8ac59;' }}">{{ item.storeSku||'点击选择商品' }}</button>
+									<ul class="dropdown-menu">
+										<li ng-if="item.proNameCN">
+											<a href="javascript:;">{{ item.proNameCN }}</a>
+										</li>
+										<li ng-if="item.proNameEN">
+											<a href="javascript:;">{{ item.proNameEN }}</a>
+										</li>
+									</ul>
+								</div>
+							</td>
+							<td><input class="form-control" ng-model="item.unitPrice" ng-disabled="purchase.orderStatus!='10'"></td>
+							<td><input class="form-control" ng-model="item.purQuantity" ng-disabled="purchase.orderStatus!='10'"></td>
+							<td><input class="form-control" ng-model="item.totalPrice" ng-disabled="purchase.orderStatus!='10'" ng-change="TotalPrice()"></td>
+							<td>
+								<div class="input-group">
+									<span class="input-group-addon {{purchase.orderStatus!='10'?'bg-muted':''}}"><i class="fa fa-calendar"></i></span>
+									<input class="form-control conCovDate" ng-model="item.conCovDate" ng-disabled="purchase.orderStatus!='10'" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+								</div>
+							</td>
+							<td class="{{ item.purQuantity<item.delQuantity?'has-warning':'' }}"><input class="form-control" ng-model="item.delQuantity" ng-disabled="purchase.orderStatus!='10'"></td>
+							<td>
+								<div class="input-group">
+									<span class="input-group-addon {{purchase.orderStatus!='10'?'bg-muted':''}}"><i class="fa fa-calendar"></i></span>
+									<input class="form-control deliverDate" ng-model="item.deliverDate" data-mask="9999-99-99">
+								</div>
+							</td>
+							<td><input class="form-control salesman" ng-value="item.salesman.join('、')" ng-disabled="purchase.orderStatus=='70'||purchase.orderStatus=='80'" placeholder="nameA、nameB、nameC"></td>
+							<td><input class="form-control" ng-model="item.logNumber" ng-disabled="purchase.orderStatus=='70'||purchase.orderStatus=='80'"></td>
+							<td class="text-center" ng-if="purchase.orderStatus=='10'"><button ng-click="purchase.purDetails.splice(purchase.purDetails.indexOf(item),1);TotalPrice();" class="btn btn-danger btn-xs">删除</button></td>
+						</tr>
+						<tr class="text-center" ng-if="!purchase.purDetails.length">
+							<td class="text-warning" colspan="10">至少保留一条商品信息</td>
+						</tr>
+						<tr class="active">
+							<th></th>
+							<th></th>
+							<th class="text-right">合计总金额(含运费)：</th>
+							<th><span style="padding-left: 12px;">{{ '¥'+purTotalPrice }}</span></th>
+							<th colspan="5"></th>
+							<th ng-if="purchase.orderStatus=='10'"></th>
+						</tr>
+					</table>
+				</section>
+				<!-- /编辑订单 -->
+				<!-- 订单跟进 -->
+				<section class="ibox-content" ng-if="activeShow=='订单跟进'" id="status">
+					<nav class="form-inline m-b">
+						<button class="btn btn-primary pull-rigth" ng-click="submitStatus()">保 存</button>
+						<div class="form-group">
+							<label>订单号&nbsp;</label>
+							<input class="form-control" ng-model="activeItem.orderNumber" disabled>
+						</div>
+						<div class="form-group">
+							<label>采购单状态</label>
+							<select class="form-control" ng-model="statusList.orderStatus">
+								<option value="10">待处理</option>
+								<option value="20">大货生产中</option>
+								<option value="30">生产完成待确认</option>
+								<option value="40">部分交货</option>
+								<option value="50">部分入库</option>
+								<option value="60">完全交货</option>
+								<option value="70">完全入库-订单完成</option>
+								<option value="80">订单取消</option>
+							</select>
+						</div>
+					</nav>
+					<table class="table table-hover">
+						<tr class="active">
+							<th>库存SKU</th>
+							<th>商品中文名</th>
+							<th>采购数量</th>
+							<th>已交货数量</th>
+							<th ng-if="statusList.orderStatus=='40'||statusList.orderStatus=='60'">交货数量</th>
+							<th ng-if="statusList.orderStatus=='40'||statusList.orderStatus=='60'">实际交期</th>
+						</tr>
+						<tr ng-repeat="item in statusList.purDetails">
+							<td><span class="form-control">{{ item.storeSku }}</span></td>
+							<td><span class="form-control">{{ item.proNameCN }}</span></td>
+							<td><span class="form-control">{{ item.purQuantity }}</span></td>
+							<td><span class="form-control">{{ item.deliverTotal }}</span></td>
+							<td class="{{ item.purQuantity<item.delQuantity?'has-warning':'' }}" ng-if="statusList.orderStatus=='40'||statusList.orderStatus=='60'">
+								<input class="form-control" ng-disabled="item.purQuantity<=item.deliverTotal" ng-init="item.delQuantity=item.purQuantity-item.deliverTotal" ng-model="item.delQuantity">
+							</td>
+							<td ng-if="statusList.orderStatus=='40'||statusList.orderStatus=='60'">
+								<div class="input-group">
+									<span class="input-group-addon {{item.purQuantity==item.deliverTotal?'bg-muted':''}}"><i class="fa fa-calendar"></i></span>
+									<input class="form-control deliverDate" ng-disabled="item.purQuantity==item.deliverTotal" ng-model="item.deliverDate" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+								</div>
+							</td>
+						</tr>
+					</table>
+				</section>
+				<!-- /订单跟进 -->
+				<!-- 添加备注 -->
+				<section class="ibox-content" ng-if="activeShow=='添加备注'" id="remark">
+					<nav class="row form-inline m-b">
+						<div class="form-group">
+							<label>最新备注：</label>
+							<span class="dropdown form-control">
+								<div class="dropdown-nav">{{ activeItem.remarks[activeItem.remarks.length-1]||'-' }}</div>
+								<ol class="dropdown-content">
+									<li ng-repeat="item in activeItem.remarks | orderBy:item:'desc'">{{ item }}</li>
+								</ol>
+							</span>
+						</div>
+						<button class="btn btn-primary pull-rigth" ng-click="submitRemark(remark)">保 存</button>
+					</nav>
+					<div class="form-group">
+						<label>追加备注：</label>
+						<textarea class="form-control m-b" rows="3" ng-model="remark"></textarea>
+					</div>
+				</section>
+				<!-- /添加备注 -->
+			</div>
+		</div>
+	</div>
+</div>
+<!-- 选择商品 -->
+<aside class="modal fade" id="skuModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">选择商品</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-striped" datatable="ng" dt-options="dtOptions">
+					<thead>
+						<tr>
+							<th width="120">库存SKU</th>
+							<th>商品中文名</th>
+							<th>商品英文名</th>
+							<th width="32">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in productList">
+							<td>{{ item.storeSku }}</td>
+							<td>{{ item.nameCN }}</td>
+							<td>{{ item.nameEn }}</td>
+							<td><button class="btn btn-primary btn-xs" ng-click="submitSku(item)">选择</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</aside>
+<!-- /选择商品 -->
+<!-- 选择供应商 -->
+<aside class="modal fade" id="supplierModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">选择商品</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-striped" datatable="ng" dt-options="dtOptions">
+					<thead>
+						<tr>
+							<th>供应商名称</th>
+							<th width="100">联系人</th>
+							<th width="100">手机</th>
+							<th width="100">固话</th>
+							<th width="24">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in supplierList">
+							<td>{{ item.supplierName }}</td>
+							<td>{{ item.contacts }}</td>
+							<td>{{ item.cellphone }}</td>
+							<td>{{ item.telephone }}</td>
+							<td><button class="btn btn-primary btn-xs" ng-click="submitSupplier(item)">选择</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</aside>
+<!-- /选择供应商 -->

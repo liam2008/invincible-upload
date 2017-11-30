@@ -1,0 +1,374 @@
+(function () {
+    var app = angular.module('app');
+
+    app.controller('mainController', [
+        '$scope',
+        'account',
+        'netManager',
+        'SweetAlert',
+        mainController
+    ]);
+
+    app.controller('loginController', [
+        '$scope',
+        '$location',
+        'netManager',
+        'SweetAlert',
+        loginController
+    ]);
+
+    app.controller('unauthorizedController', [
+        '$scope',
+        '$interval',
+        '$state',
+        unauthorizedController
+    ]);
+
+    function loginController($scope, $location, netManager, SweetAlert) {
+        $scope.username = "";
+        $scope.password = "";
+        $scope.loginFailure = false;
+
+        $scope.onFocus = function () {
+            $scope.loginFailure = false;
+        };
+
+        $scope.submit = function () {
+            if ($scope.username.length < 1) {
+                return;
+            }
+
+            var password = $scope.password || "";
+            var passwd = CryptoJS.MD5(password.toString()).toString(CryptoJS.enc.Base64);
+
+            netManager.login({
+                username: $scope.username,
+                password: passwd
+            }).then(function (result) {
+                if (result.ableLogin == true) {
+                    $location.path('/main/summary');
+                } else { //页面不跳转
+                    if (result.needChangePassword) { //密码简单
+                        SweetAlert.swal({
+                                title: "您的密码过于简单",
+                                text: "是否现在，马上修改密码?",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonText: "修改",
+                                cancelButtonText: "取消",
+                                closeOnConfirm: true,
+                                closeOnCancel: true
+                            },
+                            function (isConfirm) {
+                                if (isConfirm) { //修改密码
+                                    $('#editPassword').modal('show');
+                                } else { //取消
+                                    $location.path('/main/summary');
+                                }
+                            });
+                    } else { //密码错误
+                        $scope.loginFailure = true;
+                    }
+                }
+            }).catch(function (e) {
+                switch (e.data.code) {
+                    case '1027':
+                        alert('该用户已被冻结，若有问题请联系管理员，谢谢！');
+                        break;
+                    case '1028':
+                        alert('该用户已被删除，若有问题请联系管理员，谢谢！');
+                        break;
+                }
+            });
+
+            //修改密码
+            var passwordData = {};
+            $scope.passwordData = passwordData;
+            $scope.resetPassword = function () {
+                $scope.passwordData.submitted = true;
+                if (passwordData.newPassword === passwordData.confirmPassword) {
+                    var resetPasswordData = {
+                        curr_password: CryptoJS.MD5($scope.passwordData.password).toString(CryptoJS.enc.Base64),
+                        password: CryptoJS.MD5($scope.passwordData.confirmPassword).toString(CryptoJS.enc.Base64)
+                    };
+                    console.log('resetPasswordData', resetPasswordData);
+                    netManager.put('/me/password', resetPasswordData).then(function (res) {
+                        SweetAlert.swal({
+                                title: "保存成功？",
+                                type: "success",
+                                closeOnConfirm: true,
+                                closeOnCancel: true
+                            },
+                            function () {
+                                $location.path('/main/summary');
+                            });
+                    }, function (err) {
+                        SweetAlert.swal("保存失败!", err.data.description, 'error');
+                    });
+                }
+            }
+        };
+    }
+
+    function unauthorizedController($scope, $interval, $state) {
+        $scope.counts = 5;
+        var timer = $interval(function () {
+            $scope.counts--;
+            if ($scope.counts <= 0) {
+                $interval.cancel(timer);
+                $state.go('main.summary');
+            }
+        }, 1000);
+    }
+
+    function mainController($scope, account, netManager, SweetAlert) {
+        //定义默认参数
+        $scope.account = angular.copy(account);
+        var role = account.role || {};
+        $scope.account.scope = role.name || "普通用户";
+        $scope.navigatorMenuItem = '概述';
+
+        //导航栏
+        $scope.navList = [
+            {
+                "id": 'main.authority',
+                "title": "权限管理",
+                "selected": true,
+                "icon": 'fa-user-o',
+                "permissionId": "ca7dfa6e03f94f4badf6d48f7b56444d",
+                "nodes": [
+                    {
+                        "id": 'main.authority.rolesManage',
+                        "title": "角色管理",
+                        "selected": true,
+                        "permissionId": "a9ad8c5d99a54952a1ac34d6ee2bbcb3"
+                    },
+                    {
+                        "id": 'main.authority.userManage',
+                        "title": "用户管理",
+                        "selected": true,
+                        "permissionId": "24674d03a6a243ef97190079d88b1cb0"
+                    },
+                    {
+                        "id": 'main.authority.teamsManage',
+                        "title": "小组管理",
+                        "selected": true,
+                        "permissionId": "48558fee2c0f4d2d851899feecddf9af"
+                    }
+                ]
+            },
+            {
+                "id": 'main.base',
+                "title": "基础信息管理",
+                "selected": true,
+                "icon": 'fa-pencil-square-o',
+                "permissionId": "aba1bdd771b545f8b6a973927b444dce",
+                "nodes": [
+                    {
+                        "id": 'main.base.goodsManage',
+                        "title": "商品管理",
+                        "selected": true,
+                        "permissionId": "f0edb847bc264cfb89f8e2a1b8b4e387"
+                    },
+                    {
+                        "id": 'main.base.shopManage',
+                        "title": "商店管理",
+                        "selected": true,
+                        "permissionId": "b089f6c5c55d42618f3c626579034080"
+                    },
+                    {
+                        "id": 'main.base.stockManage',
+                        "title": "库存管理",
+                        "selected": true,
+                        "permissionId": "32d7bafa5f484531a3b6a0b4f8ec8dd4"
+                    },
+                    {
+                        "id": 'main.base.storeLog',
+                        "title": "出入库管理",
+                        "selected": true,
+                        "permissionId": "bf3c3260784942eb9bb0cee86019d44a"
+                    }
+                ]
+            },
+            {
+                "id": 'main.daily',
+                "title": "每日运营",
+                "selected": true,
+                "icon": 'fa-area-chart',
+                "permissionId": "c3776bbc-2cf3-4708-a6aa-c8933bf5ed60",
+                "nodes": [{
+                    "id": 'main.daily.import',
+                    "title": "信息导入",
+                    "selected": true,
+                    "permissionId": "bba9d842ba1443a9ba94ce056876dd62"
+                },
+                    {
+                        "id": 'main.daily.list',
+                        "title": "每日信息",
+                        "selected": true,
+                        "permissionId": "322604f48cae46db990ce5ddfb3daebf"
+                    },
+                    {
+                        "id": 'main.daily.report',
+                        "title": "每日报表",
+                        "selected": true,
+                        "permissionId": "f9ab7eb705b94b389c5a8a2ebc253645"
+                    }
+                ]
+            },
+            {
+                "id": 'main.count',
+                "title": "毛利率计算",
+                "selected": true,
+                "icon": 'fa-calculator',
+                "permissionId": "5a2940a3b3be4f5fa2d90125dcc35d85",
+                "nodes": [
+                    {
+                        "id": 'main.count.counter',
+                        "title": "毛利率计算器",
+                        "selected": true,
+                        "permissionId": "a92ef3d366a84885b35d9bc4f174c096"
+                    },
+                    {
+                        "id": 'main.count.formula',
+                        "title": "公式说明",
+                        "selected": true,
+                        "permissionId": "82dd2c187d034b8e958d644a9f2216ed"
+                    }
+                ]
+            },
+            {
+                "id": 'main.rank',
+                "title": "排名",
+                "selected": true,
+                "icon": 'fa-line-chart',
+                "permissionId": "4f0f0ed1c1cb486580bcbc2058ff42db",
+                "nodes": [{
+                    "id": 'main.rank.sellerRank',
+                    "title": "卖家排名",
+                    "selected": true,
+                    "permissionId": "c50d6e50f4704a30a75b2e0b94d5e5f9"
+                }]
+            },
+            {
+                "id": 'main.purchase',
+                "title": "采购管理",
+                "selected": true,
+                "icon": 'fa fa-clipboard',
+                "permissionId": "4d5ed8fdea3e4fa0a475f046020aaa49",
+                "nodes": [{
+                    "id": 'main.purchase.summary',
+                    "title": "采购汇总",
+                    "selected": true,
+                    "permissionId": "2821679a8b784aee812258ba3f88ab0d"
+                },
+                    {
+                        "id": 'main.purchase.statistics',
+                        "title": "采购统计",
+                        "selected": true,
+                        "permissionId": "6b43b2b1a50c411d89bd9551e9b40fa4"
+                    },
+                    {
+                        "id": 'main.purchase.supplier',
+                        "title": "供应商管理",
+                        "selected": true,
+                        "permissionId": "bbafb9e0628e4aa5bfd0ffb2b84dc10f"
+                    }
+                ]
+            },
+            {
+                "id": 'main.margin',
+                "title": "毛利率统计报表",
+                "selected": true,
+                "icon": 'fa-bar-chart',
+                "permissionId": "6573e2183f764d92b3b8a1e586f9a508",
+                "nodes": [
+                    {
+                        "id": 'main.margin.group',
+                        "title": "小组毛利率",
+                        "selected": true,
+                        "permissionId": "ea319b6d63eb41a4ab36668c5a6db082"
+                    },
+                    {
+                        "id": 'main.margin.gross',
+                        "title": "SKU毛利率",
+                        "selected": true,
+                        "permissionId": "11e09c47cbbf4fa4b3ff156970fe8c70"
+                    }
+                ]
+            },
+            {
+                "id": 'main.files',
+                "title": "在线学习",
+                "selected": true,
+                "icon": 'fa-file-text-o',
+                "permissionId": "0d031d9f73b64f71a16a184916efb6ef",
+                "nodes": [{
+                    "id": 'main.files.views',
+                    "title": "知识库",
+                    "selected": true,
+                    "permissionId": "3d2a114512644e3d82bbc552dec865c9"
+                },
+                    {
+                        "id": 'main.files.manage',
+                        "title": "资料管理",
+                        "selected": true,
+                        "permissionId": "fbaf80cd5c964bac9bb0ae33a58b1781"
+                    }
+                ]
+            }
+        ];
+        $scope.getClickNavigatorMenuItemTitle = function (id) {
+            if (id === 'nav.summary') {
+                $scope.navigatorMenu = '';
+                $scope.navigatorMenuItem = '概述';
+            } else {
+                for (var i = 0, iLen = $scope.navList.length; i < iLen; i++) {
+                    for (var j = 0, jLen = $scope.navList[i].nodes.length; j < jLen; j++) {
+                        if ($scope.navList[i].nodes[j].id === id) {
+                            $scope.navigatorMenu = $scope.navList[i].title;
+                            $scope.navigatorMenuItem = $scope.navList[i].nodes[j].title;
+                            return;
+                        }
+                    }
+                }
+            }
+        };
+
+        //登出
+        $scope.logout = function () {
+            netManager.logout();
+        };
+
+        //改变密码
+        var passwordData = {};
+        $scope.passwordData = passwordData;
+        $scope.resetPassword = function () {
+            $scope.passwordData.submitted = true;
+            if (passwordData.newPassword === passwordData.confirmPassword) {
+                SweetAlert.swal({
+                        title: "你确定修改吗?",
+                        text: "你将修改此条密码!!!",
+                        type: "warning",
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: false,
+                        closeOnCancel: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            var resetPasswordData = {
+                                curr_password: CryptoJS.MD5($scope.passwordData.password).toString(CryptoJS.enc.Base64),
+                                password: CryptoJS.MD5($scope.passwordData.confirmPassword).toString(CryptoJS.enc.Base64)
+                            };
+                            netManager.put('/me/password', resetPasswordData).then(function (res) {
+                                swal("保存成功!", 'success');
+                            }, function (err) {
+                                swal("保存失败!", err.data.description, 'error');
+                            });
+                        }
+                    });
+            }
+        }
+    }
+}());

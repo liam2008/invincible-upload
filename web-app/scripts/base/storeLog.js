@@ -1,0 +1,137 @@
+(function () {
+    var app = angular.module('app.base.storeLog', []);
+    app.controller('storeLogCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'SweetAlert',
+        function ($scope, netManager, DTOptionsBuilder, SweetAlert) {
+            //控制加载load-icon
+            $scope.isLoad = true;
+            $scope.productState = Smartdo.PRODUCT_STATE;
+            $scope.dtOptions = DTOptionsBuilder.newOptions().withOption('order', [
+                [5, 'desc']
+            ]);
+            $scope.dtOptionsLog = DTOptionsBuilder.newOptions().withOption('order', [
+                [10, 'desc']
+            ]);
+
+            //初始页面
+            init();
+
+            //点击注册
+            $scope.register = function (registerItem) {
+                var registerData = {
+                    id: registerItem.id,
+                    sku: registerItem.sku,
+                    name: registerItem.name,
+                    stock: registerItem.stock ? registerItem.stock : 0,
+                    time: registerItem.time || moment().format('YYYY-MM-DD'),
+                    enter: registerItem.enter || 0,
+                    unit: registerItem.unit || 0,
+                    note: registerItem.note || '',
+                    output: registerItem.output || 0
+                };
+                $scope.registerData = registerData;
+                $scope.registerForm.submitted = false;
+            };
+
+            //保存登记数据
+            $scope.saveERegister = function () {
+                if ($scope.registerData.enter || $scope.registerData.output) {
+                    $scope.registerForm.submitted = true;
+                    if ($scope.registerForm.$valid && $scope.registerData.time) {
+                        SweetAlert.swal({
+                                title: "你确定登记数据吗?",
+                                text: "你将登记此条数据!",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonText: "确定",
+                                cancelButtonText: "取消",
+                                closeOnConfirm: true,
+                                closeOnCancel: true
+                            },
+                            function (isConfirm) {
+                                if (isConfirm) {
+                                    console.log($scope.shopName);
+                                    var saveRegister = {
+                                        id: $scope.registerData.id,
+                                        sku: $scope.registerData.sku,
+                                        name: $scope.registerData.name,
+                                        unit: $scope.registerData.unit,
+                                        time: moment($scope.registerData.time).format('YYYY-MM-DD'),
+                                        stock: $scope.registerData.stock,
+                                        enter: $scope.registerData.enter,
+                                        output: $scope.registerData.output,
+                                        note: $scope.registerData.note
+                                    };
+                                    console.log('saveRegister', saveRegister);
+                                    netManager.get('/stores/register', saveRegister).then(function (res) {
+                                        swal("保存成功!", "success");
+                                        $('#registerLog').modal('hide');
+                                        init();
+                                    }, function (err) {
+                                        swal("保存失败", err.description, "error");
+                                        console.error(err.code);
+                                    });
+                                }
+                            });
+                    }
+                } else {
+                    SweetAlert.swal("保存失败", '请填写入库或出库数量', "warning");
+                }
+
+            };
+
+
+            //点击出入库日志
+            $scope.journal = function (id) {
+                $scope.journalData = {
+                    startTime:'2017-10-01',
+                    endTime:moment().format('YYYY-MM-DD'),
+                    id:id
+                };
+                var sendData = {
+                    id:id,
+                    startTime:'2017-10-01',
+                    endTime:$scope.journalData.endTime
+                };
+                console.log('sendData', sendData);
+                netManager.get('/stores/journal', sendData).then(function (res) {
+                    console.log(res.data);
+                    $scope.journalList = res.data;
+                }, function (err) {
+                    SweetAlert.swal("保存失败", err.description, "error");
+                    console.error(err.data);
+                });
+            };
+
+            //查询日志
+            $scope.checkLog = function () {
+                var sendData = {
+                    id:$scope.journalData.id,
+                    startTime:moment($scope.journalData.startTime).format('YYYY-MM-DD'),
+                    endTime:moment($scope.journalData.endTime).format('YYYY-MM-DD')
+                };
+                console.log('checkLog', sendData);
+                netManager.get('/stores/journal', sendData).then(function (res) {
+                    console.log(res.data);
+                    $scope.journalList = res.data;
+                }, function (err) {
+                    SweetAlert.swal("保存失败", err.description, "error");
+                    console.error(err.data);
+                });
+            };
+
+
+            //初始化页面
+            function init() {
+                $scope.isLoad = true;
+                netManager.get('/stores/list').then(function (res) {
+                    console.log(res.data);
+                    $scope.tableData = res.data;
+                    $scope.isLoad = false;
+                }, function (err) {
+                    console.error(err.data);
+                });
+            }
+        }
+    ]);
+
+}());

@@ -1,0 +1,96 @@
+(function (root) {
+    var ProductState = root.PRODUCT_STATE = {
+        0: "停售",
+        1: "未开售",
+        2: "推广期",
+        3: "在售期",
+        4: "清仓期",
+        5: "归档",
+        6: "备用"
+    };
+
+
+    //路由权限映射
+    var RouteMap = root.ROUTE_MAP = {
+        "a9ad8c5d99a54952a1ac34d6ee2bbcb3": {
+            app_route: "main.authority.rolesManage",
+            server_route: ['/roles', '/roles/department']
+        },
+        "24674d03a6a243ef97190079d88b1cb0": {
+            app_route: "main.authority.userManage",
+            server_route: ['/users', '/teams', '/roles']
+        },
+        "48558fee2c0f4d2d851899feecddf9af": {
+            app_route: "main.authority.teamsManage",
+            server_route: "/teams"
+        },
+        "f0edb847bc264cfb89f8e2a1b8b4e387": {
+            app_route: "main.base.goodsManage",
+            server_route: ['/base/list', '/teams']
+        },
+        "b089f6c5c55d42618f3c626579034080": {
+            app_route: "main.base.shopManage",
+            server_route: ['/base/shops']
+        },
+        "32d7bafa5f484531a3b6a0b4f8ec8dd4": {
+            app_route: "main.base.stockManage",
+            server_route: ['/base/product']
+        },
+        "bf3c3260784942eb9bb0cee86019d44a": {
+            app_route: "main.base.storeLog",
+            server_route: ['/stores/list']
+        },
+        "bba9d842ba1443a9ba94ce056876dd62": {
+            app_route: "main.daily.import",
+            server_route: ['/daily/import']
+        },
+        "322604f48cae46db990ce5ddfb3daebf": {
+            app_route: "main.daily.list",
+            server_route: ['/daily/list']
+        },
+        "f9ab7eb705b94b389c5a8a2ebc253645": {
+            app_route: "main.daily.report",
+            server_route: ["/daily/show"]
+        },
+        "a92ef3d366a84885b35d9bc4f174c096": {
+            app_route: "main.count.counter",
+            server_route: ['/count/counted']
+        },
+        "82dd2c187d034b8e958d644a9f2216ed": {
+            app_route: "main.count.formula",
+            server_route: ['/count/listFormula']
+        },
+        "c50d6e50f4704a30a75b2e0b94d5e5f9": {
+            app_route: "main.rank.sellerRank",
+            server_route: ['/sellerRank/rankList']
+        },
+        "2821679a8b784aee812258ba3f88ab0d": {
+            app_route: "main.purchase.summary",
+            server_route: "/purchase/purList"
+        },
+        "6b43b2b1a50c411d89bd9551e9b40fa4": {
+            app_route: "main.purchase.statistics",
+            server_route: ['/purchase/purTotal']
+        },
+        "bbafb9e0628e4aa5bfd0ffb2b84dc10f": {
+            app_route: "main.purchase.supplier",
+            server_route: ['/supplier/supplierList']
+        },
+        "ea319b6d63eb41a4ab36668c5a6db082": {
+            app_route: "main.margin.group",
+            server_route: ['/profit/teamProfitShow']
+        },
+        "11e09c47cbbf4fa4b3ff156970fe8c70": {
+            app_route: "main.margin.gross",
+            server_route: ['/profit/profitShow']
+        },
+        "3d2a114512644e3d82bbc552dec865c9": {
+            app_route: "main.files.views",
+            server_route: "/files/fileManager"
+        },
+        "fbaf80cd5c964bac9bb0ae33a58b1781": {
+            app_route: "main.files.manage",
+            server_route: ['/files/fileManager']
+        }
+    };
+}(Smartdo));

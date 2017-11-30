@@ -33,7 +33,7 @@
                                 <td> {{value['sku']?value['sku']:'-'}}</td>
                                 <td> {{value['name']?value['name']:'-'}}</td>
                                 <td> {{value['unit']?value['unit']:'-'}}</td>
-                                <td> {{value['stock']?value['stock']:'-'}}</td>
+                                <td> {{value['stock']?value['stock']:'0'}}</td>
                                 <td>{{value['updatedAt']?value['updatedAt']:'-'}}</td>
                                 <td class="text-center">
                                     <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
@@ -262,10 +262,10 @@
                             <td>{{value['sku']?value['sku']:'-'}}</td>
                             <td>{{value['name']?value['name']:'-'}}</td>
                             <td> {{value['unit']?value['unit']:'-'}}</td>
-                            <td>{{value['stocked']?value['stocked']:'-'}}</td>
+                            <td>{{value['stocked']?value['stocked']:'0'}}</td>
                             <td>{{value['enter']?value['enter']:'-'}}</td>
                             <td>{{value['output']?value['output']:'-'}}</td>
-                            <td>{{value['stock']?value['stock']:'-'}}</td>
+                            <td>{{value['stock']?value['stock']:'0'}}</td>
                             <td>{{value['note']?value['note']:'-'}}</td>
                             <td>{{value['updatedAt']?value['updatedAt']:'-'}}</td>
                         </tr>
