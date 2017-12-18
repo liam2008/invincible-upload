@@ -1,0 +1,6 @@
+<li ng-repeat="navItem in navList" ng-class="{active: $state.includes(navItem.id)}">
+    <a href="#"><i class="fa {{navItem.icon}}"></i> <span class="nav-label">{{navItem.title}}</span><span class="fa arrow"></span></a>
+    <ul class="nav nav-second-level collapse" ng-class="{in: $state.includes(navItem.id)}">
+        <li ng-repeat="node in navItem.nodes" ui-sref-active="active" ng-click="getClickNavigatorMenuItemTitle(node.id)"><a ui-sref="{{node.id}}">{{node.title}}</a></li>
+    </ul>
+</li>
