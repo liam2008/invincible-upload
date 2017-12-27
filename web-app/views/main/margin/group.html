@@ -53,7 +53,7 @@
 								<td>{{ item.gross_profit_rate=='0%'?'0':item.gross_profit_rate }}</td>
 							</tr>
 						</tbody>
-						<tfoot>
+						<tfoot ng-if="hasTotal">
 							<tr>
 								<th>合计</th>
 								<th>{{ total.actual_sales_volume?total.actual_sales_volume:'-'; }}</th>

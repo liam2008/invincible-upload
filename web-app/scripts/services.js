@@ -154,11 +154,9 @@
             },
 
             decodePermission: function (permissionList) {//主要转换['*']格式,解析
-                if(userPermissionList.length){
-                    return userPermissionList;
-                }
                 if (permissionList.length === 1 && permissionList[0] === '*') {
                     var decodeData = [];
+                    var mapRouterToPermission = this.mapRouterToPermission();
                     for(var key in mapRouterToPermission){
                         decodeData.push(mapRouterToPermission[key]);
                     }
@@ -200,7 +198,6 @@
             setPermissions: function (permissionList) {
                 mapRouterToPermission = this.mapRouterToPermission();//新建map
                 userPermissionList = this.decodePermission(permissionList);
-                console.log('permissionList', permissionList);
             },
 
             hasPermission: function (permission) {
@@ -224,7 +221,7 @@
          */
         function contain(array, obj) {
             for (var i = 0; i < array.length; i++) {
-                if (array[i] == obj)//如果要求数据类型也一致，这里可使用恒等号===
+                if (array[i] == obj)
                     return true;
             }
             return false;
@@ -369,7 +366,7 @@
                     "title": "采购管理",
                     "selected": true,
                     "all": true,
-                    "icon": 'fa fa-clipboard',
+                    "icon": 'fa fa-desktop',
                     "permissionId": "91a0096cf86a4cc4ae61d307eeeb297d",
                     "nodes": [
                     	{
@@ -398,6 +395,33 @@
                         }
                     ]
                 },
+                {
+					"id": 'main.sample',
+					"title": "样品管理",
+					"selected": true,
+					"all": true,
+					"icon": 'fa fa-desktop',
+					"permissionId": "b33a50a1415e4b12bdfae17b331ed3a0",
+					"nodes": [{
+							"id": 'main.sample.buy',
+							"title": "样品购买",
+							"selected": true,
+							"permissionId": "8c40302154ab4d24b7a1be88aafd8be9"
+						},
+						{
+							"id": 'main.sample.apply',
+							"title": "样品申请",
+							"selected": true,
+							"permissionId": "3d52f761095b4a44bb55-278010680fa2"
+						},
+						{
+							"id": 'main.sample.loan',
+							"title": "样品借出",
+							"selected": true,
+							"permissionId": "679324b16efe49f1a06495f0f140b548"
+						}
+					]
+				},
                 {
                     "id": 'main.margin',
                     "title": "毛利率统计报表",
@@ -460,7 +484,41 @@
                             "id": 'main.analysis.keyword',
                             "title": "关键字分析",
                             "selected": true,
-                            "permissionId": "c961c78c-50c9-48de-89ae-1a07f989e00b"
+                            "permissionId": "cb398c7d38da415f8a6af3044fbee6ce"
+                        }
+                    ]
+                },
+                {
+                    "id": 'main.workOrder',
+                    "title": "工单系统",
+                    "selected": true,
+                    "all":true,
+                    "icon": 'fa-file-o',
+                    "permissionId": "1e6f698aafc6485bb8c16b6df7a7354a",
+                    "nodes": [
+                        {
+                            "id": 'main.workOrder.createOrder',
+                            "title": "创建工单",
+                            "selected": true,
+                            "permissionId": "5645127ef89f42d9b900d0411b256482"
+                        },
+                        {
+                            "id": 'main.workOrder.dealingOrder',
+                            "title": "待处理工单",
+                            "selected": true,
+                            "permissionId": "1621f31d43e94c3bb7b96d3f13b78061"
+                        },
+                        {
+                            "id": 'main.workOrder.dealedOrder',
+                            "title": "已处理工单",
+                            "selected": true,
+                            "permissionId": "d79a1d069fbf4382a04de3490161d260"
+                        },
+                        {
+                            "id": 'main.workOrder.customerList',
+                            "title": "客服任务分配表",
+                            "selected": true,
+                            "permissionId": "d1429d70541445a9ae5102e2a3f28c42"
                         }
                     ]
                 }

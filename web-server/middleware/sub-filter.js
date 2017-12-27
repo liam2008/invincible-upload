@@ -84,6 +84,14 @@ module.exports = {
             // 管理员 所有权限
             case "admin": {
                 result.view = "*";
+                result.edit = true;
+                result.add = true;
+                result.delete = true;
+                break;
+            }
+            // 测试 浏览所有
+            case "test": {
+                result.view = "*";
                 result.edit = false;
                 result.add = false;
                 result.delete = false;
@@ -162,6 +170,14 @@ module.exports = {
                 result.delete = false;
                 break;
             }
+            // 测试 浏览所有
+            case "test": {
+                result.view = "*";
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+                break;
+            }
             default : {
                 result.view = null;
                 result.edit = false;
@@ -184,23 +200,27 @@ module.exports = {
             // 组长 编辑本组
             case "leader": {
                 result.view = team.id || null;
+                result.total = false;
                 break;
             }
             // 组员 浏览本组
             case "member": {
                 result.view = team.id || null;
+                result.total = false;
                 break;
             }
             // 主管和经理助理 编辑所有
             case "director":
             case "assistant": {
                 result.view = "*";
+                result.total = false;
                 break;
             }
             // 运营经理和运营总监 编辑所有及删除功能
             case "manager":
             case "COO": {
                 result.view = "*";
+                result.total = true;
                 break;
             }
             // 其他所有总监 浏览所有
@@ -210,15 +230,18 @@ module.exports = {
             case "CTO":
             case "LD": {
                 result.view = "*";
+                result.total = true;
                 break;
             }
             // 管理员 所有权限
             case "admin": {
-                result.view = "*";
+                result.view = null;
+                result.total = false;
                 break;
             }
             default : {
                 result.view = null;
+                result.total = false;
             }
         }
 
@@ -236,23 +259,27 @@ module.exports = {
             // 组长 编辑本组
             case "leader": {
                 result.view = team.id || null;
+                result.total = true;
                 break;
             }
             // 组员 浏览本组
             case "member": {
                 result.view = team.id || null;
+                result.total = false;
                 break;
             }
             // 主管和经理助理 编辑所有
             case "director":
             case "assistant": {
                 result.view = "*";
+                result.total = false;
                 break;
             }
             // 运营经理和运营总监 编辑所有及删除功能
             case "manager":
             case "COO": {
                 result.view = "*";
+                result.total = true;
                 break;
             }
             // 其他所有总监 浏览所有
@@ -262,19 +289,200 @@ module.exports = {
             case "CTO":
             case "LD": {
                 result.view = "*";
+                result.total = true;
+                break;
+            }
+            // 管理员 所有权限
+            case "admin": {
+                result.view = null;
+                result.total = false;
+                break;
+            }
+            default : {
+                result.view = null;
+                result.total = false;
+            }
+        }
+
+        req.subfilterSkuProfit = result;
+        next();
+    },
+
+    createOrder: function(req, res, next) {
+        var agent = req.agent;
+        var role = agent.role;
+        var team = agent.team || {};
+        var result = {};
+
+        switch (role.type) {
+            // 运营主管
+            case "leader": {
+                result.view = "*";
+                result.add = agent.id || null;
+                break;
+            }
+            // 运营专员
+            case "member": {
+                result.view = agent.id || null;
+                result.add = agent.id || null;
+                break;
+            }
+            // 运营经理和运营总监 编辑所有及删除功能
+            case "manager":
+            case "COO":
+            // 其他所有总监 浏览所有
+            case "CEO":
+            case "CFO":
+            case "CMPO":
+            case "CTO":
+            case "LD": {
+                result.view = null;
+                result.add = false;
                 break;
             }
             // 管理员 所有权限
             case "admin": {
                 result.view = "*";
+                result.add = agent.id;
                 break;
             }
             default : {
                 result.view = null;
+                result.add = false;
             }
         }
 
-        req.subfilterSkuProfit = result;
+        req.subfilterCreateOrder = result;
+        next();
+    },
+
+    workOrder: function(req, res, next) {
+        var agent = req.agent;
+        var role = agent.role;
+        var team = agent.team || {};
+        var result = {};
+
+        switch (role.type) {
+            // 客服主管
+            case "CSDDirector": {
+                result.view = "*";
+                result.edit = agent.id;
+                result.add = agent.id || null;
+                result.delete = false;
+                break;
+            }
+            // 运营、运营组长、客服专员
+            case "member":
+            case "leader":
+            case "CSDMember": {
+                result.view = agent.id || null;
+                result.edit = agent.id;
+                result.add = agent.id || null;
+                result.delete = false;
+                break;
+            }
+            // 运营经理和运营总监 编辑所有及删除功能
+            case "manager":
+            case "COO": {
+                result.view = "*";
+                result.edit = agent.id;
+                result.add = agent.id || null;
+                result.delete = true;
+                break;
+            }
+            // 其他所有总监 浏览所有
+            case "CEO":
+            case "CFO":
+            case "CMPO":
+            case "CTO":
+            case "LD": {
+                result.view = "*";
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+                break;
+            }
+            // 管理员 所有权限
+            case "admin": {
+                result.view = "*";
+                result.edit = agent.id;
+                result.add = agent.id;
+                result.delete = true;
+                break;
+            }
+            default : {
+                result.view = null;
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+            }
+        }
+
+        req.subfilterWorkOrder = result;
+        next();
+    },
+
+    operativeCustomer: function(req, res, next) {
+        var agent = req.agent;
+        var role = agent.role;
+        var team = agent.team || {};
+        var result = {};
+
+        switch (role.type) {
+            // 客服主管
+            case "CSDDirector": {
+                result.view = "*";
+                result.edit = true;
+                result.add = true;
+                result.delete = true;
+                break;
+            }
+            // 客服专员
+            case "CSDMember": {
+                result.view = null;
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+                break;
+            }
+            // 运营经理和运营总监 编辑所有及删除功能
+            case "manager":
+            case "COO": {
+                result.view = null;
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+                break;
+            }
+            // 其他所有总监 浏览所有
+            case "CEO":
+            case "CFO":
+            case "CMPO":
+            case "CTO":
+            case "LD": {
+                result.view = null;
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+                break;
+            }
+            // 管理员 所有权限
+            case "admin": {
+                result.view = "*";
+                result.edit = true;
+                result.add = true;
+                result.delete = true;
+                break;
+            }
+            default : {
+                result.view = null;
+                result.edit = false;
+                result.add = false;
+                result.delete = false;
+            }
+        }
+
+        req.subfilterOperativeCustomer = result;
         next();
     },
 
@@ -283,8 +491,13 @@ module.exports = {
         var agent = req.agent;
         var role = agent.role;
         var team = agent.team || {};
-        var teams = req.teams || {};                // 小组信息列表 [{_id: xx, name: xx, leader: {_id: leaderId, account: leaderAccount, name: leaderName}, members: [{_id: memberId, account: memberAccount, name: memberName}]}]
+        var teams = req.teams || [];                // 小组信息列表 [{_id: xx, name: xx, leader: {_id: leaderId, account: leaderAccount, name: leaderName}, members: [{_id: memberId, account: memberAccount, name: memberName}]}]
         var result = {};
+
+        var teamsJson = {};
+        teams.forEach(function (row) {
+            teamsJson[row._id] = row;
+        });
 
         switch (role.type) {
             // 组长 可新增 浏览小组所有订单 可编辑100,101状态
@@ -292,8 +505,8 @@ module.exports = {
                 result.add = true;                             //可添加
                 result.view = {};
                 result.view.applicant = [ agent.id ];           //自己的id
-                var teamInfo = teams[team.id] || {};
-                var members = teamInfo || [];
+                var teamInfo = teamsJson[team.id] || {};
+                var members = teamInfo.members || [];
                 members.forEach(function(row) {
                     if (row._id) {
                         result.view.applicant.push(row._id);    //组员的id
@@ -316,43 +529,64 @@ module.exports = {
             case "director": {
                 result.add = true;                             //可添加
                 result.view = {};
-                result.view.applicant = [ agent.id ];           //自己的id
-                result.view.status = "*";                       //订单状态
-                result.edit = {status: [100,101]};              //哪些状态的订单可以处理
+                result.view.applicant = "*";           //自己的id
+                result.view.status = [200, 210, 220, 230, 300, 310, 400];                       //订单状态
+                result.edit = {status: [200]};              //哪些状态的订单可以处理
                 break;
             }
             // 运营经理 不可新增 浏览除100,101之外其他状态的订单 200状态+总额限制可编辑
             case "manager": {
                 result.add = false;                            //不可添加
                 result.view = {};
-                result.view.status = [200,210,220,230,300,310,400]; //可视状态列表
+                result.view.applicant = "*";                    //自己的id
+                result.view.status = [200, 210, 220, 230, 300, 310, 400]; //可视状态列表
                 result.edit = {status: [210]};                  //哪些状态的订单可以处理
                 break;
             }
-            // 运营总监
+            // 运营总监 不可新增 浏览除100,101之外其他状态的订单 220状态+总额限制可编辑
             case "COO": {
-                result.view = "*";
+                result.add = false;                            //不可添加
+                result.view = {};
+                result.view.applicant = "*";                    //自己的id
+                result.view.status = [200, 210, 220, 230, 300, 310, 400]; //可视状态列表
+                result.edit = { status: [220] };                  //哪些状态的订单可以处理
                 break;
             }
-            // 首席执行官（CEO）
+            // 首席执行官（CEO）不可新增 浏览除100,101之外其他状态的订单 230状态+总额限制可编辑
             case "CEO": {
-                result.view = "*";
+                result.add = false;                            //不可添加
+                result.view = {};
+                result.view.applicant = "*";                    //自己的id
+                result.view.status = [200, 210, 220, 230, 300, 310, 400]; //可视状态列表
+                result.edit = { status: [230] };                  //哪些状态的订单可以处理
                 break;
             }
-            // 供应链主管
+            // 供应链主管 不可新增 浏览除100,101之外其他状态的订单 300状态+总额限制可编辑
             case "purchaseDirector": {
-                result.view = "*";
+                result.add = false;                            //不可添加
+                result.view = {};
+                result.view.applicant = "*";                    //自己的id
+                result.view.status = [200, 210, 220, 230, 300, 310, 400]; //可视状态列表
+                result.edit = { status: [300] };                  //哪些状态的订单可以处理
                 break;
             }
-            // 供应链总监（由于目前财务总监兼任，这里加上CFO） 浏览所有
+            // 供应链总监（由于目前财务总监兼任，这里加上CFO）不可新增 浏览除100,101之外其他状态的订单 310状态+总额限制可编辑
             case "CFO":
             case "CMPO": {
-                result.view = "*";
+                result.add = false;                            //不可添加
+                result.view = {};
+                result.view.applicant = "*";                    //自己的id
+                result.view.status = [200, 210, 220, 230, 300, 310, 400]; //可视状态列表
+                result.edit = { status: [310] };                  //哪些状态的订单可以处理
                 break;
             }
             // 管理员 所有权限
             case "admin": {
-                result.view = "*";
+                result.add = true;                            //可添加
+                result.view = {};
+                result.view.applicant = "*";                    //自己的id
+                result.view.status = [100, 101, 200, 210, 220, 230, 300, 310, 400]; //可视状态列表
+                result.edit = { status: [100, 101, 200, 210, 220, 230, 300, 310, 400] };                  //哪些状态的订单可以处理
                 break;
             }
             default : {

@@ -1,3 +1,5 @@
+"user strict";
+
 const moment = require('moment');
 const async = require('async');
 const mongoose = require('mongoose');
@@ -13,10 +15,46 @@ const user = InvincibleDB.getModel('user');
 var Shared = require('../../shared/');
 var ERROR_CODE = Shared.ERROR;
 
-// var Schema = mongoose.Schema;
+// 判断当前采购计划属于哪一个流程步骤，返回procedure.js的下标
+var procedure = function (money, details) {
+    if (details) {
+        let firstTime = false;
+        details.forEach(function (item) {
+            if (item.first_time === true) {
+                firstTime = true;
+            }
+        });
+        // 无新订单的情况
+        if (firstTime) {
+            if (money <= 200000) {
+                return 0;
+            } else if (money > 200000 && money <= 300000) {
+                return 1;
+            } else if (money > 300000 && money <= 99999999) {
+                return 2;
+            } else {
+                throw new Error('money is wrong.');
+            }
+            // 有新订单
+        } else {
+            if (money <= 100000) {
+                return 0;
+            } else if (money > 100000 && money <= 200000) {
+                return 1;
+            } else if (money > 200000 && money <= 99999999) {
+                return 2;
+            } else {
+                throw new Error('money is wrong.');
+            }
+        }
+    } else {
+        throw new Error('purchasePlan details is wrong.');
+    }
+};
 
 module.exports = {
     name: "purchasePlan",
+
     // 新增采购计划
     submit: function (req, res) {
         let planId;
@@ -32,9 +70,9 @@ module.exports = {
                         cb(null);
                     } else {
                         // 注意日期格式的转换
-                        let dbDate = moment(docs.createdAt).format('YYYY-MM-DD');
+                        let dbDate = moment(docs[0].createdAt).format('YYYY-MM-DD');
                         if (dbDate === moment().format('YYYY-MM-DD').toString()) {
-                            let no = parseInt(docs[0].plan_id.slice(11)) + 1;
+                            let no = (parseInt(docs[0].plan_id.slice(11)) + 1).toString();
                             if (no.toString().length === 1) {
                                 no = '00' + no;
                             } else {
@@ -95,6 +133,7 @@ module.exports = {
                     _id: new mongoose.Types.ObjectId(),
                     plan_id: planId,
                     status: req.body.status,
+                    total: req.body.total,
                     applicant: req.agent.id,
                     createdAt: moment().format('YYYY-MM-DD HH:mm:ss'),
                     updatedAt: moment().format('YYYY-MM-DD HH:mm:ss')
@@ -113,9 +152,8 @@ module.exports = {
     },
     //  首页展示
     show: function (req, res) {
-        var subfilterPurchasePlan = req.subfilterPurchasePlan || {};
-        var purchasePlanConfig = req.purchasePlanConfig || [];
-
+        const subfilterPurchasePlan = req.subfilterPurchasePlan || {};
+        const purchasePlanConfig = req.purchasePlanConfig || [];
         // purchasePlan查询条件
         let cons = {};
         // 忽略前面的多少条
@@ -124,231 +162,429 @@ module.exports = {
         let skip = (req.query.currentPage - 1) * req.query.pageSize;
         // 每页的页数
         let limit = 10;
+        // 保存的符合条件的_id
         if (req.query.plan_id) cons.plan_id = {$regex: req.query.plan_id};
-        if (req.query.startTime) cons.createdAt = { $gte: req.query.startTime };
-        if (req.query.endTime) cons.createdAt = { $lte: req.query.endTime };
-        if (req.query.startTime && req.query.endTime) cons.createdAt = { $gte: req.query.startTime, $lte: req.query.endTime };
+        if (req.query.startTime) cons.createdAt = { $gte: new Date(req.query.startTime) };
+        if (req.query.endTime) cons.createdAt = { $lte: new Date(req.query.endTime) };
+        if (req.query.startTime && req.query.endTime) {
+            // 在当前的日期上加一天
+            let date = new Date(req.query.endTime);
+            date.setDate(date.getDate() + 1);
+            cons.createdAt = { $gte: new Date(req.query.startTime), $lte: new Date(date) };
+        }
         if (req.query.status) cons.status = parseInt(req.query.status);
-        let applicant = [];
-        let operator = [];
-        let supplyChain = [];
-
-        async.series([
-            // async.series
-            function (cb) {
-                // async.parallel
-                async.parallel([
-                    function (cb) {
-                        if (req.query.applicant) {
-                            user.find({ name: req.query.applicant }).select('_id').exec(function (err, docs) {
-                                if (err) console.error(err);
-                                applicant = docs;
-                                cb(null);
-                            });
-                        } else {
-                            cb(null);
-                        }
-                    },
-                    function (cb) {
-                        if (req.query.operator) {
-                            user.find({ name: req.query.operator }).select('_id').exec(function (err, docs) {
-                                if (err) console.error(err);
-                                docs.forEach(function (item, index) {
-                                    operator.push(item._id.toString());
-                                });
-                                cb(null);
-                            });
-                        } else {
-                            cb(null);
-                        }
-                    },
-                    function (cb) {
-                        if (req.query.supplyChain) {
-                            user.find({ name: req.query.supplyChain }).select('_id').exec(function (err, docs) {
-                                if (err) console.error(err);
-                                docs.forEach(function (item, index) {
-                                    supplyChain.push(item._id.toString());
-                                });
-                                cb(null);
-                            });
-                        } else {
-                            cb(null);
+        let operator;
+        let supplyChain;
+        if (req.query.applicant) cons.applicant = req.query.applicant.toString();
+        if (req.query.operator) operator = req.query.operator.toString();
+        if (req.query.supplyChain) supplyChain = req.query.supplyChain.toString();
+        // 先将不能够显示的数据筛选出来
+        purchasePlan.find(cons)
+            .populate('applicant')
+            .populate('history.handler')
+            .populate({
+                path: 'details',
+                populate: [{ path: 'product_id' }, { path: 'supplier' }]
+            })
+            .exec(function (err, total) {
+                if (err) console.error(err);
+                let id = [];
+                total.forEach(function (item) {
+                    let type = procedure(item.total, item.details);
+                    let show = false;
+                    for (let i = 0; i < purchasePlanConfig[type].handlerTypes.length; i++) {
+                        switch (req.agent.role.type) {
+                            case 'leader': {
+                                // console.log('req.subfilterPurchasePlan.view.applicant.indexOf(item.applicant._id.toString()) !== -1', req.subfilterPurchasePlan.view.applicant.indexOf(item.applicant._id.toString()) !== -1)
+                                if (req.subfilterPurchasePlan.view.applicant.indexOf(item.applicant._id.toString()) !== -1) {
+                                    show = true;
+                                }
+                                if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1 && req.subfilterPurchasePlan.view.applicant.indexOf(item.applicant._id.toString()) !== -1) {
+                                    show = true;
+                                }
+                                break;
+                            }
+                            case 'member': {
+                                if (req.agent.id === item.applicant._id.toString()) {
+                                    show = true;
+                                }
+                                if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1 && req.agent.id === item.applicant._id.toString()) {
+                                    show = true;
+                                }
+                                break;
+                            }
+                            case 'director': {
+                                show = true;
+                                break;
+                            }
+                            case 'manager': {
+                                show = true;
+                                break;
+                            }
+                            case 'COO': {
+                                show = true;
+                                break;
+                            }
+                            case 'CEO': {
+                                show = true;
+                                break;
+                            }
+                            case 'purchaseDirector': {
+                                show = true;
+                                break;
+                            }
+                            case 'CFO':
+                            case 'CMPO': {
+                                show = true;
+                                break;
+                            }
+                            case 'admin': {
+                                show = true;
+                                break;
+                            }
+                            default: {
+                                throw new Error('?????????????????????');
+                                break;
+                            }
                         }
                     }
-                ], function (err) {
-                    if (err) console.error(err);
-                    cb(null);
+                    if (show && id.indexOf(item._id.toString()) === -1) {
+                        id.push(item._id);
+                    }
                 });
-                // ---async.parallel
-            },
-            function (cb) {
-                async.waterfall([
-                    // async.waterfall
-                    function (cb) {
-                        if ((operator instanceof Array && operator.length === 0) && (supplyChain instanceof Array && supplyChain.length === 0)) {
-                            purchasePlan.find(cons)
-                                .populate('applicant')
-                                .populate({
-                                    path: 'details',
-                                    populate: [{ path: 'product_id' }, { path: 'supplier' }]
-                                })
-                                .skip(skip)
-                                .limit(limit)
-                                .exec(function (err, docs) {
-                                    // console.log(docs)
-                                    if (err) console.error(err);
-                                    if (docs instanceof Array && docs.length === 0) {
-                                        res.json({ datas: [], pageCount: 0 });
-                                    }
-                                    // 数据处理
-                                    docs.forEach(function (item, index) {
-                                        let data = {
-                                            details: [],
-                                            peoples: {}
-                                        };
-                                        data.plan_id = item.plan_id;
-                                        data.status = item.status;
-                                        data.peoples.applicant = item.applicant.name;
-                                        for (let i = 0; i < item.details.length; i++) {
-                                            let productInfo = {
-                                                details: []
-                                            };
-                                            productInfo.details.productSku = item.details[i].product_id.store_sku;
-                                            productInfo.details.productName = item.details[i].product_id.name_cn;
-                                            data.details.push(productInfo);
-                                        }
-                                        datas.push(data);
-                                    });
-                                    res.json({ datas: datas, pageCount: Math.ceil(datas.length / 10) });
-                                });
-                        } else {
-                            purchasePlan.find(cons)
-                                .populate('applicant')
-                                .populate({
-                                    path: 'details',
-                                    populate: [{ path: 'product_id' }, { path: 'supplier' }]
-                                })
-                                .exec(function (err, docs) {
-                                    if (err) console.error(err);
-                                    if (docs instanceof Array && docs.length === 0) {
-                                        res.json({ datas: [], pageCount: 0 });
-                                    }
-                                    cb(null, docs);
-                                });
+                // 需要分页的数量
+                let count = id.length;
+                // 需要显示的purchasePlan的_id
+                cons._id = {$in: id};
+                purchasePlan.find(cons).sort({_id: -1})
+                    .populate('applicant')
+                    .populate('history.handler')
+                    .populate({
+                        path: 'details',
+                        populate: [{ path: 'product_id' }, { path: 'supplier' }]
+                    })
+                    .skip(skip).limit(limit)
+                    .exec(function (err, docs) {
+                        if (err) console.error(err);
+                        let datas = [];
+                        let add = true;
+                        if (req.agent.team.id === null && req.agent.role.type !== 'admin') {
+                            add = false;
                         }
-                    },
-                    function (param, cb) {
-                        let _idArr = [];
-                        for (let i = 0; i < param.length; i++) {
-                            let history = {};
-                            if (!(operator instanceof Array && operator.length === 0) && (supplyChain instanceof Array && supplyChain.length === 0)) {
-                                for (let j = 0; j < param[i].history.length; j++) {
-                                    if (param[i].history[j].data.beforeProcessing === 200) {
-                                        console.log(param[i].history[j])
-                                        if (!(operator.indexOf(param[i].history[j].handler.toString()) === -1)) {
-                                            _idArr.push(param[i]._id);
+                        if (docs instanceof Array && docs.length === 0) {
+                            res.json({ datas: [], pageCount: 0, add: add });
+                        }
+                        docs.forEach(function (item) {
+                            // 权限控制
+                            let permission = {
+                                view: {}
+                            };
+                            // 当前流程下标
+                            let type = procedure(item.total, item.details);
+                            // 判断当条是否显示
+                            // 循环当前当前流程的所有步骤
+                            for (let i = 0; i < purchasePlanConfig[type].handlerTypes.length; i++) {
+                                permission.view = true;
+                                // 根据不同的职位安排不同的流程
+                                switch (req.agent.role.type) {
+                                    case 'leader': {
+                                        permission.review = false;
+                                        // 如果当前item是他或者他的组员创建的 则可看
+                                        if (req.subfilterPurchasePlan.view.applicant.indexOf(item.applicant._id.toString()) !== -1) {
+                                            permission.view = true;
+                                        } else {
+                                            permission.view = false;
+                                        }
+                                        // 如果当前的状态是100或者101而且当前purchasePlan是他或者他的组员创建的 则可编辑
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1 && req.subfilterPurchasePlan.view.applicant.indexOf(item.applicant._id.toString()) !== -1) {
+                                            permission.edit = true;
+                                        } else {
+                                            permission.edit = false;
+                                        }
+                                        break;
+                                    }
+                                    case 'member': {
+                                        if (req.agent.team.id === null) {
+                                            add = false;
                                             break;
                                         }
-                                    }
-                                }
-                            }
-                            if ((operator instanceof Array && operator.length === 0) && !(supplyChain instanceof Array && supplyChain.length === 0)) {
-                                for (let j = 0; j < param[i].history.length; j++) {
-                                    if (param[i].history[j].data.beforeProcessing === 300) {
-                                        if (!(supplyChain.indexOf(param[i].history[j].handler.toString()) === -1)) {
-                                            _idArr.push(param[i]._id);
-                                            break;
+                                        permission.review = false;
+                                        if (req.agent.id === item.applicant._id.toString()) {
+                                            permission.view = true;
                                         } else {
-                                            continue;
+                                            permission.view = false;
                                         }
-                                    }
-                                }
-                            }
-                            if (!(operator instanceof Array && operator.length === 0) && !(supplyChain instanceof Array && supplyChain.length === 0)) {
-                                let opIsExist = false;
-                                let suIsExist = false;
-                                for (let j = 0; j < param[i].history.length; j++) {
-                                    // 判断运营审核是否匹配
-                                    if (param[i].history[j].data.beforeProcessing === 300) {
-                                        if (!(operator.indexOf(param[i].history[j].handler.toString()) === -1)) {
-                                            opIsExist = true;
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1 && req.agent.id === item.applicant._id.toString()) {
+                                            permission.edit = true;
                                         } else {
-                                            continue;
+                                            permission.edit = false;
                                         }
+                                        break;
                                     }
-                                    // 判断供应链审核是否匹配
-                                    if (param[i].history[j].data.beforeProcessing === 300) {
-                                        if (!(supplyChain.indexOf(param[i].history[j].handler.toString()) === -1)) {
-                                            suIsExist = true;
+                                    case 'director': {
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1) {
+                                            permission.review = true;
                                         } else {
-                                            continue;
+                                            permission.review = false;
                                         }
+                                        permission.edit = false;
+                                        break;
                                     }
-                                    // 如果均匹配，则存进数组
-                                    if (opIsExist && suIsExist) {
-                                        _idArr.push(param[i]._id);
+                                    case 'manager': {
+                                        add = false;
+                                        permission.edit = false;
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1) {
+                                            permission.review = true;
+                                        } else {
+                                            permission.review = false;
+                                        }
+                                        break;
+                                    }
+                                    case 'COO': {
+                                        add = false;
+                                        permission.edit = false;
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1) {
+                                            permission.review = true;
+                                        } else {
+                                            permission.review = false;
+                                        }
+                                        break;
+                                    }
+                                    case 'CEO': {
+                                        add = false;
+                                        permission.edit = false;
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1) {
+                                            permission.review = true;
+                                        } else {
+                                            permission.review = false;
+                                        }
+                                        break;
+                                    }
+                                    case 'purchaseDirector': {
+                                        add = false;
+                                        permission.edit = false;
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1) {
+                                            permission.review = true;
+                                        } else {
+                                            permission.review = false;
+                                        }
+                                        break;
+                                    }
+                                    case 'CFO':
+                                    case 'CMPO': {
+                                        add = false;
+                                        permission.edit = false;
+                                        if (req.subfilterPurchasePlan.edit.status.indexOf(item.status) !== -1) {
+                                            permission.review = true;
+                                        } else {
+                                            permission.review = false;
+                                        }
+                                        break;
+                                    }
+                                    case 'admin': {
+                                        permission.edit = true;
+                                        permission.review = true;
+                                        break;
+                                    }
+                                    default: {
+                                        throw new Error('?????????????????????');
                                         break;
                                     }
                                 }
                             }
-                        }
-                        cb(null, _idArr);
-                    },
-                    function (_idArr, cb) {
-                        console.log('_idArr', _idArr);
-                        async.eachSeries(_idArr, function (item, cb) {
+                            //
+                            let opIsExist = false;
+                            let suIsExist = false;
                             let data = {
+                                plan_id: item.plan_id,
+                                status: item.status,
+                                peoples: {
+                                    applicant: item.applicant.name,
+                                    supplyChain: [],
+                                    operator: []
+                                },
                                 details: [],
-                                peoples: {}
+                                permission: permission
                             };
-                            purchasePlan.findOne({ _id: mongoose.Types.ObjectId(item) }).populate('history.handler')
-                                .populate('applicant')
-                                .populate({
-                                    path: 'details',
-                                    populate: [{ path: 'product_id' }, { path: 'supplier' }]
-                                }).exec(function (err, docs) {
-                                    if (err) console.error(err);
-                                    data.plan_id = docs.plan_id;
-                                    data.status = docs.status;
-                                    for (let i = 0; i < docs.details.length; i++) {
-                                        let productInfo = {
-                                            details: []
-                                        };
-                                        productInfo.details.productSku = docs.details[i].product_id.store_sku;
-                                        productInfo.details.productName = docs.details[i].product_id.name_cn;
-                                        data.details.push(productInfo);
-                                    }
-                                    for (let i = 0; i < docs.history.length; i++) {
-                                        if (docs.history[i].data.beforeProcessing === 200) {
-                                            data.peoples.operator = docs.history[i].handler.name;
-                                        }
-                                        if (docs.history[i].data.beforeProcessing === 300) {
-                                            data.peoples.supplyChain = docs.history[i].handler.name;
-                                        }
-                                        data.peoples.applicant = docs.applicant.name;
-                                    }
-                                    datas.push(data);
-                                    cb(null);
-                                });
-                        }, function (err) {
-                            if (err) {
-                                console.error(err);
+                            // 把details保存起来
+                            for (let j = 0; j < item.details.length; j++) {
+                                let detail = {};
+                                detail.productSku = item.details[j].product_id.store_sku;
+                                detail.productName = item.details[j].product_id.name_cn;
+                                detail.log = item.details[j].remarks;
+                                data.details.push(detail);
                             }
-                            console.log('datas', datas);
-                            // cb(null);
-                            res.json({datas: datas, pageCount: Math.ceil(datas.length / 10)});
+                            // 记录为空的数据的处理
+                            if (!(operator || supplyChain)) {
+                                if (item.history instanceof Array && item.history.length === 0) {
+                                    datas.push(data);
+                                }
+                            }
+                            // 记录不为空的数据的处理
+                            for (let i = 0; i < item.history.length; i++) {
+                                // 搜索条件只填了运营审核人没有填供应链审核人
+                                if (operator && !supplyChain) {
+                                    // 首数字为2则证明是运营部门的审核，为3则证明是供应链部门的审核
+                                    if (Math.floor(item.history[i].data.beforeProcessing / 100) === 2) {
+                                        if (operator === item.history[i].handler._id.toString()) {
+                                            // 保存此条purchasePlan
+                                            let index = 0;
+                                            for (let j = 0; j < item.history.length; j++) {
+                                                if (item.history[j].data.beforeProcessing === 200) {
+                                                    index = j;
+                                                }
+                                            }
+                                            for (let j = index; j < item.history.length; j++) {
+                                                // 判断是否为供应链审核而且当前状态要大于历史查询的状态 或者 当前状态为已退回且当前为供应链审核(控制首页经手人的显示) 如此类推
+                                                if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.status === 101)) {
+                                                    data.peoples.operator.push(item.history[j].handler.name);
+                                                }
+                                                if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.status === 101)) {
+                                                    data.peoples.supplyChain.push(item.history[j].handler.name);
+                                                }
+                                            }
+                                            datas.push(data);
+                                        }
+                                    }
+                                // 搜索条件只填了供应链核人没有填运营审核人
+                                } else if (!operator && supplyChain) {
+                                    if (Math.floor(item.history[i].data.beforeProcessing / 100) === 3) {
+                                        if (supplyChain === item.history[i].handler._id.toString()) {
+                                            // 保存此条purchasePlan
+                                            let index = 0;
+                                            for (let j = 0; j < item.history.length; j++) {
+                                                if (item.history[j].data.beforeProcessing === 200) {
+                                                    index = j;
+                                                }
+                                            }
+                                            for (let j = index; j < item.history.length; j++) {
+                                                if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.status === 101)) {
+                                                    data.peoples.operator.push(item.history[j].handler.name);
+                                                }
+                                                if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.status === 101)) {
+                                                    data.peoples.supplyChain.push(item.history[j].handler.name);
+                                                }
+                                            }
+                                            datas.push(data);
+                                        }
+                                    }
+                                //  搜索条件均填了供应链审核人和运营审核人
+                                } else if (operator && supplyChain) {
+                                    let index = 0;
+                                    for (let j = 0; j < item.history.length; j++) {
+                                        if (item.history[j].data.beforeProcessing === 200) {
+                                            index = j;
+                                        }
+                                    }
+                                    for (let j = index; j < item.history.length; j++) {
+                                        if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.status === 101)) {
+                                            if (operator === item.history[i].handler._id.toString()) {
+                                                opIsExist = true;
+                                            }
+                                        }
+                                        if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.status === 101)) {
+                                            if (supplyChain === item.history[i].handler._id.toString()) {
+                                                suIsExist = true;
+                                            }
+                                        }
+                                    }
+                                    if (opIsExist && suIsExist) {
+                                        // 保存此条数据
+                                        let index = 0;
+                                        for (let j = 0; j < item.history.length; j++) {
+                                            if (item.history[j].data.beforeProcessing === 200) {
+                                                index = j;
+                                            }
+                                        }
+                                        for (let j = index; j < item.history.length; j++) {
+                                            if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.status === 101)) {
+                                                data.peoples.supplyChain.push(item.history[j].handler.name);
+                                            }
+                                            if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.status === 101)) {
+                                                data.peoples.operator.push(item.history[j].handler.name);
+                                            }
+                                        }
+                                        datas.push(data);
+                                        break;
+                                    }
+                                // 运营审核人和供应链审核人均为空
+                                } else {
+                                    if (item.history instanceof Array && item.history.length === 0) {
+                                        datas.push(data);
+                                    } else {
+                                        let index = 0;
+                                        for (let j = 0; j < item.history.length; j++) {
+                                            if (item.history[j].data.beforeProcessing === 200) {
+                                                index = j;
+                                            }
+                                        }
+                                        for (let j = index; j < item.history.length; j++) {
+                                            if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 3 && item.status === 101)) {
+                                                data.peoples.supplyChain.push(item.history[j].handler.name);
+                                            }
+                                            if ((Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.history[j].data.beforeProcessing < item.status) || (Math.floor(item.history[j].data.beforeProcessing / 100) === 2 && item.status === 101)) {
+                                                data.peoples.operator.push(item.history[j].handler.name);
+                                            }
+                                        }
+                                        datas.push(data);
+                                        break;
+                                    }
+                                }
+                            }
                         });
+                        res.json({datas: datas, pageCount: Math.ceil(count / req.query.pageSize), add: add});
+                    });
+            });
+    },
+    // 首页返回peoples
+    getPeoples: function (req, res) {
+        // 返回所有申请过的人和审核过的人作为搜索条件
+        purchasePlan.find().populate('applicant').populate('history.handler').exec(function (err, docs) {
+            if (err) console.error(err);
+            let applicant = [];
+            let operator = [];
+            let supplyChain = [];
+            let id1 = [];
+            let id2 = [];
+            let id3 = [];
+            docs.forEach(function (item, index) {
+                let data1 = {
+                    name: item.applicant.name,
+                    _id: item.applicant._id.toString()
+                };
+                // 保存申请过的申请人
+                if (id1.indexOf(item.applicant._id.toString()) === -1) {
+                    id1.push(item.applicant._id.toString());
+                    applicant.push(data1);
+                }
+                for (let i = 0; i < item.history.length; i++) {
+                    let data2 = {
+                        name: item.history[i].handler.name,
+                        _id: item.history[i].handler._id.toString()
+                    };
+                    // 保存运营部审核过的审核人
+                    if (id2.indexOf(item.history[i].handler._id.toString()) === -1) {
+                        if ((Math.floor(item.history[i].data.beforeProcessing / 100) === 2)) {
+                            id2.push(item.history[i].handler._id.toString());
+                            operator.push(data2);
+                        }
                     }
-                ]);
-                // ---async.waterfall
-            }
-        ]);
-        // ---async.series
+                    // 保存供应链审核过的审核人
+                    if (id3.indexOf(item.history[i].handler._id.toString()) === -1) {
+                        if ((Math.floor(item.history[i].data.beforeProcessing / 100) === 3)) {
+                            id3.push(item.history[i].handler._id.toString());
+                            supplyChain.push(data2);
+                        }
+                    }
+                }
+            });
+            res.json({applicant: applicant, operator: operator, supplyChain: supplyChain});
+        });
     },
     // 编辑页面展示
     editShow: function (req, res) {
         let planId = req.query.plan_id;
-        purchasePlan.findOne({ plan_id: planId }).populate('applicant').populate({
+        purchasePlan.findOne({ plan_id: planId }).populate('applicant').populate('history.handler').populate({
             path: 'details',
             populate: [{ path: 'product_id' }, { path: 'supplier' }]
         }).exec(function (err, docs) {
@@ -388,27 +624,17 @@ module.exports = {
             });
             // 处理采购计划状态和意见
             for (let i = 0; i < docs.history.length; i++) {
-                let operatorId, supplyChainId;
                 let cur = {};
-                // 运营部同意
-                if (docs.history[i].data.beforeProcessing === 200 && docs.history[i].data.afterProcessing === 300) {
-                    cur.status = 1;
-                    cur.operator = docs.history[i].data.log;
-                }
-                // 运营部不同意
-                if (docs.history[i].data.beforeProcessing === 200 && docs.history[i].data.afterProcessing === 101) {
-                    cur.status = 0;
-                    cur.operator = docs.history[i].data.log;
-                }
-                // 供应链同意
-                if (docs.history[i].data.beforeProcessing === 300 && docs.history[i].data.afterProcessing === 400) {
-                    cur.status = 1;
-                    cur.supplyChain = docs.history[i].data.log;
-                }
-                // 供应链不同意
-                if (docs.history[i].data.beforeProcessing === 300 && docs.history[i].data.afterProcessing === 101) {
-                    cur.status = 0;
-                    cur.supplyChain = docs.history[i].data.log;
+                if (docs.history[i].data.afterProcessing === 101) {
+                    cur.agree = 0;
+                    cur.log = docs.history[i].data.log;
+                    cur.status = docs.history[i].data.beforeProcessing;
+                    cur.name = docs.history[i].handler.name;
+                } else {
+                    cur.agree = 1;
+                    cur.log = docs.history[i].data.log;
+                    cur.status = docs.history[i].data.beforeProcessing;
+                    cur.name = docs.history[i].handler.name;
                 }
                 datas.reviews.push(cur);
             }
@@ -581,37 +807,36 @@ module.exports = {
     },
     // 审核
     review: function (req, res) {
+        var subfilterPurchasePlan = req.subfilterPurchasePlan || {};
+        var purchasePlanConfig = req.purchasePlanConfig || [];
         let curStatus = req.body.status;
         let review = {
             data: {}
         };
-        // 记录审核前和审核后的状态
-        if (curStatus === 200) {
-            if (parseInt(req.body.review.status) === 1) {
-                review.data.afterProcessing = 300;
+
+        let index = procedure(req.body.total, req.body.details);
+
+        if (parseInt(req.body.review.agree) === 1) {
+            if (purchasePlanConfig[index].statuses.indexOf(curStatus) !== -1) {
+                if (purchasePlanConfig[index].statuses.length === purchasePlanConfig[index].statuses.indexOf(curStatus) + 1) {
+                    review.data.afterProcessing = 400;
+                } else if (curStatus === 200) {
+                    review.data.afterProcessing = 210;
+                } else {
+                    review.data.afterProcessing = purchasePlanConfig[index].statuses[purchasePlanConfig[index].statuses.indexOf(curStatus) + 1];
+                }
+            } else if (curStatus === 101) {
+                review.data.afterProcessing = 200;
             } else {
-                review.data.afterProcessing = 101;
+                throw new Error('status error');
             }
-            review.data.beforeProcessing = 200;
-            review.data.log = req.body.review.remark;
-            review.handler = mongoose.Types.ObjectId(req.agent.id);
-            // review.id = uuid.v4();
-            review.time = moment().format('YYYY-MM-DD HH:mm:ss');
-        } else if (curStatus === 300) {
-            if (parseInt(req.body.review.status) === 1) {
-                review.data.afterProcessing = 400;
-            } else {
-                review.data.afterProcessing = 101;
-            }
-            review.data.beforeProcessing = 300;
-            review.data.log = req.body.review.remark;
-            review.handler = mongoose.Types.ObjectId(req.agent.id);
-            // review.id = uuid.v4();
-            review.time = moment().format('YYYY-MM-DD HH:mm:ss');
         } else {
-            throw new Error('status error');
+            review.data.afterProcessing = 101;
         }
-        // 更新
+        review.data.beforeProcessing = curStatus;
+        review.data.log = req.body.review.remark;
+        review.handler = mongoose.Types.ObjectId(req.agent.id);
+        review.time = moment().format('YYYY-MM-DD HH:mm:ss');
         purchasePlan.update({ plan_id: req.body.plan_id }, {
             status: review.data.afterProcessing,
             '$push': {'history': review},

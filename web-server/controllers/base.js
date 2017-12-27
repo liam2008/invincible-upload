@@ -40,6 +40,7 @@ module.exports = {
 
         var results = [];
         findCondition.state = {$nin: [-1]};
+        findCondition.delete
         Merchandise.find(findCondition)
             .populate('product_id')
             .populate('shop_id')
@@ -218,14 +219,12 @@ module.exports = {
     deleteMerd: function (req, res, next) {
         var subFilter = req.subfilterMerchandiseEdit || {};
         if (subFilter.delete) {
-            if (!req.body.asin || !req.body.shopID || !req.body.sellerSku) {
+            if (!req.params.id) {
                 res.error(ERROR_CODE.MISSING_ARGUMENT);
                 return;
             }
             Merchandise.findOne({
-                    asin: req.body.asin,
-                    seller_sku: req.body.sellerSku,
-                    shop_id: mongoose.Types.ObjectId(req.body.shopID)
+                    id: req.params.id
                 }, function(err, MerchandiseResult) {
                     if (dealErr.findErr(err, res)) return debug(new Error(err));
                     if (MerchandiseResult) {

@@ -272,17 +272,15 @@ module.exports = {
     },
 
     keyword: function (req, res, next) {
-        var findTaskId;
-        var where = "WHERE 1=1 ";
-        if (req.query.bprice) where += ("AND price >= " + req.query.bprice);
-        if (req.query.eprice) where += ("AND price <= " + req.query.eprice);
-        if (req.query.breview) where += ("AND customer_review >= " + req.query.breview);
-        if (req.query.ereview) where += ("AND customer_review <= " + req.query.ereview);
-        if (req.query.bscore) where += ("AND score >= " + req.query.bscore);
-        if (req.query.escore) where += ("AND score <= " + req.query.escore);
-        if (req.query.brate) where += ("AND big_type_rank >= " + req.query.brate);
-        if (req.query.erate) where += ("AND big_type_rank <= " + req.query.erate);
-        if (findTaskId) where += ("AND task_id = " + findTaskId);
+        var where = "WHERE 1=1";
+        if (req.query.bprice) where += (" AND price >= " + req.query.bprice);
+        if (req.query.eprice) where += (" AND price <= " + req.query.eprice);
+        if (req.query.breview) where += (" AND REPLACE(customer_review,',', '') >= " + req.query.breview);
+        if (req.query.ereview) where += (" AND REPLACE(customer_review,',', '') <= " + req.query.ereview);
+        if (req.query.bscore) where += (" AND score + 0 >= " + req.query.bscore);
+        if (req.query.escore) where += (" AND score + 0 <= " + req.query.escore);
+        if (req.query.brate) where += (" AND REPLACE(big_type_rank,',', '') + 0 >= " + req.query.brate);
+        if (req.query.erate) where += (" AND REPLACE(big_type_rank,',', '') + 0 <= " + req.query.erate);
         var result = {
             list: [],
             keywords: [],
@@ -304,7 +302,10 @@ module.exports = {
                             var taskRule = JSON.parse(paramentFound.task_rule);
                             result.keywords.push(taskRule.keyword);
                             if (req.query.keyword) {
-                                if (taskRule.keyword.toString() == req.query.keyword.toString()) findTaskId = paramentFound.task_id;
+                                if (taskRule.keyword.toString() == req.query.keyword.toString()) {
+                                    where += (" AND task_id = '" + paramentFound.task_id + "'");
+                                    console.log(where)
+                                }
                             }
                         });
                         callB(null);
@@ -317,7 +318,7 @@ module.exports = {
                         "big_type, url, asin, currency FROM keyword_goods AS keyword_goods ";
                     var currentPage = req.query.currentPage || 1;
                     var itemsPerPage = req.query.itemsPerPage || 10;
-                    var limit = ("LIMIT " + (currentPage - 1) * itemsPerPage + ", " + itemsPerPage);
+                    var limit = (" LIMIT " + (currentPage - 1) * itemsPerPage + ", " + itemsPerPage);
                     sql = sql + where + limit;
                     MysqlCrawlerOther.query(sql, null, function (err, paramentFounds) {
                         if (err) {
@@ -327,11 +328,12 @@ module.exports = {
                             return;
                         }
                         paramentFounds.forEach(function (paramentFound) {
+                            var smallType = paramentFound.small_type.substring(paramentFound.small_type.lastIndexOf(">") + 1, paramentFound.small_type.lastIndexOf(":") - 1)
                             var sqlResult = {};
                             sqlResult.price = paramentFound.price;
                             sqlResult.csrReview = paramentFound.customer_review;
                             sqlResult.title = paramentFound.title;
-                            sqlResult.smallType = paramentFound.small_type;
+                            sqlResult.smallType = smallType;
                             sqlResult.score = paramentFound.score;
                             sqlResult.isZiYingv = paramentFound.is_ziying;
                             sqlResult.isFba = paramentFound.is_fba;
@@ -347,6 +349,7 @@ module.exports = {
                     })
                 },
 
+                // 数据总数
                 function (callB) {
                     var countSql = "SELECT COUNT(*) AS totalItems FROM keyword_goods AS keyword_goods ";
                     countSql = countSql + where;
@@ -357,11 +360,12 @@ module.exports = {
                             res.error(ERROR_CODE.FIND_FAILED);
                             return;
                         }
-                        result.totalItems = paramentFound.totalItems;
+                        result.totalItems = paramentFound[0].totalItems;
                         callB(null);
                     })
                 },
 
+                // 站点
                 function (callB) {
                     var sql = "SELECT code, name, type, type_code, status, val, create_time " +
                         "FROM t_sys_parament AS t_sys_parament WHERE 1=1";
@@ -378,7 +382,6 @@ module.exports = {
                             }
                         });
                         result.taskSide = taskSide;
-                        res.success(result);
                         callB(null);
                     })
                 }
@@ -388,6 +391,7 @@ module.exports = {
                     debug(new Error(err));
                     return;
                 }
+                res.success(result);
             }
         )
     },

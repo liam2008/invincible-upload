@@ -19,7 +19,7 @@ router.post('/update', subfilter.merchandise_edit, controller.update);
 
 router.post('/saveMerchandise', subfilter.merchandise_edit, controller.saveMerchandise);
 
-router.post('/deleteMerd', subfilter.merchandise_edit, controller.deleteMerd);
+router.delete('/deleteMerd/:id', subfilter.merchandise_edit, controller.deleteMerd);
 
 router.get('/shops', controller.shops);
 

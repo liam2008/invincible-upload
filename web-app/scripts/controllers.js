@@ -52,8 +52,8 @@
                 } else { //页面不跳转
                     if (result.needChangePassword) { //密码简单
                         SweetAlert.swal({
-                                title: "您的密码过于简单",
-                                text: "是否现在，马上修改密码?",
+                                title: "您的密码已过期，请尽快修改密码！",
+                                text: "马上修改密码？",
                                 type: "warning",
                                 showCancelButton: true,
                                 confirmButtonText: "修改",

@@ -68,6 +68,7 @@
 					$scope.storeName = res.data['storeName'];
 					$scope.teamName = res.data['teamName'];
 					$scope.total = res.data['total'];
+					$scope.hasTotal = res.data['hasTotal'];
 					$timeout(function() {
 						$scope.loading = false
 					}, 1000)
@@ -90,7 +91,11 @@
 					shopName: val.store_name,
 					teamName: val.group_name
 				};
-				$http.post(App.config.server + '/profit/profitDetail', $scope.content).then(function(res) {
+				$http({
+					method: 'GET',
+					url: App.config.server + '/profit/profitDetail',
+					params: $scope.content
+				}).then(function(res) {
 					$scope.content.asin = res.data.asin;
 					$scope.content.nameCN = res.data.nameCN;
 					$scope.content.storeSku = res.data.storeSku;

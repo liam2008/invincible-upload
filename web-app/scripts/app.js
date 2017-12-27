@@ -30,23 +30,22 @@
                             return config || $q.when(config);
                         },
                         'responseError': function (response) {
-                            console.log(response);
+                            console.error(response);
                             var status = response.status;
                             var data = response.data;
 
-                            if (data.code === Smartdo.ERROR.TOKEN_EXPIRED           //过期
-                                || data.code === Smartdo.ERROR.INVALID_TOKEN        //错误
-                            ) {
-                                $window.localStorage.clear();
-                                $location.path('/login');
-                            }
-                            else if (status == 401 || status == 403) {
+                            if(data){//防止 data=null
+                                if (data.code === Smartdo.ERROR.TOKEN_EXPIRED           //过期
+                                    || data.code === Smartdo.ERROR.INVALID_TOKEN        //错误
+                                ) {
+                                    $window.localStorage.clear();
+                                    $location.path('/login');
+                                }
+                            } else if (status == 401 || status == 403) {
                                 //没有权限,这部分后台控制
                                 //$location.path('/xxx');
                                 return $q.reject(response);
                             }
-
-                            console.error("responseError: ", data);
                             return $q.reject(response);
                         }
                     };

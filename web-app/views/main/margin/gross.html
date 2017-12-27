@@ -164,7 +164,7 @@
 								<td>{{ item.other_cost }}</td>
 							</tr>
 						</tbody>
-						<tfoot>
+						<tfoot ng-if="hasTotal">
 							<tr>
 								<th class="text-center" colspan="4">合计</th>
 								<th>{{ total.gross_profit }}</th>

@@ -45,7 +45,7 @@ module.exports = {
             return;
         }
 
-        var findRequire = {$or: []};
+        var findRequire = {};
         var results = [];
         var nowMoment = moment();
         var subDays = 1;
@@ -82,17 +82,20 @@ module.exports = {
                                 var sellerSku = row.seller_sku || "";
                                 var shopModel = row.shop_id || {};
                                 var key;
+                                // 11号前没有店铺数据
                                 if (startDate < "2017-10-11") {
-                                    findRequire.$or.push({asin: asin, seller_sku: sellerSku});
                                     key = asin + sellerSku;
                                     map_seller2shop[key] = shopModel.name;
                                     NullshopName = true;
 
                                 } else {
-                                    findRequire.$or.push({asin: asin, seller_sku: sellerSku, shop_name: shopModel.name});
                                     key = asin + sellerSku + shopModel.name;
                                 }
-                                map_seller2store[key] = row.store_sku;
+                                if (row.product_id) {
+                                    map_seller2store[key] = row.product_id.store_sku;
+                                }else {
+                                    map_seller2store[key] = row.store_sku || "";
+                                }
                                 map_seller2team[key] = "";
                                 if (row.team_id) map_seller2team[key] = row.team_id.name;
                                 map_seller2projected[key] = row.projected_sales;
@@ -105,18 +108,18 @@ module.exports = {
                 },
                 // 找出这天的销售情况
                 function (callB) {
-                    findRequire.date = {"$gte": startDate, "$lte": endDate};
+                    findRequire.date = {$gte: startDate, $lte: endDate};
                     DailySell.find(findRequire, function (err, findDailyResult) {
                         if (err) {
                             callB(err);
                             return;
                         }
-
                         findDailyResult.forEach(function (list) {
                             var seller_sku = list.seller_sku || "";
                             var asin = list.asin || "";
                             var shop_name = list.shop_name || "";
                             var key = asin + seller_sku + shop_name;
+                            // 如果key未出现过，则新增，否则合并合计数据
                             var num = skus.indexOf(key);
                             if (num == -1) {
                                 skus.push(key);

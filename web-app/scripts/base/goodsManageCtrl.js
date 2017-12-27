@@ -1,18 +1,45 @@
 (function () {
     var app = angular.module('app.base.goodsManage', []);
 
-    app.controller('goodsManageCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'SweetAlert',
-        function ($scope, netManager, DTOptionsBuilder, SweetAlert,$q) {
-            $scope.productState = Smartdo.PRODUCT_STATE;
-             $scope.properties = [
-                {extend: 'excel', title: '商品管理'},
-                {extend: 'copy', title: '商品管理'}
-            ];
-            $scope.dtOptions = DTOptionsBuilder.newOptions()
-                .withDOM('<"html5buttons"B>lTfgitp')
-                .withButtons($scope.properties);
+    app.controller('goodsManageCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', 'DTColumnDefBuilder', 'SweetAlert', '$q',
+        function ($scope, netManager, DTOptionsBuilder, DTColumnDefBuilder, SweetAlert, $q) {
+            var deferred = $q.defer();
+            var promise = deferred.promise;
 
+            $scope.productState = Smartdo.PRODUCT_STATE;
+            $scope.dtOptions = DTOptionsBuilder.newOptions();
+
+            //下拉弹窗OPtion定义
             $scope.dtOptionsNew = DTOptionsBuilder.newOptions();
+
+            $scope.dtInstance = {};
+
+            promise.then(function (right) {
+                //主页table设置
+                var properties = [
+                    {extend: 'excel', title: '商品管理'},
+                    {extend: 'copy', title: '商品管理'}
+                ];
+
+                if (right) {
+                    properties.push({
+                        text: '添加商品',
+                        action: function (e, dt, node, config) {
+                            $scope.addGoods = {
+                                shelfTime: moment(),
+                                fba: '0'
+                            };
+                            $scope.formAdd.submitted = false;
+                            $scope.$digest();
+                            $('#addGoodModule').modal('show')
+                        }
+                    });
+                };
+
+                $scope.dtOptions.withDOM('<"html5buttons"B>lTfgitp')
+                    .withButtons(properties);
+            });
+
 
             //渲染页面
             init();
@@ -33,7 +60,7 @@
                     'projectedSales': editItem['projectedSales'],
                     'storeSku': editItem['storeSku'],
                     'productId': editItem['productId'],
-                    'shelfTime': editItem['shelfTime'] || ''
+                    'shelfTime': editItem['shelfTime'] || null
                 }
             };
 
@@ -58,7 +85,6 @@
                                 }
                             });
                             console.log('$scope.modalData', $scope.modalData);
-
                             var comfirmData = {
                                 "asin": $scope.modalData.asin,
                                 "sellerSku": $scope.modalData.sellerSku,
@@ -69,17 +95,17 @@
                                 "teamId": $scope.modalData.teamId,
                                 "state": Number($scope.modalData.state) || 0,
                                 "projectedSales": Number($scope.modalData['projectedSales']) || 0,
-                                "shelfTime": moment($scope.modalData['shelfTime']).format('YYYY-MM-DD')
+                                "shelfTime": $scope.modalData['shelfTime'] ? moment($scope.modalData['shelfTime']).format('YYYY-MM-DD') : null
                             };
                             console.log('teamId', $scope.modalData.teamId);
                             console.log('comfirmData', comfirmData);
-                            angular.extend($scope.tableData[$scope.index],comfirmData);
+                            angular.extend($scope.tableData[$scope.index], $scope.modalData, comfirmData);
                             netManager.post('/base/update', comfirmData).then(function (res) {
                                 swal("保存成功!", "success");
-                                angular.extend($scope.tableData[$scope.index],comfirmData);
+                                angular.extend($scope.tableData[$scope.index], comfirmData);
                                 console.log('$scope.tableData[$scope.index]', $scope.tableData[$scope.index]);
                             }, function (err) {
-                                console.err(err);
+                                console.error(err);
                                 swal("保存失败!", err.data.description, "error");
                             });
                         }
@@ -95,7 +121,7 @@
                     var addGoodsData = {
                         asin: $scope.addGoods.asin,
                         sellerSku: $scope.addGoods.sellerSku,
-                        FBA: $scope.addGoods.fba?Number( $scope.addGoods.fba):null,
+                        FBA: $scope.addGoods.fba ? Number($scope.addGoods.fba) : null,
                         fnsku: $scope.addGoods.fnsku || null,
                         productId: $scope.addGoods.productId,
                         name: $scope.addGoods.name || null,
@@ -123,7 +149,7 @@
             $scope.addGoods = addGoods;
 
             //删除
-            $scope.delete = function(index){
+            $scope.delete = function (index) {
                 SweetAlert.swal({
                         title: "你确定删除吗?",
                         text: "你将删除此条数据!",
@@ -135,21 +161,14 @@
                         closeOnCancel: true
                     },
                     function (isConfirm) {
-                        var deleteItem = $scope.tableData[index];
-                        console.log('deleteItem', deleteItem);
                         if (isConfirm) {
-                            var deleteData = {
-                                asin: deleteItem.asin,
-                                shopID: deleteItem.shop.shopId,
-                                sellerSku: deleteItem.sellerSku
-                            };
-                            console.log('deleteData', deleteData);
-                            netManager.put('/base/deleteMerd', deleteData).then(function (res) {
-                                SweetAlert.swal("编辑成功!", "success");
-                                $scope.tableData.splice(index,1);
+                            var id = $scope.tableData[index].id;
+                            netManager.delete('/base/deleteMerd/' + id).then(function (res) {
+                                swal("编辑成功!", "success");
+                                $scope.dtInstance.DataTable.rows(index).remove().draw();
                             }, function (err) {
                                 console.error('error', err.data.description);
-                                SweetAlert.swal("编辑失败!", err.data.description, "error")
+                                swal("编辑失败!", err.data.description, "error")
                             });
                         }
                     });
@@ -196,10 +215,10 @@
                     console.log('res.data', res.data);
                     var shopNames = res.data['shopsNames'];
                     data.list.map(function (val) {
-                        var country,addr;
-                        if(val.shop.name){
+                        var country, addr;
+                        if (val.shop.name) {
                             country = val.shop.name.split('-')[2]
-                        }else{
+                        } else {
                             country = "US"
                         }
                         addr = Smartdo.SIDE_ADDR[country];
@@ -209,21 +228,11 @@
                     console.log('tableData', $scope.tableData);
                     $scope.stockList = data.stockList;
                     $scope.shopNames = shopNames;
-                    $scope.rights= data.rights;
-                    if($scope.rights.add){
-                        $scope.properties.push( {
-                            text: '添加商品',
-                            action: function (e, dt, node, config) {
-                                $scope.addGoods = {
-                                    shelfTime:moment(),
-                                    fba:'0'
-                                };
-                                $scope.formAdd.submitted = false;
-                                $scope.$digest();
-                                $('#addGoodModule').modal('show')
-                            }
-                        });
-                    }
+                    $scope.rights = data.rights;
+
+                    //初始化datable的添加商品权限
+                    deferred.resolve($scope.rights.add);
+
                     $scope.isLoad = false;
                 }, function (err) {
                     console.error(err);

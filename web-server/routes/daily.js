@@ -22,4 +22,3 @@ router.post('/import/confirm', controller.saveDailySell);
 router.get('/import', controller.import);
 
 router.get('/PopupList', controller.PopupList);
-

@@ -74,6 +74,8 @@ module.exports = {
             var time = Moment().format("YYYY-MM-DD HH:mm:ss");
 
             findUser.password = passwd;
+            findUser.needChangePassword = false;
+            findUser.lastChangePassword = time;
             findUser.updatedAt = time;
 
             findUser.save(function(e, r) {

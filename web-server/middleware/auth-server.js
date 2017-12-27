@@ -198,10 +198,7 @@ AuthServer.prototype.token = function() {
                     permissions:    result.permissions || {}
                 };
 
-                var needChangePassword = false;
-                if (password == CryptoJS.MD5(username).toString()) {
-                    needChangePassword = true;
-                }
+                var needChangePassword = result.needChangePassword || false;
 
                 Promise.promisify(tokenUtils.generateAccessToken)(user, scope, function(e, token) {
                     res.success({

@@ -647,32 +647,40 @@ details
   | endTime     | String    | 申请结束时间      |
   | operator    | String    | 运营部审核人      |
   | supplyChain | String    | 供应链审核人      |
+  | currentPage | String    | 当前页数        |
+  | pageSize    | String    | 每一页的数据量     |
 
   返回：
 
 ```json
 {
-  "datas":"主要数据"
   [
     {
         "plan_Id":"采购计划编号",
         "status":"状态",
         "peoples":{
           "applicant":"申请人",
-          "operator":"运营部审核",
-          "suppliyChain":"供应链审核"
+          "operator":[],
+          "suppliyChain":[]
         },
         "details":[
           {
             "productSku":"商品库存sku",
-            "productName":"中文名"
+            "productName":"中文名",
+            "log":"备注"
           },
           {...}
         ],
+        "permissiong":{
+          "view":"是否可以查看",
+          "edit":"是否可以编辑",
+          "review":"是否可以审核"
+        }
     },
     {...}
   ],
-  "pageCount":"页数"
+  "pageCount":"页数",
+  "add":"当前用户是否可以进行创建采购计划的操作"
 }
 
 ```
@@ -730,7 +738,8 @@ details
       {
         "status":"审核结果(同意或不同意)", //0为不同意，1为同意
         "operator":"运营的审核意见（存在则是运营意见，不存在则为空）",
-        "supplyChain":"供应链的审核意见（存在就是供应链意见，不存在则为空）"
+        "supplyChain":"供应链的审核意见（存在就是供应链意见，不存在则为空）",
+        "log":"意见"
       },
       {...}
     ]
@@ -793,22 +802,86 @@ details
 
 参数：
 
+| Key     | Data Type | Description |
+| ------- | --------- | ----------- |
+| status  | String    | 状态          |
+| review  | object    | 审核数据        |
+| total   | Number    | 总金额         |
+| details | object    | 采购明细        |
+
+
+review
 | Key    | Data Type | Description |
 | ------ | --------- | ----------- |
-| status | String    | 状态          |
-| review | object    | 审核数据        |
+| agree  | Number    | 同意或不同意（1或0） |
+| remark | String    | 审核意见        |
 
-```json
-review{
-  "status":"同意或不同意（1或0）",
-  "remark":"审核意见"
-}
-```
+
+details
+| Key                      | Data Type | Description |
+| ------------------------ | --------- | ----------- |
+| product_id               | String    | 产品id        |
+| local_storage            | String    | 广州仓在途及库存数量  |
+| fba_storage              | String    | FBA仓在途及库存总数 |
+| average_7                | String    | 7天平均销量      |
+| average_30               | String    | 30天平均销量     |
+| expected_sales           | String    | 预计销量        |
+| local_transport          | String    | 国内运输和验货时间   |
+| abroad_transport         | String    | 国际运输和入仓时间   |
+| prepare_period           | String    | 备货周期        |
+| safety_stock             | String    | 安全库存天数      |
+| purchase_amount          | String    | 执行采购数量      |
+| supplier                 | String    | 供应商的id      |
+| unit_cost                | String    | 单件M采购成本     |
+| estimate_production_days | String    | 预计生产时间      |
+| least_amount             | String    | 最少起订量       |
+| advance_pay_rate         | String    | 预付比例        |
+| first_time               | String    | 是否首次采购      |
+| remarks                  | String    | 备注          |
 
 返回：
 
 ```json
 true
+```
+
+
+- 返回申请人或审核人
+
+路由：/purchasePlan/getPeoples
+
+方法：GET
+
+参数：
+无
+
+返回：
+
+```json
+  applicant:
+  [
+    {
+      "name":"名字",
+      "_id":"_id",
+    },
+    {...}
+  ],
+  operator:
+  [
+    {
+      "name":"名字",
+      "_id":"_id",
+    },
+    {...}
+  ],
+  supplyChain:
+  [
+    {
+      "name":"名字",
+      "_id":"_id",
+    },
+    {...}
+  ]
 ```
 
 
@@ -1216,7 +1289,7 @@ true
 
   路由：/appraise/EVALTask
 
-  方法：POST
+  方法：GET
 
   参数：
 
@@ -1276,7 +1349,8 @@ true
   	  "currency":"价格符号"
   	}
   	keywords:["关键字"]，     
-    	totalItems:总数据量
+    totalItems:总数据量
+    taskSide:["站点"]
   }
   ```
 
@@ -1437,17 +1511,15 @@ true
 
 - 商品删除：
 
-  路由：/base/deleteMerd
+  路由：/base/deleteMerd/:id
 
-  方法：POST
+  方法：DELETE
 
   参数：
 
-  | Key       | Data Type | Description |
-  | --------- | --------- | ----------- |
-  | asin      | String    | ASIN        |
-  | shopID    | String    | 所属店铺        |
-  | sellerSku | String    | 卖家sku       |
+  | Key  | Data Type | Description |
+  | ---- | --------- | ----------- |
+  | id   | String    | 商品id        |
 
   返回：
 
@@ -1464,7 +1536,12 @@ true
 
   方法：GET
 
-  参数：无
+  参数：
+
+  | Key       | Data Type | Description |
+  | --------- | --------- | ----------- |
+  | teamID    | String    | 小组ID        |
+  | orderType | Number    | 工单类型        |
 
   返回：
 
@@ -1473,13 +1550,24 @@ true
     customerList:[
       {
     	  WOCustomerID:"工单客服ID",
-    	  operateTeam:"运营小组",
+        operateTeam:{
+          id:"运营小组id",
+          name:"运营小组名字"
+        },
     	  WOType:"工单类型",
         customer:{
-          customerID:"客服ID"
-          customerName:"客服名字"
+          id:"客服ID"
+          name:"客服名字"
         }
     	},
+      {···}
+    ],
+    team:[
+      {id: "小组id", name:"小组名称"},
+      {···}
+    ]，
+    customers：[
+    	{id: "客服id", name:"客服名字"},
       {···}
     ]
   }
@@ -1497,14 +1585,14 @@ true
   | Key          | Data Type | Description |
   | ------------ | --------- | ----------- |
   | WOCustomerID | String    | 工单客服ID      |
-  | operateTeam  | String    | 运营小组        |
+  | operateTeam  | String    | 运营小组ID      |
   | WOType       | String    | 工单类型        |
-  | customer     | String    | 客服ID        |
+  | customerID   | String    | 客服ID        |
 
   返回：
 
   ```json
-  Boolean
+  无
   ```
 
 
@@ -1518,14 +1606,14 @@ true
 
   | Key         | Data Type | Description |
   | ----------- | --------- | ----------- |
-  | operateTeam | String    | 运营小组        |
+  | operateTeam | String    | 运营小组ID      |
   | WOType      | String    | 工单类型        |
-  | customer    | String    | 客服ID        |
+  | customerID  | String    | 客服ID        |
 
   返回：
 
   ```json
-  Boolean
+  无
   ```
 
 
@@ -1543,8 +1631,192 @@ true
 
   返回：
 
-  ```json
-  Boolean
+  ```- 待处理工单处理：   路由：/workOrder/dealOrder   方法：POST   参数：     Key 	Data Type	Description     log 	String   	工单客服ID          to  	String   	转派人           返回：       无  - json
+  无
   ```
 
-### 
+
+- 创建工单打开：
+
+  路由：/workOrder/orderReady
+
+  方法：GET
+
+  参数：无
+
+  返回：
+
+  ```json
+  {
+    team:[{
+      id:"小组id",
+      name:"小组名称"
+    },
+      {···}
+         ]
+  }
+  ```
+
+- 创建工单：
+
+  路由：/workOrder/createOrder
+
+  方法：POST
+
+  参数：
+
+  | Key         | Data Type | Description |
+  | ----------- | --------- | ----------- |
+  | operateTeam | String    | 小组ID        |
+  | WOType      | Number    | 问题类型        |
+  | content     | String    | 内容          |
+
+  返回：
+
+  ```json
+  无
+  ```
+
+
+- 待处理工单列表：
+
+  路由：/workOrder/newOrderList
+
+  方法：GET
+
+  参数：无
+
+  返回：
+
+  ```json
+  {
+    list:[
+      {
+        id:"id",
+        orderID:"工单编号",
+        type:"类型",
+        creator:"创建人",
+        content:"工单内容",
+        handler:"当前处理人"
+      },
+      {···}
+    ],
+    typeCount:{
+      "0":其他,
+      "1":评论异常数量,
+      "2":发现跟卖数量,
+      "3"：Lightning Deals数量， 
+      "4":销售权限数量， 
+      "5":品牌更改数量， 
+      "6":店铺IP问题数量，
+      "7":asin被篡改数量，
+      "8":文案被篡改数量
+    },
+    customers:[
+      {
+        id:"id",
+        name:"名字"
+      },
+      {···}
+    ]
+  }
+  ```
+
+
+- 待处理工单编辑打开：
+
+  路由：/workOrder/openOrder
+
+  方法：GET
+
+  参数：
+
+  | Key  | Data Type | Description |
+  | ---- | --------- | ----------- |
+  | id   | String    | 工单客服ID      |
+
+  返回：
+
+  ```json
+  {
+    order:{
+      creator:"创建人",
+  	type:"类型",
+  	createdAt:"创建时间",
+  	content:"内容",
+  	operateTeam:"小组",
+      logs:[{name:"处理人",log:"处理意见"}],
+      history:[{dealtAt:"处理时间",handler:"处理人"}]
+    }
+  }
+  ```
+
+
+
+- 待处理工单处理：
+
+  路由：/workOrder/dealOrder
+
+  方法：POST
+
+  参数：
+
+  | Key       | Data Type | Description    |
+  | --------- | --------- | -------------- |
+  | log       | String    | 处理意见           |
+  | state     | Number    | 状态（1-已跟进 2-完结） |
+  | id        | String    | 工单ID           |
+  | handlerID | String    | 转派人或处理完结人      |
+
+  返回：
+
+  ```json
+  无
+  ```
+
+
+
+
+- 已处理工单：
+
+  路由：/workOrder/dealtList
+
+  方法：GET
+
+  参数：
+
+  | Key          | Data Type | Description |
+  | ------------ | --------- | ----------- |
+  | startDate    | Date      | 开始时间        |
+  | endDate      | Date      | 结束时间        |
+  | state        | Number    | 状态          |
+  | type         | Number    | 类型          |
+  | currentPage  | Number    | 当前页码        |
+  | itemsPerPage | Number    | 页面数据数量      |
+  | creator      | String    | 创建人         |
+  | handler      | String    | 当前处理人       |
+  | treated      | String    | 参与处理人       |
+
+  返回：
+
+  ```json
+  {
+    list:[
+      {
+        orderID:"工单编号",
+    	  state:"状态",
+    	  type:"类型",
+    	  creator:"创建人",
+    	  content:"工单内容",
+    	  handler:"当前处理人"
+      },
+      {···}
+    ]，
+    totalItems :数据总数
+  }
+  ```
+  ​
+
+
+
+###  

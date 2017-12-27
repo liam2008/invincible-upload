@@ -4,19 +4,21 @@ var Schema = mongoose.Schema;
 module.exports = {
     name: "user",
     schema: {
-        _id:            Schema.Types.ObjectId,
-        name:           String,
-        account:        String,
-        password:       String,
-        status:         Number,
-        creator:        { type: Schema.Types.ObjectId, ref: 'user' },
-        scope:          Number,
-        role:           { type: Schema.Types.ObjectId, ref: 'role' },
-        team:           { type: Schema.Types.ObjectId, ref: 'team' },
-        permissions:    {},
-        history:        [],
-        createdAt:      Date,
-        updatedAt:      Date,
-        deletedAt:      Date
+        _id:                Schema.Types.ObjectId,
+        name:               String,
+        account:            String,
+        password:           String,
+        status:             Number,
+        needChangePassword: Boolean,
+        lastChangePassword: Date,
+        creator:            { type: Schema.Types.ObjectId, ref: 'user' },
+        scope:              Number,
+        role:               { type: Schema.Types.ObjectId, ref: 'role' },
+        team:               { type: Schema.Types.ObjectId, ref: 'team' },
+        permissions:        {},
+        history:            [],
+        createdAt:          Date,
+        updatedAt:          Date,
+        deletedAt:          Date
     }
 };

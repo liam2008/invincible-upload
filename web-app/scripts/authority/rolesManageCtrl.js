@@ -145,6 +145,7 @@
                         collapsedAll: true,
                         scope: angular.element(document.getElementById('addRolesModule')).scope(),
                         department: '',
+                        navList:angular.copy(shareData.navList),
                         collapseAll: function () {
                             this.collapsedAll = true;
                         },
@@ -152,7 +153,6 @@
                             this.collapsedAll = false;
                         }
                     };
-                    debugger;
                     $scope.addRoles.navList = permissionFn.navListFn($scope.addRoles.navList);
                     $scope.addRoles.departmentList = res.data;
                     $scope.isLoad = false;
@@ -172,7 +172,6 @@
                         department: $scope.addRoles.department,
                         management: $scope.addRoles.management
                     };
-                    debugger;
                     console.log('saveUserData', saveUserData);
                     netManager.post('/roles', saveUserData).then(function (res) {
                         $('#addRolesModule').modal('hide');

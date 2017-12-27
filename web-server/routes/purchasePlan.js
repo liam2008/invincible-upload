@@ -23,4 +23,6 @@ router.get('/editShow', controller.editShow);
 
 router.post('/editSubmit', controller.editSubmit);
 
-router.post('/review', controller.review);
+router.post('/review', helper.team_list, subFileter.purchase_plan, procedure.purchase_plan, controller.review);
+
+router.get('/getPeoples', controller.getPeoples);

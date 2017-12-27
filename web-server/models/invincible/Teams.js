@@ -6,8 +6,8 @@ module.exports = {
     schema: {
         _id:        Schema.Types.ObjectId,
         name:       String,     // 小组名称
-        leader:     { type: Schema.Types.ObjectId, ref: 'user' },     // 小组长
-        members:    [],         // 小组成员
+        leader:     { type: Schema.Types.ObjectId, ref: 'user' },       // 小组长
+        members:    [{ type: Schema.Types.ObjectId, ref: 'user' }],     // 小组成员
         history:    [],         // 历史
         createdAt:  Date,       // 创建时间
         updatedAt:  Date,       // 修改时间

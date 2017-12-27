@@ -8,9 +8,7 @@
     display: inline-block;
     font-size: 13px;
     position: relative;
-    vertical-align: middle;
-    /*width: 100% !important;*/
-}
+    vertical-align: middle; }
 .chosen-container .chosen-drop {
     background: #fff;
     border: 1px solid #e5e6e7;

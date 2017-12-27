@@ -13,13 +13,23 @@ module.exports = {
 
 router.use(app.authServer.authenticate());
 
-router.get('/customerList', subfilter.merchandise_edit, controller.customerList);
+router.get('/customerList', subfilter.operativeCustomer, controller.customerList);
 
-router.post('/saveCustomer', subfilter.merchandise_edit, controller.saveCustomer);
+router.post('/saveCustomer', subfilter.operativeCustomer, controller.saveCustomer);
 
-router.post('/updateCustomer', subfilter.merchandise_edit, controller.updateCustomer);
+router.post('/updateCustomer', subfilter.operativeCustomer, controller.updateCustomer);
 
-router.get('/deleteCustomer', subfilter.merchandise_edit, controller.deleteCustomer);
+router.post('/deleteCustomer', subfilter.operativeCustomer, controller.deleteCustomer);
 
-router.post('/CreateOrder', subfilter.merchandise_edit, controller.workOrderCreate);
+router.post('/createOrder', subfilter.workOrder, controller.workOrderCreate);
+
+router.get('/newOrderList', subfilter.workOrder, controller.newOrderList);
+
+router.post('/dealOrder', subfilter.workOrder, controller.dealOrder);
+
+router.get('/dealtList', subfilter.workOrder, controller.dealtList);
+
+router.get('/orderReady', subfilter.workOrder, controller.orderReady);
+
+router.get('/openOrder', subfilter.workOrder, controller.openOrder);
 

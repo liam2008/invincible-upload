@@ -133,7 +133,12 @@ module.exports = {
                         }
                         total.product_unit_price = "#";
                         total.first_ship_unit_price = "#";
-                        results.total = total;
+                        if (subFilter.total) {
+                            results.total = total;
+                            results.hasTotal = true;
+                        }else {
+                            results.hasTotal = false;
+                        }
                         callB(null);
                     })
                 },
@@ -186,6 +191,7 @@ module.exports = {
             return;
         }
 
+        var results = {};
         var teamName;
         async.series([
                 function (callB) {
@@ -216,7 +222,6 @@ module.exports = {
                     };
                     MysqlCrawler.query(sql, null, function (err, groupResult) {
                         if (dealErr.findErr(err, res)) return debug(new Error(err));
-                        var results = {};
                         var list = [];
                         if (groupResult) {
                             groupResult.forEach(function (group) {
@@ -253,9 +258,13 @@ module.exports = {
                             total.gross_profit = total.gross_profit.toFixed(2);
                             total.actual_sales_volume = total.actual_sales_volume.toFixed(2);
                             results.list = list;
-                            results.total = total;
+                            if (subFilter.total) {
+                                results.total = total;
+                                results.hasTotal = true;
+                            }else {
+                                results.hasTotal = false;
+                            }
                         }
-                        res.success(results);
                         callB(null);
                     });
                 }
@@ -265,6 +274,7 @@ module.exports = {
                     debug(new Error(err));
                     return;
                 }
+                res.success(results);
             }
         )
     },
@@ -276,7 +286,7 @@ module.exports = {
                 // 根据店铺名找出店铺id
                 function (callB) {
                     var findRequire = {};
-                    findRequire.name = req.body.shopName;
+                    findRequire.name = req.query.shopName;
                     Shops.findOne(findRequire, function (err, shopOneFound) {
                         if (dealErr.findErr(err, res)) return callB(err);
                         if (shopOneFound) {
@@ -284,24 +294,7 @@ module.exports = {
                             callB(null);
                         }else {
                             res.error(ERROR_CODE.NOT_EXISTS);
-                            callB(err);
-                            return;
-                        }
-                    })
-                },
-
-                // 根据小组名找出小组id
-                function (callB) {
-                    var findRequire = {};
-                    findRequire.team_name = req.body.teamName;
-                    Merchandise.findOne(findRequire, function (err, merdOneFound) {
-                        if (dealErr.findErr(err, res)) return callB(err);
-                        if (merdOneFound) {
-                            require.team_id = merdOneFound.team_id;
-                            callB(null);
-                        }else {
-                            res.error(ERROR_CODE.NOT_EXISTS);
-                            callB(err);
+                            callB(ERROR_CODE.NOT_EXISTS);
                             return;
                         }
                     })
@@ -309,17 +302,21 @@ module.exports = {
 
                 // 找出对应asin数据
                 function (callB) {
-                    require.seller_sku = req.body.sellerSku;
+                    require.seller_sku = req.query.sellerSku;
                     Merchandise.findOne(require)
                         .populate("product_id")
                         .exec(function (err, merdOneFound) {
                         if (dealErr.findErr(err, res)) return callB(err);
                         if (merdOneFound) {
                             result.asin = merdOneFound.asin;
-                            result.storeSku = merdOneFound.store_sku;
-                            if (merdOneFound.product_id) result.nameCN = merdOneFound.product_id.name_cn;
+
+                            if (merdOneFound.product_id) {
+                                result.nameCN = merdOneFound.product_id.name_cn;
+                                result.storeSku = merdOneFound.product_id.store_sku;
+                            }else {
+                                result.storeSku = merdOneFound.store_sku || "";
+                            }
                         }
-                        res.success(result);
                         callB(null);
                     })
                 }
@@ -329,6 +326,7 @@ module.exports = {
                     debug(err);
                     return;
                 }
+                res.success(result);
             }
         );
     }

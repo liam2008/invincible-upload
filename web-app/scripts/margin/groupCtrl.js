@@ -71,7 +71,8 @@
 					params: $scope.where
 				}).then(function(res) {
 					$scope.list = res.data['list'];
-					$scope.total = res.data['total']
+					$scope.total = res.data['total'];
+					$scope.hasTotal = res.data['hasTotal']
 				})
 			}
 

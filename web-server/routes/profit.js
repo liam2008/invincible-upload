@@ -17,4 +17,4 @@ router.get('/profitShow', subfilter.skuProfit, controller.profitShow);
 
 router.get('/teamProfitShow', subfilter.teamProfit, controller.teamProfitShow);
 
-router.post('/profitDetail', controller.profitDetail);
+router.get('/profitDetail', controller.profitDetail);

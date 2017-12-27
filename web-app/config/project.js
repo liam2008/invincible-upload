@@ -2,6 +2,7 @@ var App = window.App || {};
 
 App.config = (function() {
 	return {
-		"server": "http://127.0.0.1:9800",
+		"server": "http://192.168.0.92:9800",
+        "version": +new Date()
 	};
 }());

@@ -8,6 +8,8 @@ var ERROR_CODE = Shared.ERROR;
 var MESSAGE = Shared.MESSAGE;
 var dealErr = require('../errors/controller-error');
 
+var env = process.env.NODE_ENV || "development";
+
 module.exports = {
     name: "sellerRank",
 
@@ -105,7 +107,11 @@ module.exports = {
             }
             SellerRank.count(findRequire, function (err, maxNum) {
                 results["total"] = maxNum;
-                res.success(results);
+                if (env != "development") {
+                    res.success(results);
+                }else {
+                    res.success();
+                }
             })
         });
     },
@@ -120,7 +126,11 @@ module.exports = {
                 var result = [(SellerRankResult.M1)[i], (SellerRankResult.M3)[i], (SellerRankResult.M12)[i], (SellerRankResult.Lifetime)[i]];
                 results.push(result);
             }
-            res.success(results);
+            if (env != "development") {
+                res.success(results);
+            }else {
+                res.success();
+            }
         });
     }
 };

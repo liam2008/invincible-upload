@@ -36,7 +36,7 @@
                                 <tr>
                                     <th>序号</th>
                                     <th>图片</th>
-                                    <th>产品信息</th>
+                                    <th style="width:200px;">产品信息</th>
                                     <th>评价/星级</th>
                                     <th>购买状态</th>
                                     <th>第一次评价</th>
@@ -50,9 +50,9 @@
                                         {{$index+1}}
                                     </td>
                                     <td>
-                                        <img ng-src="{{asinItem.imgUrl}}" alt="img"/>
+                                        <img style="width:100px;height:100px;" ng-src="{{asinItem.imgUrl}}" alt="img"/>
                                     </td>
-                                    <td width="400">
+                                    <td>
                                         <div>
                                             {{asinItem.title}}
                                         </div>
@@ -65,7 +65,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="text-success">{{asinItem.reviewsCnt || 0}}<!--todo--></div>
+                                        <div class="text-success">{{asinItem.reviewsCnt || 0}}</div>
                                         <div>
                                             <div star-score rating-value="asinItem.totalStar" max="5"
                                                  readonly="true"></div>

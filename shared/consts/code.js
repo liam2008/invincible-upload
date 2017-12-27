@@ -114,14 +114,15 @@
         ORDERID_NOT_NUMBER:             '1059',
         TOKEN_EXPIRED:                  '1060',
         FIND_FAILED:                    '1061',
-        OVER_NUMBER:                    '1062'
+        OVER_NUMBER:                    '1062',
+        DB_VAL_ERROR:                   '1063'
     };
 
     var Message = root.MESSAGE = {
         "1000": [ 500, "InternalError" ],
         "1001": [ 400, "InvalidArgument" ],
         "1002": [ 400, "MissingArgument" ],
-        "1003": [ 400, "AlreadyExists" ],
+        "1003": [ 400, "已存在" ],
         "1004": [ 400, "NotExists" ],
         "1005": [ 400, "密码错误" ],
         "1006": [ 401, "UnauthorizedRequest" ],
@@ -179,6 +180,7 @@
         "1058": [ 400, "MissingAccount" ],
         "1060": [ 400, "TokenExpired" ],
         "1061": [ 400, "FindFailed" ],
-        "1062": [ 400, "NumberTooLarge" ]
+        "1062": [ 400, "NumberTooLarge" ],
+        "1063": [ 400, "数据库数据有错" ]
     };
 }(Smartdo));

@@ -8560,6 +8560,10 @@ body.md-skin {
     cursor: pointer;
 }
 
+.dataTable td {
+    word-break: break-all;
+}
+
 .l{
     border:1px solid red;
 }

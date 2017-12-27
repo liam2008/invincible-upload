@@ -1,0 +1,304 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>
+                待处理工单
+            </h5>
+        </div>
+        <div class="ibox-content">
+            <!--首页-->
+            <div ng-show="state.home">
+                <!--导航-->
+                <div class="row m-b-lg">
+                    <h3 class="col-lg-2 text-center cursor" ng-click="dataFilter(0)">
+                    <span class="inline">
+                        评论异常 <span ng-class="{'text-danger':typeCount['0']}">({{typeCount['0'] || 0}})</span>
+                    </span>
+                    <span class="m-l-sm inline m-t-lg">
+                        <i class="fa fa-2x" ng-class="{true:'fa-caret-down',false:'fa-caret-up'}[tabItem[0]]"></i>
+                    </span>
+                    </h3>
+
+                    <h3 class="col-lg-2 text-center cursor" ng-click="dataFilter(1)">
+                    <span class="inline">
+                        发现跟卖 <span ng-class="{'text-danger':typeCount['1']}">({{typeCount['1'] || 0}})</span>
+                    </span>
+                    <span class="m-l-sm inline m-t-lg">
+                        <i class="fa fa-2x" ng-class="{true:'fa-caret-down',false:'fa-caret-up'}[tabItem[1]]"></i>
+                    </span>
+                    </h3>
+
+                    <h3 class="col-lg-2 text-center cursor" ng-click="dataFilter(2)">
+                    <span class="inline">
+                        ASIN被篡改 <span ng-class="{'text-danger':typeCount['2']}">({{typeCount['2'] || 0}})</span>
+                    </span>
+                    <span class="m-l-sm inline m-t-lg">
+                        <i class="fa fa-2x" ng-class="{true:'fa-caret-down',false:'fa-caret-up'}[tabItem[2]]"></i>
+                    </span>
+                    </h3>
+
+                    <h3 class="col-lg-2 text-center cursor" ng-click="dataFilter(3)">
+                    <span class="inline">
+                        文案被修改 <span ng-class="{'text-danger':typeCount['3']}">({{typeCount['3'] || 0}})</span>
+                    </span>
+                    <span class="m-l-sm inline m-t-lg">
+                        <i class="fa fa-2x" ng-class="{true:'fa-caret-down',false:'fa-caret-up'}[tabItem[3]]"></i>
+                    </span>
+                    </h3>
+
+                    <h3 class="col-lg-2 text-center cursor" ng-click="dataFilter(4)">
+                    <span class="inline">
+                        普通工单 <span ng-class="{'text-danger':typeCount['4']}">({{typeCount['4'] || 0}})</span>
+                    </span>
+                    <span class="m-l-sm inline m-t-lg">
+                        <i class="fa fa-2x" ng-class="{true:'fa-caret-down',false:'fa-caret-up'}[tabItem[4]]"></i>
+                    </span>
+                    </h3>
+                </div>
+
+                <!--table-->
+                <div class="table-responsive">
+                    <table datatable="ng" dt-options="dtOptions"
+                           class="table table-striped table-bordered table-hover dataTables-example table-responsive"
+                           dt-instance="dtInstance">
+                        <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>工单编号</th>
+                            <th>类型</th>
+                            <th>创建人</th>
+                            <th width="400px;">工单内容</th>
+                            <th>当前处理人</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="value in tableData">
+                            <td>
+                                {{$index+1}}
+                            </td>
+                            <td>
+                                {{value.orderID || '-'}}
+                            </td>
+                            <td>
+                                {{value.type | typeState}}
+                            </td>
+                            <td>
+                                {{value.creator || '-'}}
+                            </td>
+                            <td ng-bind-html="value.content | trustHtml">
+
+                            </td>
+                            <td>
+                                {{value.handler || '-'}}
+                            </td>
+                            <td>
+                                <button class="btn btn-primary btn-outline btn-sm" type="button"
+                                        ng-click="handle($index)">处理
+                                </button>
+                                &nbsp;&nbsp;&nbsp;
+                                <button class="btn btn-danger btn-outline btn-sm" type="button"
+                                        ng-click="sendTurn($index)">转派
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!--处理-->
+            <div ng-show="state.handle">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">
+                            <span class="text-danger">*</span>
+                            创建人
+                        </label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static">{{handleData.creator}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">
+                            <span class="text-danger">*</span>
+                            创建时间
+                        </label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static">{{handleData.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">
+                            <span class="text-danger">*</span>
+                            类型
+                        </label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static">{{handleData.type | typeState}}</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">
+                            <span class="text-danger">*</span>
+                            内容
+                        </label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static">
+                                {{handleData.content}}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-if="handleData.operateTeam">
+                        <label class="col-sm-1 control-label">
+                            <span class="text-danger">*</span>
+                            小组
+                        </label>
+
+                        <div class="col-sm-10">
+                            <p class="form-control-static">
+                                {{handleData.operateTeam}}
+                            </p>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="hr-line-dashed"></div>
+
+                <!--tab选择-->
+                <uib-tabset active="activeForm">
+                    <uib-tab index="0" heading="工单处理">
+                        <form class="form-horizontal m-t-md m-b-md">
+                            <div ng-repeat="logItem in handleData.logs">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">
+                                        处理意见
+                                    </label>
+
+                                    <div class="col-sm-10">
+                                        <div class="form-control-static">
+                                            <span>{{logItem.name}}</span>
+                                        </div>
+                                        <p>
+                                            {{logItem.log}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">
+                                    <span class="text-danger">*</span>
+                                    处理意见
+                                </label>
+
+                                <div class="col-sm-10">
+                                    <textarea cols="45" rows="10" ng-model="handleData.addLog"></textarea>
+                                </div>
+                            </div>
+
+                        </form>
+                    </uib-tab>
+                    <uib-tab index="1" heading="工单轨迹">
+                        <div id="vertical-timeline" class="vertical-container dark-timeline">
+                            <div class="vertical-timeline-block"
+                                 ng-repeat="historyItem in handleData.history">
+                                <div class="vertical-timeline-icon navy-bg">
+                                    <i class="fa" ng-class="{'fa-clock-o':$index==0,'fa-edit':$index==1}"></i><!--,'fa-smile-o':historyItem.state==2-->
+                                </div>
+
+                                <div class="vertical-timeline-content">
+                                    <h2>
+                                        <span ng-if="$index==0">创建工单</span>
+                                        <span ng-if="$index!=0">转派</span>
+                                    </h2>
+
+                                    <div class="clearfix">
+                                        <div class="pull-left">
+                                            <span ng-if="$index==0">创建人：</span>
+                                            <span ng-if="$index!=0">处理人：</span>{{historyItem.handler}}
+                                        </div>
+
+                                        <div class="vertical-date pull-right">
+                                            <span ng-if="$index!=0">处理时间：</span>
+                                            {{historyItem.dealtAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </uib-tab>
+                </uib-tabset>
+
+                <div class="hr-line-dashed"></div>
+
+                <div class="text-center m-b-lg">
+                    <button class="btn btn-white m-r-lg" ng-click="endOrder()">工单完结</button>
+                    <button class="btn btn-white  m-r-lg" type="button" ng-click="sendTurn()">转派</button>
+                    <button class="btn btn-white btn-md" ng-click="cancelHandle()">取消</button>
+                </div>
+            </div>
+
+            <!--转派-->
+            <div ng-show="state.send">
+                <form class="form-horizontal" name="formSend" role="form" novalidate>
+                    <div class="row">
+                        <div class="col-sm-5 col-sm-offset-4">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">
+                                    <span class="text-danger">*</span>
+                                    当前处理人
+                                </label>
+
+                                <div class="col-sm-9">
+                                    <p class="form-control-static">{{account.name}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-5 col-sm-offset-4">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">
+                                    <span class="text-danger">*</span>
+                                    转派处理人
+                                </label>
+
+                                <div class="col-sm-9">
+                                    <select class="form-control" ng-model="sendData.handler" name="sendName"
+                                            ng-options="item as item.name for item in customers" required>
+                                        <option value>请选择处理人</option>
+                                    </select>
+
+                                    <div class="m-t-xs" ng-show="formSend.submitted && formSend.sendName.$invalid">
+                                        <small class="text-danger" ng-show="formSend.sendName.$error.required">
+                                            转派处理人不能为空
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="text-center m-b-lg">
+                    <button class="btn btn-white btn-md m-r-lg" ng-click="saveSend()">保存</button>
+                    <button class="btn btn-white btn-md" ng-click="cancelSend()">取消</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div load-icon is-load="isLoad"></div>
+</div>

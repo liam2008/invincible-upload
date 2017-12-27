@@ -1,0 +1,105 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>
+                创建工单
+            </h5>
+        </div>
+        <div class="ibox-content">
+            <form class="form-horizontal" name="formAdd" role="form" novalidate>
+                <div class="row">
+                    <div class="form-group col-lg-4">
+                        <label class="col-sm-3 control-label">
+                            <span class="text-danger">*</span>
+                            创建人
+                        </label>
+
+                        <div class="col-sm-2 control-label">
+                            {{account.name}}
+                        </div>
+                    </div>
+
+                    <div class="form-group col-lg-4">
+                        <label class="col-sm-3 control-label">
+                            <span class="text-danger">*</span>
+                            创建时间
+                        </label>
+
+                        <div class="col-sm-5 control-label">
+                            {{createTime}}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-lg-4">
+                        <label class="col-sm-3 control-label" for="teams">
+                            <span class="text-danger">*</span>
+                            小组
+                        </label>
+
+                        <div class="col-sm-9">
+                            <select class="chosen-select" name="teams" id="teams" chosen ng-model="initData.operateTeam" ng-options="item['id'] as item.name for item in teamList" required>
+                                <option value>请选择小组</option>
+                            </select>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.teams.$invalid">
+                                <small class="text-danger" ng-show="formAdd.teams.$error.required">
+                                    小组不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-lg-4">
+                        <label class="col-sm-3 control-label" for="WOType">
+                            <span class="text-danger">*</span>
+                            问题类型
+                        </label>
+
+                        <div class="col-sm-9">
+                            <select class="form-control" name="WOType" id="WOType" ng-model="initData.WOType" ng-options="item['id'] as item.name for item in typeList" required>
+                                <option value>请选择类型</option>
+                            </select>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.WOType.$invalid">
+                                <small class="text-danger" ng-show="formAdd.WOType.$error.required">
+                                    问题类型不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-lg-4">
+                        <label class="col-sm-3 control-label" for="content">
+                            <span class="text-danger">*</span>
+                            内容
+                        </label>
+
+                        <div class="col-sm-9">
+                            <textarea name="content" id="content" cols="45" rows="10" ng-model="initData.content" required></textarea>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.content.$invalid">
+                                <small class="text-danger" ng-show="formAdd.content.$error.required">
+                                    内容不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="text-center m-b-lg">
+                <button class="btn btn-primary btn-md m-r-lg" ng-click="post()">提交</button>
+                <button class="btn btn-white btn-md" ng-click="cancel()">取消</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+

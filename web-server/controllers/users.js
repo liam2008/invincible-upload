@@ -421,6 +421,11 @@ module.exports = {
                         return;
                     }
 
+                    if (afterRole != 'leader') {
+                        callB(null);
+                        return;
+                    }
+
                     User.findOne({team: team, role: afterRole}, function(err, findUser) {
                         if (err) {
                             callB(ERROR_CODE.DB_ERROR);

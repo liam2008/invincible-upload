@@ -111,8 +111,12 @@
             app_route: "main.analysis.review",
             server_route: ['/appraise/EVALTask']
         },
-        "c961c78c-50c9-48de-89ae-1a07f989e00b": {
+        "cb398c7d38da415f8a6af3044fbee6ce": {
             app_route: "main.analysis.keyword",
+            server_route: ['/appraise/keyword']
+        },
+        "5645127ef89f42d9b900d0411b256482": {
+            app_route: "main.workOrder.createOrder",
             server_route: ['/appraise/keyword']
         }
     };

@@ -16,11 +16,6 @@
                 console.error(err);
             });
 
-            netManager.post('/workOrder/CreateOrder', {operateTeam:"小组A", WOType: 1,content:"123456"}).then(function (res) {
-            }, function (err) {
-                console.error(err);
-            });
-
             //预览
             $scope.fnReview = function () {
                 var contentHtml = $('#setContnet').val();
