@@ -1,0 +1,407 @@
+<style>
+	.daterangepicker .ranges {
+		width: 180px;
+	}
+	
+	.daterangepicker .ranges .input-mini {
+		width: 80px;
+	}
+	
+	#sectionA .form-group {
+		margin-right: 15px;
+		margin-bottom: 4px;
+	}
+	
+	#sectionA .form-control {
+		width: 200px;
+		margin-left: 4px;
+	}
+	
+	table.table tr td {
+		vertical-align: middle;
+	}
+	
+	#sectionA .pagination {
+		display: block;
+		text-align: right;
+		-webkit-user-select: none;
+	}
+	
+	#sectionA .pagination li {
+		display: inline-block;
+		vertical-align: middle;
+		padding: 6px;
+		margin: 0 5px;
+		min-width: 32px;
+		text-align: center;
+		font-family: sans-serif;
+		font-weight: bold;
+		color: #2d2f33;
+		background-color: #f3f4f5;
+		border-radius: 2px;
+		cursor: pointer;
+	}
+	
+	#sectionA .pagination li:hover {
+		color: #1ab394;
+	}
+	
+	#sectionA .pagination li.active {
+		color: #fff;
+		background-color: #1ab394;
+	}
+	
+	#sectionB .table label {
+		width: 42px;
+		margin-right: 4px;
+		text-align: right;
+		font-weight: normal;
+	}
+	
+	#sectionB .form-control.num {
+		width: 102px;
+	}
+	
+	#sectionB .form-control.tips {
+		width: 40px;
+	}
+	
+	#sectionB .form-control.text {
+		width: 240px;
+	}
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>{{ activeShow||'样品购买' }}</h5>
+				</div>
+				<!-- 首页列表 -->
+				<section class="ibox-content" id="sectionA" ng-if="!activeShow">
+					<nav class="form-inline">
+						<div class="form-group">
+							<label>申请人</label>
+							<input class="form-control">
+						</div>
+						<div class="form-group">
+							<label>样品名</label>
+							<input class="form-control">
+						</div>
+						<div class="form-group">
+							<label>申请时间</label>
+							<input class="form-control date-picker" id="daterange" ng-model="daterange" date-range-picker options="{separator:' 至 ',locale:{format:'YYYY-MM-DD',fromLabel:'开始',toLabel:'结束',applyLabel:'应用',cancelLabel:'取消'}}">
+						</div>
+						<div class="form-group">
+							<label>样品单状态</label>
+							<select class="form-control">
+								<option>请选择</option>
+								<option>待处理</option>
+								<option>待收货</option>
+								<option>部分收货</option>
+								<option>已完成</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<button class="btn btn-info">查 询</button>
+						</div><br>
+						<div class="form-group btn-group m-t">
+							<button class="btn btn-white" ng-click="active('新建样品单', item)">新建样品单</button>
+							<button class="btn btn-white">删 除</button>
+							<button class="btn btn-white">标记为已完成</button>
+						</div>
+					</nav>
+					<table class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr>
+								<th width="39" class="text-center"><input type="checkbox"></th>
+								<th width="120">编号</th>
+								<th width="70">状态</th>
+								<th width="60" class="text-center">样品图片</th>
+								<th>样品信息</th>
+								<th>供应商</th>
+								<th width="50">数量</th>
+								<th width="50">签收</th>
+								<th width="45">单位</th>
+								<th width="84">单价</th>
+								<th width="136">费用信息</th>
+								<th width="138">申请信息</th>
+								<th width="133" class="text-center">操作</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in sampleList">
+								<td class="text-center"><input type="checkbox"></td>
+								<td>SPO171225001</td>
+								<td>部分收货</td>
+								<td><img width="60" height="60" src="https://i1.mifile.cn/a4/848def18-47d9-4ca0-8822-c2ac61b83779"></td>
+								<td style="">
+									名称：
+									<a href="#">样品名称示例Sample name sample</a>
+									<div>型号： XH001</div>
+									<div>颜色： 白色</div>
+								</td>
+								<td>广州智干电子商务科技有限公司</td>
+								<td>999</td>
+								<td>999</td>
+								<td class="text-center">套</td>
+								<td>99.00</td>
+								<td>
+									<div>金额：98901.00</div>
+									<div>运费：99.00</div>
+									<div>总金额：99000.00</div>
+								</td>
+								<td>
+									<div>申请人</div>
+									<div>2017-12-25 12:00:00</div>
+								</td>
+								<td>
+									<button class="btn btn-info btn-xs" ng-click="active('编辑样品单', item)">编辑</button>
+									<button class="btn btn-primary btn-xs" ng-click="active('关联订单号', item)">关联</button>
+									<button class="btn btn-success btn-xs" ng-click="active('签收', item)">签收</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<!-- 分页 -->
+					<ul class="pagination" ng-if="where.currentPage<=6">
+						<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+						<li ng-if="page<=6" ng-click="handlePagination(page)" ng-repeat="page in pageCount" ng-class="page==where.currentPage?'active':''">{{ page }}</li>
+						<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+					</ul>
+					<ul class="pagination" ng-if="where.currentPage>6">
+						<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+						<li ng-click="handlePagination(where.currentPage-3)" ng-class="where.currentPage-3==where.currentPage?'active':''">{{ where.currentPage-3 }}</li>
+						<li ng-click="handlePagination(where.currentPage-2)" ng-class="where.currentPage-2==where.currentPage?'active':''">{{ where.currentPage-2 }}</li>
+						<li ng-click="handlePagination(where.currentPage-1)" ng-class="where.currentPage-1==where.currentPage?'active':''">{{ where.currentPage-1 }}</li>
+						<li ng-click="handlePagination(where.currentPage)" ng-class="where.currentPage==where.currentPage?'active':''">{{ where.currentPage }}</li>
+						<li ng-if="where.currentPage+1<=pageCount.length" ng-click="handlePagination(where.currentPage+1)" ng-class="where.currentPage+1==where.currentPage?'active':''">{{ where.currentPage+1 }}</li>
+						<li ng-if="where.currentPage+2<=pageCount.length" ng-click="handlePagination(where.currentPage+2)" ng-class="where.currentPage+2==where.currentPage?'active':''">{{ where.currentPage+2 }}</li>
+						<li ng-if="where.currentPage+3<=pageCount.length" ng-click="handlePagination(where.currentPage+3)" ng-class="where.currentPage+3==where.currentPage?'active':''">{{ where.currentPage+3 }}</li>
+						<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+					</ul>
+					<!-- /分页 -->
+				</section>
+				<!-- /首页列表 -->
+				<!-- 新增编辑 -->
+				<section class="ibox-content" id="sectionB" ng-if="activeShow=='新建样品单'||activeShow=='编辑样品单'">
+					<nav class="form-inline m-b">
+						<div class="form-group m-r">
+							<label>申请人</label>
+							<input class="form-control" readonly>
+						</div>
+						<div class="form-group m-r">
+							<label>采购类型</label>
+							<select class="form-control">
+								<option>样品采购</option>
+							</select>
+						</div>
+						<div class="form-group m-r">
+							<label>采购方式</label>
+							<select class="form-control">
+								<option>国内采购</option>
+								<option>亚马逊采购</option>
+							</select>
+						</div>
+					</nav>
+					<table class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th width="77" class="text-center">样品图片</th>
+								<th>样品信息</th>
+								<th>供应商</th>
+								<th>样品链接</th>
+								<th width="120" class="text-center">数量</th>
+								<th width="57" class="text-center">单位</th>
+								<th width="120" class="text-center">单价</th>
+								<th width="165">费用信息</th>
+								<th width="53"><button class="btn btn-primary btn-xs">添加</button></th>
+							</tr>
+						</thead>
+						<tbody class="form-inline">
+							<tr>
+								<td><img width="60" height="60"></td>
+								<td>
+									<div><label>名称</label><input class="form-control input-sm text"></div>
+									<div><label>型号</label><input class="form-control input-sm text"></div>
+									<div><label>颜色</label><input class="form-control input-sm text"></div>
+								</td>
+								<td><input class="form-control input-sm text"></td>
+								<td><input class="form-control input-sm text"></td>
+								<td><input class="form-control input-sm num"></td>
+								<td><input class="form-control input-sm tips"></td>
+								<td><input class="form-control input-sm num"></td>
+								<td>
+									<div><label>金额</label><input class="form-control input-sm num"></div>
+									<div><label>运费</label><input class="form-control input-sm num"></div>
+									<div><label>总费用</label><input class="form-control input-sm num"></div>
+								</td>
+								<td><button class="btn btn-danger btn-xs">删除</button></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="9">
+									<span class="m-r">金额合计：98901.00</span>
+									<span class="m-r">运费合计：99.00</span>
+									<span class="m-r">总费用合计：99000.00</span>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+					<article class="m-b">
+						<button class="btn btn-w-m btn-primary">确 认</button>
+						<button class="btn btn-w-m btn-white m-l" ng-click="active(null)">取 消</button>
+					</article>
+				</section>
+				<!-- /新增编辑 -->
+				<!-- 关联订单号 -->
+				<section class="ibox-content" id="sectionC" ng-if="activeShow=='关联订单号'">
+					<nav class="form-inline m-b">
+						<div class="form-group m-r">
+							<label>申请人</label>
+							<input class="form-control" readonly>
+						</div>
+						<div class="form-group m-r">
+							<label>采购类型</label>
+							<select class="form-control">
+								<option>样品采购</option>
+							</select>
+						</div>
+						<div class="form-group m-r">
+							<label>采购方式</label>
+							<select class="form-control">
+								<option>国内采购</option>
+								<option>亚马逊采购</option>
+							</select>
+						</div>
+					</nav>
+					<table class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th width="60" class="text-center">样品图片</th>
+								<th>样品信息</th>
+								<th>供应商</th>
+								<th width="200">外部单号</th>
+								<th width="50">数量</th>
+								<th width="45">单位</th>
+								<th width="84">单价</th>
+								<th width="136">费用信息</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><img width="60" height="60" src="https://i1.mifile.cn/a4/848def18-47d9-4ca0-8822-c2ac61b83779"></td>
+								<td style="">
+									名称：
+									<a href="#">样品名称示例Sample name sample</a>
+									<div>型号： XH001</div>
+									<div>颜色： 白色</div>
+								</td>
+								<td>广州智干电子商务科技有限公司</td>
+								<td><input class="form-control input-sm"></td>
+								<td>999</td>
+								<td class="text-center">套</td>
+								<td>99.00</td>
+								<td>
+									<div>金额：98901.00</div>
+									<div>运费：99.00</div>
+									<div>总金额：99000.00</div>
+								</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="8">
+									<span class="m-r">金额合计：98901.00</span>
+									<span class="m-r">运费合计：99.00</span>
+									<span class="m-r">总费用合计：99000.00</span>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+					<article class="m-b">
+						<button class="btn btn-w-m btn-primary">确 认</button>
+						<button class="btn btn-w-m btn-white m-l" ng-click="active(null)">取 消</button>
+					</article>
+				</section>
+				<!-- /关联订单号 -->
+				<!-- 签收 -->
+				<section class="ibox-content" id="sectionD" ng-if="activeShow=='签收'">
+					<nav class="form-inline m-b">
+						<div class="form-group m-r">
+							<label>申请人</label>
+							<input class="form-control" readonly>
+						</div>
+						<div class="form-group m-r">
+							<label>采购类型</label>
+							<select class="form-control">
+								<option>样品采购</option>
+							</select>
+						</div>
+						<div class="form-group m-r">
+							<label>采购方式</label>
+							<select class="form-control">
+								<option>国内采购</option>
+								<option>亚马逊采购</option>
+							</select>
+						</div>
+					</nav>
+					<table class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th width="60" class="text-center">图片</th>
+								<th>样品信息</th>
+								<th>供应商</th>
+								<th width="120">外部单号</th>
+								<th width="50">数量</th>
+								<th width="45">单位</th>
+								<th width="84">单价</th>
+								<th width="136">费用信息</th>
+								<th width="136">签收数量</th>
+								<th width="60" class="text-center">实物图片</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><img width="60" height="60" src="https://i1.mifile.cn/a4/848def18-47d9-4ca0-8822-c2ac61b83779"></td>
+								<td style="">
+									名称：
+									<a href="#">样品名称示例Sample name sample</a>
+									<div>型号： XH001</div>
+									<div>颜色： 白色</div>
+								</td>
+								<td>广州智干电子商务科技有限公司</td>
+								<td>13226267239</td>
+								<td>999</td>
+								<td class="text-center">套</td>
+								<td>99.00</td>
+								<td>
+									<div>金额：98901.00</div>
+									<div>运费：99.00</div>
+									<div>总金额：99000.00</div>
+								</td>
+								<td><input class="form-control input-sm"></td>
+								<td><img width="60" height="60" src="https://i1.mifile.cn/a4/848def18-47d9-4ca0-8822-c2ac61b83779"></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="10">
+									<span class="m-r">金额合计：98901.00</span>
+									<span class="m-r">运费合计：99.00</span>
+									<span class="m-r">总费用合计：99000.00</span>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+					<article class="m-b">
+						<button class="btn btn-w-m btn-primary">确 认</button>
+						<button class="btn btn-w-m btn-white m-l" ng-click="active(null)">取 消</button>
+					</article>
+				</section>
+				<!-- /签收 -->
+			</div>
+		</div>
+	</div>
+</div>

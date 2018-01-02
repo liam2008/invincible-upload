@@ -1,0 +1,60 @@
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>
+                待处理工单
+            </h5>
+        </div>
+        <div class="ibox-content">
+            <!--转派-->
+            <form class="form-horizontal" name="formSend" role="form" novalidate>
+                <div class="row">
+                    <div class="col-sm-5 col-sm-offset-4">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">
+                                <span class="text-danger">*</span>
+                                当前处理人
+                            </label>
+
+                            <div class="col-sm-9">
+                                <p class="form-control-static">{{account.name}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-5 col-sm-offset-4">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">
+                                <span class="text-danger">*</span>
+                                转派处理人
+                            </label>
+
+                            <div class="col-sm-9">
+                                <select class="chosen-select" chosen name="sendName"
+                                        ng-options="item.id as item.name for item in customers" ng-model="handlerID" required>
+                                    <option value>请选择处理人</option>
+                                </select>
+
+                                <div class="m-t-xs" ng-show="formSend.submitted && formSend.sendName.$invalid">
+                                    <small class="text-danger" ng-show="formSend.sendName.$error.required">
+                                        转派处理人不能为空
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="text-center m-b-lg">
+                <button class="btn btn-white btn-md m-r-lg" ng-click="saveSend()">保存</button>
+                <button class="btn btn-white btn-md" ng-click="cancelSend()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div load-icon is-load="isLoad"></div>
+</div>

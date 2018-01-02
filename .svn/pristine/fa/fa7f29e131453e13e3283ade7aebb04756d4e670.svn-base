@@ -1,0 +1,200 @@
+<style>
+    .width-wrap {
+        width: 75px !important;
+    }
+    .form-group{
+        margin-right: 15px;
+    }
+</style>
+
+<!--表格-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>
+                关键字列表信息
+            </h5>
+        </div>
+        <div class="ibox-content">
+            <div class="row">
+                <div class="col-lg-10">
+                    <div class="row form-inline m-b">
+                        <div class="form-group">
+                            <label>价格区间&nbsp;</label>
+
+                            <input class="form-control width-wrap" ng-model="postData.bprice" placeholder="最小值">
+                            -
+                            <input class="form-control width-wrap" ng-model="postData.eprice" placeholder="最大值">
+                        </div>
+
+                        <div class="form-group">
+                            <label>评论数区间&nbsp;</label>
+                            <input class="form-control width-wrap" ng-model="postData.breview"
+                                   placeholder="最小值">
+                            -
+                            <input class="form-control width-wrap" ng-model="postData.ereview"
+                                   placeholder="最大值">
+                        </div>
+
+                        <div class="form-group">
+                            <label>打分区间&nbsp;</label>
+                            <input class="form-control width-wrap" ng-model="postData.bscore" placeholder="最小值">
+                            -
+                            <input class="form-control width-wrap" ng-model="postData.escore" placeholder="最大值">
+                        </div>
+                    </div>
+
+                    <div class="row form-inline m-b">
+                        <div class="form-group">
+                            <label>大类排名区间&nbsp;</label>
+                            <input class="form-control width-wrap" ng-model="postData.brate" placeholder="最小值">
+                            -
+                            <input class="form-control width-wrap" ng-model="postData.erate" placeholder="最大值">
+                        </div>
+
+                        <!--首次请求没有-->
+                        <div class="form-group" ng-if="showKeywordSelect">
+                            <label class="control-label">关键字列表&nbsp;</label>
+
+                            <select class="form-control" ng-model="postData.keyword">
+                                <option ng-value="keywordItem" ng-repeat="keywordItem in postData.keywords track by $index">
+                                    {{keywordItem}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-2">
+                    <button class="btn btn-default btn-outline m-r-lg" type="button"
+                            ng-click="checkFn()">&nbsp;&nbsp;查询&nbsp;&nbsp;
+                    </button>
+
+                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
+                            data-target="#addTaskModal" ng-click="newKeyword()">新建关键字
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover" align="center"
+                        valign="middle">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>ASIN</th>
+                        <th width="400">标题</th>
+                        <th>价格</th>
+                        <th>评论数</th>
+                        <th>打分</th>
+                        <th>FBA</th>
+                        <th>自营</th>
+                        <th>大类名</th>
+                        <th width="400">小类名</th>
+                        <th>大类排名</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="tableItem in tableList" class="text-center">
+                        <td>
+                            {{$index+1}}
+                        </td>
+                        <td>
+                            <a ng-href="{{tableItem.url}}" class="text-success">{{tableItem.asin}}</a>
+                        </td>
+                        <td>
+                            {{tableItem.title || '-'}}
+                        </td>
+                        <td>
+                            {{tableItem.price || '-'}}
+                        </td>
+                        <td>
+                            {{tableItem.csrReview || '-'}}
+                        </td>
+                        <td>
+                            {{tableItem.score || '-'}}
+                        </td>
+                        <td>
+                            {{tableItem.isFba=='0'?'否':'是'}}
+                        </td>
+                        <td>
+                            {{tableItem.isZiYingv=='0'?'否':'是'}}
+                        </td>
+                        <td>
+                            {{tableItem.bigType || '-'}}
+                        </td>
+                        <td>
+                            {{tableItem.smallType || '-'}}
+                        </td>
+                        <td>
+                            {{tableItem.bigTypeRank || '-'}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <!--分页-->
+                <div class="pull-right">
+                    <ul uib-pagination total-items="totalItems" ng-model="postData.currentPage" max-size="5" class="pagination-sm" boundary-links="true" rotate="false" ng-change="pageChanged()"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--弹出添加任务框-->
+<div class="modal inmodal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">添加keyword</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" name="formAdd" role="form" novalidate>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="site">
+                            <span class="text-danger">*</span>
+                            站点
+                        </label>
+
+                        <div class="col-sm-10">
+                            <select class="form-control" name="site" id="site" ng-model="addData.site">
+                                <option ng-repeat="sideItem in taskSide" value="{{sideItem.code}}">{{sideItem.name}}</option>
+                            </select>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.site.$invalid">
+                                <small class="text-danger" ng-show="formAdd.site.$error.required">
+                                    站点不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="keyword">
+                            <span class="text-danger">*</span>
+                            keyword
+                        </label>
+
+                        <div class="col-sm-10">
+                            <input class="form-control" placeholder="请选择" name="keyword" id="keyword" ng-model="addData.keyword" required>
+
+                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.keyword.$invalid">
+                                <small class="text-danger" ng-show="formAdd.keyword.$error.required">
+                                    keyword不能为空
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" ng-click="saveAdd()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>

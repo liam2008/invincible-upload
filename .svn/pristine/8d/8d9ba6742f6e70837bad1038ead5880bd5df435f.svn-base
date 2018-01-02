@@ -1,0 +1,676 @@
+<style>
+	.table {
+		white-space: nowrap;
+	}
+	
+	.btn+.btn {
+		margin-left: 15px;
+	}
+	
+	.form-inline .form-group {
+		margin-right: 10px;
+		margin-bottom: 10px;
+	}
+	
+	.form-inline .form-control {
+		width: 200px;
+	}
+	
+	.daterangepicker .ranges {
+		width: 180px;
+	}
+	
+	.daterangepicker .ranges .input-mini {
+		width: 80px;
+	}
+	
+	.appearance {
+		background-color: transparent;
+		border-color: transparent;
+		outline: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+	}
+	
+	.mydropdown {
+		position: relative;
+		width: 420px;
+		cursor: pointer;
+	}
+	
+	.mydropdown-nav {
+		width: 400px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.mydropdown-content {
+		display: none;
+		position: absolute;
+		left: 0;
+		bottom: 100%;
+		width: 420px;
+		max-height: 180px;
+		margin-bottom: 0;
+		padding: 12px;
+		white-space: normal;
+		overflow-y: auto;
+		list-style: none;
+		background-color: #fff;
+		border: 1px solid rgba(0, 0, 0, .2);
+		border-radius: 4px;
+	}
+	
+	.mydropdown-content li {
+		margin-top: 10px;
+		padding-top: 10px;
+		border-top: 1px solid #eaeefb;
+		white-space: pre-line;
+	}
+	
+	.mydropdown-content li:first-child {
+		margin-top: 0;
+		padding-top: 0;
+		border-top: none;
+	}
+	
+	.mydropdown:hover .mydropdown-content {
+		display: block
+	}
+	
+	#sectionA label {
+		width: 84px;
+		margin-right: 10px;
+		text-align: right;
+	}
+	
+	#sectionA .pagination {
+		display: block;
+		text-align: right;
+		-webkit-user-select: none;
+	}
+	
+	#sectionA .pagination li {
+		display: inline-block;
+		vertical-align: middle;
+		padding: 6px;
+		margin: 0 5px;
+		min-width: 32px;
+		text-align: center;
+		font-family: sans-serif;
+		font-weight: bold;
+		color: #2d2f33;
+		background-color: #f3f4f5;
+		border-radius: 2px;
+		cursor: pointer;
+	}
+	
+	#sectionA .pagination li:hover {
+		color: #1ab394;
+	}
+	
+	#sectionA .pagination li.active {
+		color: #fff;
+		background-color: #1ab394;
+	}
+	
+	#sectionB .ellipsis {
+		width: 300px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	
+	#sectionB .normal {
+		width: 300px;
+		white-space: normal;
+	}
+	
+	#sectionB td label,
+	#sectionC td label {
+		width: 155px;
+		text-align: right;
+	}
+	
+	#sectionB td .form-control,
+	#sectionC td .form-control {
+		width: 120px;
+	}
+	
+	#sectionB td textarea.form-control,
+	#sectionC td textarea.form-control {
+		width: 100%;
+		resize: none;
+	}
+	
+	#sectionC label {
+		margin-bottom: 0;
+		vertical-align: middle;
+	}
+	
+	#sectionC .form-control[readonly] {
+		padding: 6px 0;
+		background-color: transparent;
+		border-color: transparent;
+	}
+	
+	.chosen-select {
+		width: 200px;
+	}
+	
+	.btn[disabled] {
+		color: #bcbec2;
+		background-color: #f4f4f5 !important;
+		border-color: #e9e9eb !important;
+	}
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row">
+		<div class="col-lg-12">
+			<!-- 采购计划 -->
+			<section class="ibox" id="sectionA" ng-if="!activeShow||activeShow=='采购计划'">
+				<div class="ibox-title">
+					<h5>采购计划</h5>
+				</div>
+				<div class="ibox-content">
+					<nav class="row form-inline m-b">
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>采购计划编号</label>
+								<input class="form-control" ng-model="where.plan_id">
+							</div>
+							<div class="form-group">
+								<label>申请人</label>
+								<select class="chosen-select" chosen ng-model="where.applicant" ng-options="item.name for item in people.applicant">
+									<option value>请选择</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>申请时间</label>
+								<input class="form-control date-picker" id="daterange" ng-model="daterange" date-range-picker options="{separator:' 至 ',locale:{format:'YYYY-MM-DD',fromLabel:'开始',toLabel:'结束',applyLabel:'应用',cancelLabel:'取消'}}">
+							</div>
+							<div class="form-group">
+								<button class="btn btn-info" ng-click="handlePagination(1)">搜索</button>
+								<button class="btn btn-primary" ng-click="handleActive({activeShow:'新增采购计划'})" ng-if="addDisabled">新增采购计划</button>
+							</div>
+						</div>
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>运营部审核人</label>
+								<select class="chosen-select" chosen ng-model="where.operator" ng-options="item.name for item in people.operator">
+									<option value>请选择</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>供应链审核人</label>
+								<select class="chosen-select" chosen ng-model="where.supplyChain" ng-options="item.name for item in people.supplyChain">
+									<option value>请选择</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>订单状态</label>
+								<select class="form-control" ng-model="where.status">
+									<option value>请选择</option>
+									<option ng-repeat="(key, val) in statuses" value="{{key}}">{{val}}</option>
+								</select>
+							</div>
+						</div>
+					</nav>
+					<table class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>采购计划编号</th>
+								<th>订单状态</th>
+								<th>经手人</th>
+								<th width="420">库存SKU数</th>
+								<th width="420">备注信息</th>
+								<th class="text-center">操作</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in purchasePlan">
+								<td>
+									<a href="javascript:;" ng-click="handleActive({activeShow:'查看采购计划',activeItem:item})">{{item.plan_id}}</a>
+								</td>
+								<td>
+									<select class="appearance" ng-init="item.status=''+item.status" ng-model="item.status" disabled>
+										<option ng-repeat="(key, val) in statuses" value="{{key}}">{{val}}</option>
+									</select>
+								</td>
+								<td>
+									<div>申请人：{{item.peoples.applicant||'-'}}</div>
+									<div>运营部审核：{{item.peoples.operator.toString()||'-'}}</div>
+									<div>供应链审核：{{item.peoples.supplyChain.toString()||'-'}}</div>
+								</td>
+								<td class="mydropdown">
+									<div class="mydropdown-nav">{{item.details.length||'-'}}个</div>
+									<ul class="mydropdown-content">
+										<li ng-repeat="detail in item.details">{{detail.productSku}}<br>{{ detail.productName}}</li>
+									</ul>
+								</td>
+								<td class="mydropdown">
+									<div class="mydropdown-nav">{{item.details[0].productSku}}<br>{{item.details[0].log}}</div>
+									<ul class="mydropdown-content">
+										<li ng-repeat="detail in item.details">{{detail.productSku}}<br>{{ detail.log}}</li>
+									</ul>
+								</td>
+								<td class="text-center">
+									<button class="btn btn-info btn-xs" ng-click="handleActive({activeShow:'编辑采购计划',activeItem:item})" ng-if="item.permission.edit&&item.status<200">编辑</button>
+									<button class="btn btn-info btn-xs" ng-click="handleActive({activeShow:'审核采购计划',activeItem:item})" ng-if="item.permission.review&&item.status>=200&&item.status<400">审核</button>
+									<button class="btn btn-info btn-xs" ng-click="handleActive({activeShow:'查看采购计划',activeItem:item})" ng-if="item.permission.view&&!(item.permission.edit&&item.status<200)&&!(item.permission.review&&item.status>=200&&item.status<400)">查看</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<!-- 分页 -->
+					<ul class="pagination" ng-if="where.currentPage<=6">
+						<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+						<li ng-if="page<=6" ng-click="handlePagination(page)" ng-repeat="page in pageCount" ng-class="page==where.currentPage?'active':''">{{ page }}</li>
+						<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+					</ul>
+					<ul class="pagination" ng-if="where.currentPage>6">
+						<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+						<li ng-click="handlePagination(where.currentPage-3)" ng-class="where.currentPage-3==where.currentPage?'active':''">{{ where.currentPage-3 }}</li>
+						<li ng-click="handlePagination(where.currentPage-2)" ng-class="where.currentPage-2==where.currentPage?'active':''">{{ where.currentPage-2 }}</li>
+						<li ng-click="handlePagination(where.currentPage-1)" ng-class="where.currentPage-1==where.currentPage?'active':''">{{ where.currentPage-1 }}</li>
+						<li ng-click="handlePagination(where.currentPage)" ng-class="where.currentPage==where.currentPage?'active':''">{{ where.currentPage }}</li>
+						<li ng-if="where.currentPage+1<=pageCount.length" ng-click="handlePagination(where.currentPage+1)" ng-class="where.currentPage+1==where.currentPage?'active':''">{{ where.currentPage+1 }}</li>
+						<li ng-if="where.currentPage+2<=pageCount.length" ng-click="handlePagination(where.currentPage+2)" ng-class="where.currentPage+2==where.currentPage?'active':''">{{ where.currentPage+2 }}</li>
+						<li ng-if="where.currentPage+3<=pageCount.length" ng-click="handlePagination(where.currentPage+3)" ng-class="where.currentPage+3==where.currentPage?'active':''">{{ where.currentPage+3 }}</li>
+						<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+					</ul>
+					<!-- /分页 -->
+				</div>
+			</section>
+			<!-- /采购计划 -->
+			<!-- 新增编辑 -->
+			<section class="ibox" id="sectionB" ng-if="activeShow=='新增采购计划'||activeShow=='编辑采购计划'">
+				<div class="ibox-title">
+					<h5>{{activeShow}}</h5>
+				</div>
+				<div class="ibox-content">
+					<nav class="row form-inline m-b">
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>申请人</label>
+								<input class="form-control" ng-model="activeItem.applicantName" readonly>
+							</div>
+							<div class="form-group" ng-if="activeItem.plan_id">
+								<label>采购计划编号 </label>
+								<input class="form-control" ng-model="activeItem.plan_id" readonly>
+							</div>
+						</div>
+					</nav>
+					<table class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr>
+								<th width="300">库存SKU</th>
+								<th width="300">库存及销量</th>
+								<th width="300">运营部采购需求</th>
+								<th width="300">供应商信息</th>
+								<th>备注</th>
+								<th><span class="btn btn-xs btn-primary" ng-click="handleAddDetail()">添加</span></th>
+							</tr>
+						</thead>
+						<tbody class="form-inline">
+							<tr ng-repeat="item in activeItem.details">
+								<td>
+									<div class="btn btn-white btn-sm ellipsis" ng-click="handleProduct(item)" style="{{item.productSku?'':'border-color:#f8ac59;'}}">
+										{{item.productSku||'点击选择库存SKU'}}
+									</div>
+									<div class="normal">{{item.productName}}</div>
+								</td>
+								<td>
+									<div class="{{item['local_storage']===''||item['local_storage']<0?'has-warning':''}}">
+										<label>广州仓在途及库存数量</label>
+										<input class="form-control input-sm" ng-model="item['local_storage']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['fba_storage']===''||item['fba_storage']<0?'has-warning':''}}">
+										<label>FBA仓在途及库存数量</label>
+										<input class="form-control input-sm" ng-model="item['fba_storage']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['average_7']===''||item['average_7']<0?'has-warning':''}}">
+										<label>7天日均销量</label>
+										<input class="form-control input-sm" ng-model="item['average_7']">
+									</div>
+									<div class="{{item['average_30']===''||item['average_30']<0?'has-warning':''}}">
+										<label>30天日均销量</label>
+										<input class="form-control input-sm" ng-model="item['average_30']">
+									</div>
+								</td>
+								<td>
+									<div class="{{item['expected_sales']===''||item['expected_sales']<0?'has-warning':''}}">
+										<label>预计日销量</label>
+										<input class="form-control input-sm" ng-model="item['expected_sales']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['local_transport']===''||item['local_transport']<0?'has-warning':''}}">
+										<label>国内运输和验货天数</label>
+										<input class="form-control input-sm" ng-model="item['local_transport']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['abroad_transport']===''||item['abroad_transport']<0?'has-warning':''}}">
+										<label>国际运输和入仓天数</label>
+										<input class="form-control input-sm" ng-model="item['abroad_transport']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['prepare_period']===''||item['prepare_period']<0?'has-warning':''}}">
+										<label>备货周期</label>
+										<input class="form-control input-sm" ng-model="item['prepare_period']" ng-change="handleCountDetail()">
+									</div>
+									<div>
+										<label>备货天数</label>
+										<input class="form-control input-sm" ng-model="item['prepare']" readonly>
+									</div>
+									<div class="{{item['safety_stock']===''||item['safety_stock']<0?'has-warning':''}}">
+										<label>安全库存天数</label>
+										<input class="form-control input-sm" ng-model="item['safety_stock']" ng-change="handleCountDetail()">
+									</div>
+									<div>
+										<label>建议采购数量</label>
+										<input class="form-control input-sm" ng-model="item['amount']" readonly>
+									</div>
+									<div class="{{item['purchase_amount']===''||item['purchase_amount']<0?'has-warning':''}}">
+										<label>执行采购数量</label>
+										<input class="form-control input-sm" ng-model="item['purchase_amount']" ng-change="handleCountDetail()">
+									</div>
+									<div>
+										<label>贷款总额</label>
+										<input class="form-control input-sm" ng-model="item['total']" readonly>
+									</div>
+								</td>
+								<td>
+									<div>
+										<label>供应商</label>
+										<div class="btn btn-white btn-sm" ng-click="handleSupplier(item)" style="{{item.supplierName?'':'border-color:#f8ac59;'}}">
+											{{item['supplierName']||'点击选择供应商'}}
+										</div>
+									</div>
+									<div class="{{item['unit_cost']===''||item['unit_cost']<0?'has-warning':''}}">
+										<label>单件采购成本</label>
+										<input class="form-control input-sm" ng-model="item['unit_cost']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['estimate_production_days']===''||item['estimate_production_days']<0?'has-warning':''}}">
+										<label>预计下单生产天数</label>
+										<input class="form-control input-sm" ng-model="item['estimate_production_days']" ng-change="handleCountDetail()">
+									</div>
+									<div class="{{item['least_amount']===''||item['least_amount']<0?'has-warning':''}}">
+										<label>最少起订量</label>
+										<input class="form-control input-sm" ng-model="item['least_amount']">
+									</div>
+									<div class="{{item['advance_pay_rate']===''||item['advance_pay_rate']<0?'has-warning':''}}">
+										<label>结算方式</label>
+										<input class="form-control input-sm" ng-model="item['advance_pay_rate']">
+									</div>
+									<div>
+										<label>是否第一次采购</label>
+										<select class="form-control input-sm" ng-model="item['first_time']">
+											<option>否</option>
+											<option>是</option>
+										</select>
+									</div>
+								</td>
+								<td>
+									<textarea class="form-control" rows="10" ng-model="item['remarks']"></textarea>
+								</td>
+								<td><span class="btn btn-danger btn-xs" ng-click="handleRemoveDetail(item)">删除</span></td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th>总数量合计：{{ activeItem.amount }}</th>
+								<th>总金额合计：{{ activeItem.total.toFixed(2) }}</th>
+								<th colspan="4"></th>
+							</tr>
+						</tfoot>
+					</table>
+					<div class="row">
+						<ol class="col-lg-6 m-b" ng-if="activeItem.reviews.length" style="max-height:302px;padding-left:30px;overflow:auto;line-height:2;">
+							<li ng-repeat="val in activeItem.reviews">
+								<select class="appearance" ng-init="val.status=''+val.status" ng-model="val.status" disabled style="width:86px;height:30px;font-weight:bold;">
+									<option value="200">类目主管</option>
+									<option value="210">运营经理</option>
+									<option value="220">运营总监</option>
+									<option value="230">CEO</option>
+									<option value="300">供应链主管</option>
+									<option value="310">供应链总监</option>
+								</select>{{val.name}}【{{val.agree?'同意':'不同意'}}】：
+								<div style="padding-left:86px;white-space:pre-line;">{{val.log}}</div>
+							</li>
+						</ol>
+						<article class="col-lg-12 m-b">
+							<button class="btn btn-w-m btn-primary" ng-click="handleSave(activeItem['status']=200)">提交审核</button>
+							<button class="btn btn-w-m btn-info" ng-click="handleSave(activeItem['status']=100)">保存草稿</button>
+							<span class="btn btn-w-m btn-white" ng-click="handleActive({})">取 消</span>
+						</article>
+					</div>
+				</div>
+			</section>
+			<!-- /新增编辑 -->
+			<!-- 审核查看 -->
+			<section class="ibox" id="sectionC" ng-if="activeShow=='审核采购计划'||activeShow=='查看采购计划'">
+				<div class="ibox-title">
+					<h5>{{activeShow}}</h5>
+				</div>
+				<div class="ibox-content">
+					<nav class="row form-inline m-b">
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>申请人：</label>
+								<input class="form-control" ng-model="activeItem.applicantName" readonly>
+							</div>
+							<div class="form-group" ng-if="activeItem.plan_id">
+								<label>采购计划编号 ：</label>
+								<input class="form-control" ng-model="activeItem.plan_id" readonly>
+							</div>
+						</div>
+					</nav>
+					<table class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr>
+								<th width="300">库存SKU</th>
+								<th width="300">库存及销量</th>
+								<th width="300">运营部采购需求</th>
+								<th width="300">供应商信息</th>
+								<th>备注</th>
+							</tr>
+						</thead>
+						<tbody class="form-inline">
+							<tr ng-repeat="item in activeItem.details">
+								<td>
+									<div>{{item['productSku']}}</div>
+									<div>{{item['productName']}}</div>
+								</td>
+								<td>
+									<div>
+										<label>广州仓在途及库存数量：</label>
+										<input class="form-control input-sm" ng-model="item['local_storage']" readonly>
+									</div>
+									<div>
+										<label>FBA仓在途及库存数量：</label>
+										<input class="form-control input-sm" ng-model="item['fba_storage']" readonly>
+									</div>
+									<div>
+										<label>7天日均销量：</label>
+										<input class="form-control input-sm" ng-model="item['average_7']" readonly>
+									</div>
+									<div>
+										<label>30天日均销量：</label>
+										<input class="form-control input-sm" ng-model="item['average_30']" readonly>
+									</div>
+								</td>
+								<td>
+									<div>
+										<label>预计日销量：</label>
+										<input class="form-control input-sm" ng-model="item['expected_sales']" readonly>
+									</div>
+									<div>
+										<label>国内运输和验货天数：</label>
+										<input class="form-control input-sm" ng-model="item['local_transport']" readonly>
+									</div>
+									<div>
+										<label>国际运输和入仓天数：</label>
+										<input class="form-control input-sm" ng-model="item['abroad_transport']" readonly>
+									</div>
+									<div>
+										<label>备货周期：</label>
+										<input class="form-control input-sm" ng-model="item['prepare_period']" readonly>
+									</div>
+									<div>
+										<label>备货天数：</label>
+										<input class="form-control input-sm" ng-model="item['prepare']" readonly>
+									</div>
+									<div>
+										<label>安全库存天数：</label>
+										<input class="form-control input-sm" ng-model="item['safety_stock']" readonly>
+									</div>
+									<div>
+										<label>建议采购数量：</label>
+										<input class="form-control input-sm" ng-model="item['amount']" readonly>
+									</div>
+									<div>
+										<label>执行采购数量：</label>
+										<input class="form-control input-sm" ng-model="item['purchase_amount']" readonly>
+									</div>
+									<div>
+										<label>贷款总额：</label>
+										<input class="form-control input-sm" ng-model="item['total']" readonly>
+									</div>
+								</td>
+								<td>
+									<div>
+										<label>供应商：</label>
+										<span style="padding:6px 0;">{{item['supplierName']}}</span>
+									</div>
+									<div>
+										<label>单件采购成本：</label>
+										<input class="form-control input-sm" ng-model="item['unit_cost']" readonly>
+									</div>
+									<div>
+										<label>预计下单生产天数：</label>
+										<input class="form-control input-sm" ng-model="item['estimate_production_days']" readonly>
+									</div>
+									<div>
+										<label>最少起订量：</label>
+										<input class="form-control input-sm" ng-model="item['least_amount']" readonly>
+									</div>
+									<div>
+										<label>结算方式：</label>
+										<input class="form-control input-sm" ng-model="item['advance_pay_rate']" readonly>
+									</div>
+									<div>
+										<label>是否第一次采购：</label>
+										<input class="form-control input-sm" ng-model="item['first_time']" readonly>
+									</div>
+								</td>
+								<td>
+									<textarea class="form-control" rows="10" ng-model="item['remarks']" readonly></textarea>
+								</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th>总数量合计：{{ activeItem.amount }}</th>
+								<th>总金额合计：{{ activeItem.total.toFixed(2) }}</th>
+								<th colspan="4"></th>
+							</tr>
+						</tfoot>
+					</table>
+					<div class="row">
+						<ol class="col-lg-6 m-b" ng-if="activeItem.reviews.length" style="max-height:302px;padding-left:30px;overflow:auto;line-height:2;">
+							<li ng-repeat="val in activeItem.reviews">
+								<select class="appearance" ng-init="val.status=''+val.status" ng-model="val.status" disabled style="width:86px;height:30px;font-weight:bold;">
+									<option value="200">类目主管</option>
+									<option value="210">运营经理</option>
+									<option value="220">运营总监</option>
+									<option value="230">CEO</option>
+									<option value="300">供应链主管</option>
+									<option value="310">供应链总监</option>
+								</select>{{val.name}}【{{val.agree?'同意':'不同意'}}】：
+								<div style="padding-left:86px;white-space:pre-line;">{{val.log}}</div>
+							</li>
+						</ol>
+						<article class="col-lg-12 m-b">
+							<p ng-if="activeShow=='审核采购计划'" ng-init="activeItem.review.agree=1">
+								<select class="appearance" class="form-control" ng-model="activeItem.status" disabled style="display:inline-block;vertical-align:middle;width:auto;padding:0;">
+									<option ng-repeat="(key, val) in statuses" value="{{key}}">{{val}}</option>
+								</select>
+								<label class="radio-inline" style="margin:0 30px;"><input type="radio" ng-model="activeItem.review.agree" name="agree" value="1">同意</label>
+								<label class="radio-inline"><input type="radio" ng-model="activeItem.review.agree" name="agree" value="0">不同意</label>
+							</p>
+							<p ng-if="activeShow=='审核采购计划'" class="{{activeItem.review.remark?'':'has-warning'}}">
+								<textarea class="form-control" rows="10" ng-model="activeItem.review.remark" style="width:50%;resize:none;"></textarea>
+							</p>
+							<button class="btn btn-w-m btn-primary" ng-if="activeShow=='审核采购计划'" ng-click="handleReview()">确 认</button>
+							<button class="btn btn-w-m btn-white" ng-click="handleActive({})">返 回</button>
+						</article>
+					</div>
+				</div>
+			</section>
+			<!-- /审核查看 -->
+		</div>
+	</div>
+</div>
+<!-- 选择商品 -->
+<aside class="modal fade" id="skuModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">选择商品</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-striped table-bordered table-hover" datatable="ng" dt-options="dtOptions">
+					<thead>
+						<tr>
+							<th width="120">库存SKU</th>
+							<th>商品中文名</th>
+							<th>商品英文名</th>
+							<th width="32">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in productList">
+							<td>{{ item.storeSku }}</td>
+							<td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;">{{ item.nameCN }}</td>
+							<td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;">{{ item.nameEn }}</td>
+							<td><button class="btn btn-primary btn-xs" ng-click="handleSubmitProduct(item)">选择</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</aside>
+<!-- /选择商品 -->
+<!-- 选择供应商 -->
+<aside class="modal fade" id="supplierModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">选择商品</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-striped table-bordered table-hover" datatable="ng" dt-options="dtOptions">
+					<thead>
+						<tr>
+							<th style="max-width:360px;overflow:hidden;text-overflow:ellipsis;">供应商名称</th>
+							<th width="100">联系人</th>
+							<th width="100">手机</th>
+							<th width="100">固话</th>
+							<th width="30">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in supplierList">
+							<td>{{ item.supplierName }}</td>
+							<td>{{ item.contacts }}</td>
+							<td>{{ item.cellphone }}</td>
+							<td>{{ item.telephone }}</td>
+							<td><button class="btn btn-primary btn-xs" ng-click="handleSubmitSupplier(item)">选择</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</aside>
+<!-- /选择供应商 -->

@@ -1,0 +1,76 @@
+<!-- 分页组件 -->
+<style>
+	.lin-pagination {
+		display: block;
+		text-align: right;
+		-webkit-user-select: none;
+	}
+	
+	.lin-pagination li {
+		display: inline-block;
+		vertical-align: middle;
+		padding: 6px 4px;
+		margin: 0 4px;
+		min-width: 32px;
+		text-align: center;
+		font-weight: bold;
+		color: #606266;
+		background-color: #f4f4f5;
+		border-radius: 2px;
+		cursor: pointer;
+	}
+	
+	.lin-pagination li:hover {
+		color: #409eff;
+	}
+	
+	.lin-pagination li.active {
+		color: #fff;
+		background-color: #409eff;
+	}
+</style>
+<ul ng-if="pageCount<=7" class="lin-pagination">
+	<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+	<li ng-if="pageCount>=1" ng-click="handlePagination(1)" ng-class="1==where.currentPage?'active':''">1</li>
+	<li ng-if="pageCount>=2" ng-click="handlePagination(2)" ng-class="2==where.currentPage?'active':''">2</li>
+	<li ng-if="pageCount>=3" ng-click="handlePagination(3)" ng-class="3==where.currentPage?'active':''">3</li>
+	<li ng-if="pageCount>=4" ng-click="handlePagination(4)" ng-class="4==where.currentPage?'active':''">4</li>
+	<li ng-if="pageCount>=5" ng-click="handlePagination(5)" ng-class="5==where.currentPage?'active':''">5</li>
+	<li ng-if="pageCount>=6" ng-click="handlePagination(6)" ng-class="6==where.currentPage?'active':''">6</li>
+	<li ng-if="pageCount>=7" ng-click="handlePagination(7)" ng-class="7==where.currentPage?'active':''">7</li>
+	<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+</ul>
+<ul ng-if="pageCount==8" class="lin-pagination">
+	<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+	<li ng-click="handlePagination(1)" ng-class="1==where.currentPage?'active':''">1</li>
+	<li ng-if="where.currentPage<5" ng-click="handlePagination(2)" ng-class="2==where.currentPage?'active':''">2</li>
+	<li ng-if="where.currentPage<5" ng-click="handlePagination(3)" ng-class="3==where.currentPage?'active':''">3</li>
+	<li ng-if="where.currentPage>4">...</li>
+	<li ng-click="handlePagination(4)" ng-class="4==where.currentPage?'active':''">4</li>
+	<li ng-click="handlePagination(5)" ng-class="5==where.currentPage?'active':''">5</li>
+	<li ng-if="where.currentPage<5">...</li>
+	<li ng-if="where.currentPage>4" ng-click="handlePagination(6)" ng-class="6==where.currentPage?'active':''">6</li>
+	<li ng-if="where.currentPage>4" ng-click="handlePagination(7)" ng-class="7==where.currentPage?'active':''">7</li>
+	<li ng-click="handlePagination(8)" ng-class="8==where.currentPage?'active':''">8</li>
+	<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+</ul>
+<ul ng-if="pageCount>=9" class="lin-pagination">
+	<li ng-click="handlePagination(where.currentPage-1)">上页</li>
+	<li ng-click="handlePagination(where.currentPage=1)" ng-class="1==where.currentPage?'active':''">1</li>
+	<li ng-if="where.currentPage<5" ng-click="handlePagination(where.currentPage=2)" ng-class="2==where.currentPage?'active':''">2</li>
+	<li ng-if="where.currentPage<5" ng-click="handlePagination(where.currentPage=3)" ng-class="3==where.currentPage?'active':''">3</li>
+	<li ng-if="where.currentPage<5" ng-click="handlePagination(where.currentPage=4)" ng-class="4==where.currentPage?'active':''">4</li>
+	<li ng-if="where.currentPage<5" ng-click="handlePagination(where.currentPage=5)" ng-class="5==where.currentPage?'active':''">5</li>
+	<li ng-if="where.currentPage<=pageCount-4">...</li>
+	<li ng-if="where.currentPage>=5&&where.currentPage<=pageCount-4" ng-click="handlePagination(where.currentPage-1)">{{where.currentPage-1}}</li>
+	<li ng-if="where.currentPage>=5&&where.currentPage<=pageCount-4" ng-click="handlePagination(where.currentPage)" class="active">{{where.currentPage}}</li>
+	<li ng-if="where.currentPage>=5&&where.currentPage<=pageCount-4" ng-click="handlePagination(where.currentPage+1)">{{where.currentPage+1}}</li>
+	<li ng-if="where.currentPage>=5">...</li>
+	<li ng-if="where.currentPage>5&&where.currentPage>pageCount-4" ng-click="handlePagination(pageCount-4)" ng-class="pageCount-4==where.currentPage?'active':''">{{pageCount-4}}</li>
+	<li ng-if="where.currentPage>5&&where.currentPage>pageCount-4" ng-click="handlePagination(pageCount-3)" ng-class="pageCount-3==where.currentPage?'active':''">{{pageCount-3}}</li>
+	<li ng-if="where.currentPage>5&&where.currentPage>pageCount-4" ng-click="handlePagination(pageCount-2)" ng-class="pageCount-2==where.currentPage?'active':''">{{pageCount-2}}</li>
+	<li ng-if="where.currentPage>5&&where.currentPage>pageCount-4" ng-click="handlePagination(pageCount-1)" ng-class="pageCount-1==where.currentPage?'active':''">{{pageCount-1}}</li>
+	<li ng-click="handlePagination(where.currentPage=pageCount)" ng-class="pageCount==where.currentPage?'active':''">{{pageCount}}</li>
+	<li ng-click="handlePagination(where.currentPage+1)">下页</li>
+</ul>
+<!-- /分页组件 -->

@@ -1,0 +1,127 @@
+<style>
+	.lin-dropdown {
+		position: relative;
+		cursor: pointer;
+	}
+	
+	.lin-dropdown .lin-dropdown-nav {
+		width: 360px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.lin-dropdown .lin-dropdown-content {
+		display: none;
+		position: absolute;
+		bottom: 0;
+		right: 100%;
+		width: 768px;
+		max-height: 300px;
+		font-size: 12px;
+		padding: 12px;
+		overflow: auto;
+		background-color: #fff;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
+		border-radius: 4px;
+		z-index: 10;
+	}
+	
+	.lin-dropdown:hover .lin-dropdown-content {
+		display: block;
+	}
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row" spellcheck="false">
+		<div class="col-lg-12">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>{{ activeShow||'评论任务' }}</h5>
+				</div>
+				<section class="ibox-content" ng-if="!activeShow">
+					<nav class="form-inline m-b">
+						<div class="form-group m-r">
+							<label>任务选择 </label>
+							<div class="btn-group">
+								<button class="btn btn-default" style="width: 240px;" ng-click="handleTask(where)">{{ where.taskId||'请选择' }}</button>
+								<button class="btn btn-default" ng-click="handleDelTask(where)">清空</button>
+							</div>
+						</div>
+						<button class="btn btn-w-m btn-info" ng-click="handlePagination(1)">查 询</button>
+						<button class="btn btn-w-m btn-primary pull-right" ng-click="active('添加任务')">添加任务</button>
+					</nav>
+					<table class="table table-striped table-bordered table-hover">
+						<thead>
+							<tr style="white-space: nowrap;">
+								<th>编号</th>
+								<th>Asin</th>
+								<th>评论星级</th>
+								<th>评论标题</th>
+								<th>评论内容</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in reviewList">
+								<th>{{ item.taskID }}</th>
+								<td>{{ item.asin }}</td>
+								<td>
+									<div style="white-space: nowrap;">
+										<i ng-if="item.star>=1" class="fa fa-star" style="color: #f90;"></i>
+										<i ng-if="item.star>=2" class="fa fa-star" style="color: #f90;"></i>
+										<i ng-if="item.star>=3" class="fa fa-star" style="color: #f90;"></i>
+										<i ng-if="item.star>=4" class="fa fa-star" style="color: #f90;"></i>
+										<i ng-if="item.star>=5" class="fa fa-star" style="color: #f90;"></i>
+									</div>
+								</td>
+								<td>{{ item.title }}</td>
+								<td class="lin-dropdown">
+									<div class="lin-dropdown-nav">{{ item.content }}</div>
+									<div class="lin-dropdown-content">{{ item.content }}</div>
+								</td>
+							</tr>
+							<tr ng-if="reviewList.length==0">
+								<td colspan="5" class="text-center">数据为空</td>
+							</tr>
+						</tbody>
+					</table>
+					<lin-pagination></lin-pagination>
+				</section>
+				<section class="ibox-content {{err?'has-warning':''}}" ng-if="activeShow=='添加任务'">
+					<textarea class="form-control" rows="20" ng-model="activeItem.content"></textarea>
+					<div class="text-danger" style="height:30px;line-height:30px;">{{err}}</div>
+					<div class="m-b">
+						<button class="btn btn-w-m btn-primary" ng-click="submitSave()">提 交</button>
+						<button class="btn btn-w-m btn-white m-l" ng-click="active(null)">取 消</button>
+					</div>
+				</section>
+			</div>
+		</div>
+	</div>
+</div>
+
+<aside class="modal fade" id="taskModal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">任务选择</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-striped table-bordered table-hover" datatable="ng" dt-options="dtOptions">
+					<thead>
+						<tr>
+							<th>编号</th>
+							<th width="30">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in taskList">
+							<td>{{ item }}</td>
+							<td><button class="btn btn-primary btn-xs" ng-click="handleSubmitTask(item)">选择</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</aside>
