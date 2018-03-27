@@ -19,25 +19,25 @@
 									<th>库存SKU</th>
 									<th>中文名称</th>
 									<th>单位</th>
-									<th>当前库存</th>
+									<th>当前总库存</th>
 									<th>最近出入库时间</th>
 									<th>操作</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr ng-repeat="value in tableData">
-									<td>
-										{{$index+1}}
-									</td>
-									<td> {{value['sku']?value['sku']:'-'}}</td>
-									<td> {{value['name']?value['name']:'-'}}</td>
-									<td> {{value['unit']?value['unit']:'-'}}</td>
-									<td> {{value['stock']?value['stock']:'-'}}</td>
-									<td>{{value['updatedAt']?value['updatedAt']:'-'}}</td>
+									<td>{{ $index+1 }}</td>
+									<td>{{ value['sku']||'-' }}</td>
+									<td>{{ value['name']||'-' }}</td>
+									<td>{{ value['unit']||'-' }}</td>
+									<td>{{ value['stock']!=undefined?value['stock']:'-' }}</td>
+									<td>{{ value['updatedAt']||'-' }}</td>
 									<td class="text-center">
-										<button class="btn btn-primary btn-outline" type="button" data-toggle="modal" data-target="#registerLog" ng-click="register(value)">出入库登记
+										<button class="btn btn-info btn-outline" type="button"ng-click="register(value)">出入库登记
                                     </button> &nbsp;&nbsp;&nbsp;
-										<button class="btn btn-info btn-outline" type="button" data-toggle="modal" data-target="#journalLog" ng-click="journal(value['id'])">出入库日志
+										<button class="btn btn-primary btn-outline" type="button" data-toggle="modal" data-target="#journalLog" ng-click="journal(value['id'])">出入库日志
+                                    </button>&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-success btn-outline" type="button" ng-click="readDetails(value)">查看库存明细
                                     </button>
 									</td>
 								</tr>
@@ -91,14 +91,21 @@
 						</div>
 					</div>
 					<div class="hr-line-dashed"></div>
-
 					<div class="form-group">
 						<label class="col-sm-2 control-label">
-                            单位
+                            <span class="text-danger">*</span>当前仓库
                         </label>
 
 						<div class="col-sm-10">
-							<input type="text" class="form-control" name="unit" placeholder="单位" ng-model="registerData.unit" />
+							<select id="registerHouse" class="form-control" ng-model="registerHouse" name="registerHouse" required ng-change="toggleHouse()">
+								<option value="">请选择</option>
+								<option ng-repeat="item in houseList" value="{{item._id}}">{{item.name}}</option>
+							</select>
+							<div class="m-t-xs" ng-show="registerForm.submitted && registerForm.registerHouse.$invalid">
+									<small class="text-danger" ng-show="registerForm.registerHouse.$error.required">
+                                        当前仓库不能为空
+                                   </small>
+							</div>
 						</div>
 					</div>
 
@@ -161,6 +168,16 @@
 							</div>
 						</div>
 					</div>
+					
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                            单位
+                        </label>
+
+						<div class="col-sm-10">
+							<input type="text" class="form-control" name="unit" placeholder="单位" ng-model="registerData.unit" />
+						</div>
+					</div>
 
 					<div class="form-group">
 						<label class="col-sm-2 control-label">
@@ -182,7 +199,7 @@
 	</div>
 </div>
 
-<!--编辑 出入库日志-->
+<!--点击 出入库日志-->
 <div class="modal inmodal fade" id="journalLog" tabindex="-1" role="dialog" aria-hidden="true">
 	<div class="modal-dialog modal-lg" style="width:70%">
 		<div class="modal-content">
@@ -193,7 +210,7 @@
 
 				<div class="form-group m-t-xs">
 					<div class="row m-t-md">
-						<div class="col-lg-4">
+						<div class="col-lg-3">
 							<div class="col-lg-4">
 								<label class="m-t-sm">开始日期</label>
 							</div>
@@ -202,7 +219,7 @@
 								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
 							</div>
 						</div>
-						<div class="col-lg-4">
+						<div class="col-lg-3">
 							<div class="col-lg-4">
 								<label class="m-t-sm">结束日期</label>
 							</div>
@@ -212,7 +229,16 @@
 								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
 							</div>
 						</div>
-						<div class="col-lg-4">
+						<div class="col-lg-3">
+							<label>
+                            仓库
+                        	</label>
+							<select id="" class="form-control" ng-model="checkHouse" style="display:inline-block;width: 70%;margin-left: 20px;">
+								<option value="">请选择</option>
+								<option ng-repeat="item in houseList" value="{{item._id}}">{{item.name}}</option>
+							</select>
+						</div>
+						<div class="col-lg-3">
 							<button class="btn btn-w-m btn-default" ng-click="checkLog()">查询</button>
 						</div>
 					</div>
@@ -228,6 +254,7 @@
 								<th>库存SKU</th>
 								<th>中文名称</th>
 								<th>单位</th>
+								<th>所在仓库</th>
 								<th>期初库存</th>
 								<th>入库</th>
 								<th>出库</th>
@@ -238,19 +265,18 @@
 						</thead>
 						<tbody>
 							<tr ng-repeat="value in journalList">
-								<td>
-									{{$index+1}}
-								</td>
-								<td  style="white-space:nowrap;">{{value['time']?value['time']:'-'}}</td>
-								<td  style="white-space:nowrap;">{{value['sku']?value['sku']:'-'}}</td>
-								<td>{{value['name']?value['name']:'-'}}</td>
-								<td> {{value['unit']?value['unit']:'-'}}</td>
-								<td>{{value['stocked']?value['stocked']:'0'}}</td>
-								<td>{{value['enter']?value['enter']:'-'}}</td>
-								<td>{{value['output']?value['output']:'-'}}</td>
+								<td>{{$index+1}}</td>
+								<td style="white-space:nowrap;">{{value['time']||'-'}}</td>
+								<td style="white-space:nowrap;">{{value['sku']||'-'}}</td>
+								<td>{{value['name']||'-'}}</td>
+								<td> {{value['unit']||'-'}}</td>
+								<td>{{value.house}}</td>
+								<td>{{value['stocked']!=undefined?value['stocked']:'0'}}</td>
+								<td>{{value['enter']||'-'}}</td>
+								<td>{{value['output']||'-'}}</td>
 								<td>{{value['stock']?value['stock']:'0'}}</td>
-								<td style="width: 250px;">{{value['note']?value['note']:'-'}}</td>
-								<td  style="white-space:nowrap;">{{value['updatedAt']?value['updatedAt']:'-'}}</td>
+								<td style="width: 250px;">{{value['note']||'-'}}</td>
+								<td style="white-space:nowrap;">{{value['updatedAt']||'-'}}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -260,4 +286,37 @@
 	</div>
 </div>
 
+<!--点击 查看库存-->
+<div class="modal inmodal fade" id="storeDetails" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header" style="padding:15px">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+				<h4 class="modal-title">库存明细</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-bordered table-stripped table-hover">
+					<thead>
+						<tr>
+							<th>仓库</th>
+							<th>当前库存</th>
+							<th>最大在库天数</th>
+							<th>最近出入库时间</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in storeDetailsList">
+							<td>{{item.house}}</td>
+							<td>{{item.stock}}</td>
+							<td>{{item.duration}}</td>
+							<td>{{item.updatedAt}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<!--/点击 查看库存-->
 <div load-icon is-load="isLoad"></div>

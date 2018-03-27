@@ -17,8 +17,6 @@ var MESSAGE = Shared.MESSAGE;
 var Utils = Shared.Utils;
 var dealErr = require('../errors/controller-error');
 
-//var MysqlCrawler = require('../databases/mysql_crawler');
-
 module.exports = {
     name: "sample",
 

@@ -1,34 +1,23 @@
 <style>
-	#authorize {
-		display: none;
-		position: absolute;
-		right: 100%;
-		bottom: 0;
-		width: 360px;
-		padding: 12px;
-		text-align: left;
-		background-color: #fff;
-		border: 1px solid #ebeef5;
-		box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
-		border-radius: 4px;
-		z-index: 10;
-	}
-	
-	#authorize label {
-		font-size: 14px;
-		margin-bottom: 14px;
-	}
-	
 	.chosen-container,
 	.chosen-container input {
 		width: 100%!important;
 	}
 	
-	.chosen-choices {
-		max-height: 210px;
-		overflow: auto!important;
+	#loading {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 0;
+		bottom: 0;
+		padding-top: 15%;
+		text-align: center;
+		font-size: 16px;
+		color: #999;
+		background: rgba(255, 255, 255, .6);
 	}
 </style>
+
 <div class="wrapper wrapper-content  animated fadeInRight">
 	<div class="row">
 		<div class="col-lg-12">
@@ -44,50 +33,41 @@
 					<nav class="form-inline m-b text-right">
 						<div class="btn-group pull-left">
 							<button class="btn btn-white {{where.type==''?'active':''}}" ng-click="handlePagination(1,'')">全部</button>
-							<button class="btn btn-white {{where.type=='dpf'?'active':''}}" ng-click="handlePagination(1,'pdf')">学习文档</button>
+							<button class="btn btn-white {{where.type=='pdf'?'active':''}}" ng-click="handlePagination(1,'pdf')">学习文档</button>
 							<button class="btn btn-white {{where.type=='mp4'?'active':''}}" ng-click="handlePagination(1,'mp4')">学习视频</button>
-							<button class="btn btn-white {{where.type=='doc'?'active':''}}" ng-click="handlePagination(1,'doc')">作业</button>
+							<button class="btn btn-white {{where.type=='doc+zip'?'active':''}}" ng-click="handlePagination(1,'doc+zip')">作业</button>
 						</div>
 						<div class="input-group">
-							<input placeholder="请输入文件名搜索" class="form-control" ng-model="where.keyword" style="width: 768px;">
+							<input placeholder="请输入文件名或标签搜索" class="form-control" ng-model="where.keyword" style="width: 768px;">
 							<span class="input-group-btn"><button class="btn btn-white" ng-click="handlePagination(1,'')"><i class="fa fa-search"></i></button></span>
 						</div>
 					</nav>
 					<table class="table table-hover issue-tracker">
 						<thead ng-if="list.length">
 							<tr>
-								<td>类型</td>
 								<td>文件名</td>
+								<td width="200">标签</td>
 								<td class="text-right">大小</td>
-								<td style="padding-left:200px;">修改时间</td>
-								<td width="132" class="text-center">操作</td>
+								<td width="400" style="padding-left:150px;">修改时间</td>
+								<td width="135" class="text-center">操作</td>
 							</tr>
 						</thead>
 						<tbody>
 							<tr ng-repeat="item in list">
-								<td style="font-size:16px;">
+								<td>
 									<i ng-if="item.type==='pdf'" class="fa fa-file-pdf-o"></i>
 									<i ng-if="item.type==='doc'" class="fa fa-file-word-o"></i>
 									<i ng-if="item.type==='mp4'" class="fa fa-file-video-o"></i>
+									<i ng-if="item.type==='zip'" class="fa fa-file-zip-o"></i>
+									<span>{{ item.name }}</span>
 								</td>
-								<td class="issue-info">{{ item.name }}</td>
+								<td style="display:block;width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.tips||'-' }}</td>
 								<td class="text-right">{{ item.size }}</td>
-								<td style="padding-left:200px;">{{ item.updated }}</td>
+								<td width="400" style="padding-left:150px;">{{ item.updated }}</td>
 								<td style="position:relative;text-align:center;">
 									<button class="btn btn-info btn-outline btn-xs" ng-click="rename(item)">重名</button>
-									<button class="btn btn-success btn-outline btn-xs" ng-click="indexShow(item, 1)">设置</button>
+									<button class="btn btn-success btn-outline btn-xs" ng-click="setModal(item)">设置</button>
 									<button class="btn btn-danger btn-outline btn-xs" ng-click="remove(item)">删除</button>
-									<aside id="authorize" style="display:{{ index==item._id?'block':'' }}">
-										<label>谁可以查看</label>
-										<select chosen multiple ng-model="authorize" ng-change="">
-											<option value="000000000000000000000000">所有人</option>
-											<option ng-value="u._id" ng-repeat="u in users">{{ u.name + u.account }}</option>
-										</select>
-										<div class="m-t">
-											<button class="btn btn-primary btn-sm btn-w-m" ng-click="update(item, authorize)">确 认</button>
-											<button class="btn btn-white btn-sm btn-w-m m-l" ng-click="indexShow(item, 0)">取 消</button>
-										</div>
-									</aside>
 								</td>
 							</tr>
 							<tr ng-if="!list.length">
@@ -101,3 +81,49 @@
 		</div>
 	</div>
 </div>
+<!-- 设置 -->
+<aside class="modal fade" id="setModal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">文件设置</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label>标签描述</label>
+					<input class="form-control" ng-model="active.tips">
+				</div>
+				<div class="form-group">
+					<label>谁可以查看</label>
+					<button class="btn btn-danger btn-outline btn-xs pull-right" ng-click="active.authorize=[]">清空所有</button>
+					<select chosen multiple ng-model="active.authorize" ng-change="updateChange(active)">
+						<option value="000000000000000000000000">所有人</option>
+						<option ng-value="u._id" ng-repeat="u in users">{{ u.name + u.account }}</option>
+					</select>
+				</div>
+				<div class="text-right">
+					<button class="btn btn-primary btn-w-m" ng-click="update()">确 认</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</aside>
+
+<aside id="loading" ng-if="isLoad">
+	<div class="sk-spinner sk-spinner-fading-circle">
+		<div class="sk-circle1 sk-circle"></div>
+		<div class="sk-circle2 sk-circle"></div>
+		<div class="sk-circle3 sk-circle"></div>
+		<div class="sk-circle4 sk-circle"></div>
+		<div class="sk-circle5 sk-circle"></div>
+		<div class="sk-circle6 sk-circle"></div>
+		<div class="sk-circle7 sk-circle"></div>
+		<div class="sk-circle8 sk-circle"></div>
+		<div class="sk-circle9 sk-circle"></div>
+		<div class="sk-circle10 sk-circle"></div>
+		<div class="sk-circle11 sk-circle"></div>
+		<div class="sk-circle12 sk-circle"></div>
+	</div>
+	<p>文件越大所需时间越长，先去喝杯茶吧~</p>
+</aside>

@@ -1,63 +1,96 @@
 (function() {
 	var app = angular.module('app.files.manage', []);
-	app.controller('fileManageCtrl', ['$scope', '$http',
-		function($scope, $http) {
+	app.controller('fileManageCtrl', ['$scope', 'netManager', '$http',
+		function($scope, netManager, $http) {
+			// 筛选条件
 			$scope.where = {
 				keyword: '',
 				currentPage: 1
 			};
-			$http.get(App.config.server + '/files/users').then(function(res) {
+			// 查询用户
+			netManager.get('/files/users').then(function(res) {
 				$scope.users = res.data || []
 			});
+			// 分页查询
 			$scope.handlePagination = function(page, type) {
 				$scope.where.type = type;
 				$scope.where.currentPage = page;
 				if(type) delete $scope.where.keyword;
-				$http({
-					method: 'GET',
-					url: App.config.server + '/files/list',
-					params: $scope.where
-				}).then(function(res) {
+				netManager.get('/files/list', $scope.where).then(function(res) {
 					$scope.where.type = type || '';
 					$scope.list = res.data.results;
-					$scope.pageCount = res.data.pageCount;
-				})
+					$scope.pageCount = res.data.pageCount
+				});
 			};
 			$scope.handlePagination(1);
-
+			// 文件上传
 			$scope.upload = function(val) {
 				var file = val.files[0];
-				var fileInfo = {
-					name: file.name,
-					size: Math.round(file['size'] / 1024) + ' KB',
-					type: file.name.substr(file.name.lastIndexOf('.') + 1, 3),
-					updated: moment().format('YYYY-MM-DD HH:mm:ss')
-				};
-				if(['pdf', 'doc', 'mp4'].indexOf(fileInfo.type.toLocaleLowerCase()) >= 0) {
-					var fileReader = new FileReader();
-					fileReader.readAsDataURL(file);
-					fileReader.onload = function(e) {
-						var result = this.result;
-						$http.post('http://192.168.0.89:9800' + '/files/upload', {
-							fileInfo: fileInfo,
-							result: e.target.result,
-							type: fileInfo.type
-						}).then(function(res) {
-							$scope.where = {
-								type: '',
-								keyword: '',
-								currentPage: 1
-							};
-							$scope.handlePagination(1);
-							swal('上传成功', fileInfo.name, 'success');
-							val.value = ''
-						})
-					}
-				} else {
-					swal('不支持该类型上传', name, 'warning')
-				}
-			};
+				var fileName = file.name;
+				var fileSize = Math.round(file['size'] / 1024) + ' KB';
+				var fileType = file.name.substr(file.name.lastIndexOf('.') + 1, 3);
 
+				if(fileSize > 102400) {
+					swal('文件太大！', '上传文件请保持在100mb以下', 'warning');
+					return
+				};
+				if(['doc', 'pdf', 'mp4', 'zip'].indexOf(fileType) == -1) {
+					swal('格式错误！', '请上传 pdf mp4 word zip 文件类型', 'warning');
+					return
+				};
+
+				netManager.get('/files/exists', {
+					name: fileName
+				}).then(function(res) {
+					var filePush = function() {
+						$scope.isLoad = true;
+						var formData = new FormData();
+						formData.append('file', file);
+						$http.post(App.config.server + '/files/upload', formData, {
+							headers: {
+								'Content-Type': undefined
+							}
+						}).then(function(res) {
+							if(res.data.name) {
+								swal('上传成功', res.data.name, 'success');
+								$scope.where = {
+									type: '',
+									keyword: '',
+									currentPage: 1
+								};
+								$scope.handlePagination(1)
+							} else {
+								swal('上传失败', fileName, 'warning')
+							};
+							$scope.isLoad = false;
+						}).catch(function(err) {
+							$scope.isLoad = false;
+							swal('上传失败', fileName, 'warning')
+						})
+					};
+					if(res.data.exists) {
+						swal({
+							title: "文件已存在？",
+							text: "你是否替换该文件！",
+							type: 'warning',
+							showCancelButton: true,
+							closeOnConfirm: false,
+							cancelButtonText: '取消',
+							confirmButtonColor: "#dd6b55",
+							confirmButtonText: "确认"
+						}, function(isConfirm) {
+							if(isConfirm) {
+								swal.close();
+								filePush()
+							}
+						})
+					} else {
+						filePush()
+					};
+					val.value = ''
+				})
+			};
+			// 文件重命名
 			$scope.rename = function(val) {
 				swal({
 					title: '文档名称编辑！',
@@ -73,7 +106,7 @@
 						swal.showInputError('你需要输入新文件名！')
 						return
 					};
-					$http.post(App.config.server + '/files/update', {
+					netManager.post('/files/update', {
 						id: val._id,
 						oldName: val.name,
 						newName: inputValue
@@ -81,41 +114,35 @@
 						if(res.data.errmsg) {
 							swal('文件名已存在！', inputValue, 'warning')
 						} else {
-							var type = val.name.substr(val.name.lastIndexOf('.'));
-							val.path = val.path.replace(val.name, inputValue + type);
-							val.name = val.name.replace(val.name, inputValue + type);
+							val.name = res.data;
 							swal('更改成功', val.name, 'success')
 						}
 					})
 				})
 			};
-
-			$scope.indexShow = function(val, show) {
-				$scope.authorize = JSON.parse(JSON.stringify(val.authorize));
-				show ? $scope.index = val._id : $scope.index = null
+			// 权限设置
+			$scope.setModal = function(val) {
+				$scope.item = val;
+				$scope.active = JSON.parse(JSON.stringify(val));
+				$('#setModal').modal('show')
 			};
-
-			$scope.update = function(val, authorize) {
-				var loginUserId = $scope.account.id;
-				if(authorize.indexOf(loginUserId) === -1) {
-					
+			$scope.updateChange = function(val) {
+				var allId = '000000000000000000000000';
+				if(val.authorize.length > 1 && val.authorize.indexOf(allId) != -1) {
+					val.authorize = [allId]
 				}
-
-				console.log()
-				console.log(authorize)
-
-				return
-				$http.post(App.config.server + '/files/authorize', {
-					id: val._id,
-					authorize: authorize
-				}).then(function(res) {
+			};
+			$scope.update = function() {
+				netManager.post('/files/authorize', $scope.active).then(function(res) {
 					if(res.data.ok) {
-						swal('设置成功', val.name, 'success');
-						$scope.index = null
+						swal('设置成功', $scope.active.name, 'success');
+						$scope.item.authorize = $scope.active.authorize;
+						$scope.item.tips = $scope.active.tips;
+						$('#setModal').modal('hide')
 					}
 				})
 			};
-
+			// 文件移除
 			$scope.remove = function(val) {
 				swal({
 					title: "确定删除吗？",
@@ -127,10 +154,12 @@
 					confirmButtonColor: "#dd6b55",
 					confirmButtonText: "删除"
 				}, function() {
-					$http.get(App.config.server + '/files/remove?id=' + val._id).then(function(res) {
+					netManager.get('/files/remove?id=' + val._id).then(function(res) {
 						if(res.data) {
+							swal('删除成功', val.name, 'success')
 							$scope.handlePagination(1);
-							swal('删除成功', res.data.name, 'success');
+						} else {
+							swal('删除失败', val.name, 'warning')
 						}
 					})
 				})

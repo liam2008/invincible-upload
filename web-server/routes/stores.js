@@ -7,8 +7,16 @@ module.exports = {
 	route: router
 };
 
+// 仓库列表
+router.get('/houses', controller.houseList);
+// 仓库保存
+router.post('/ihouse', controller.houseSave);
+// 仓库更新
+router.post('/uhouse', controller.houseUpdate);
+
+// 库存列表
 router.get('/list', controller.storesList);
-
-router.get('/register', controller.storesRegister);
-
+// 库存登记
+router.post('/register', controller.storesRegister);
+// 库存记录
 router.get('/journal', controller.storesJournal);

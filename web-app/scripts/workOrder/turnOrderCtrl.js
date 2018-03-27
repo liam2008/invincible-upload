@@ -13,12 +13,12 @@
                 $scope.formSend.submitted = true;
                 if ($scope.formSend.$valid) {
                     var saveData = {
+                    	id: id,
                         log: log,
                         handlerID:$scope.handlerID,
-                        id: id,
+                        remark: $scope.remark,
                         state: 1
                     };
-                    console.log('saveData', saveData);
                     netManager.post('/workOrder/dealOrder', saveData).then(function (res) {
                         $state.go('main.workOrder.dealingOrder',{'currentPage':window.sessionStorage.getItem('currentPage')});
                     }, function (err) {

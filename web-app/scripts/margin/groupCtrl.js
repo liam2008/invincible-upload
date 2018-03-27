@@ -4,25 +4,14 @@
 		function($scope, $http, DTOptionsBuilder) {
 			$scope.list = [];
 			$scope.day = moment().format('d');
-			$scope.startDate = null;
-			$scope.endDate = null;
 
-			if($scope.day > 4) {
-				//上周四-本周三
-				$scope.endDate = moment().subtract(parseInt($scope.day) - 3, 'days').format('YYYY-MM-DD')
-				$scope.startDate = moment().subtract(parseInt($scope.day) + 3, 'days').format('YYYY-MM-DD')
-			} else {
-				//上上周四-上周三
-				$scope.endDate = moment().subtract(4 + parseInt($scope.day), 'days').format('YYYY-MM-DD')
-				$scope.startDate = moment().subtract(10 + parseInt($scope.day), 'days').format('YYYY-MM-DD')
-			};
 			$scope.where = {
 				daterange: {
-					startDate: $scope.startDate,
-					endDate: $scope.endDate
+					startDate: moment().subtract(2, 'days').startOf('months').format('YYYY-MM-DD'),
+					endDate: moment().subtract(2, 'days').format('YYYY-MM-DD')
 				},
-				startDate: $scope.startDate,
-				endDate: $scope.endDate
+				startDate: moment().subtract(2, 'days').startOf('months').format('YYYY-MM-DD'),
+				endDate: moment().subtract(2, 'days').format('YYYY-MM-DD')
 			};
 
 			$scope.dtOptions = DTOptionsBuilder.newOptions()

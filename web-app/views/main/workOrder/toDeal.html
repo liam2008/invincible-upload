@@ -1,186 +1,211 @@
+<style>
+	.myhove {
+		position: relative;
+		cursor: pointer;
+	}
+	
+	.myhove div {
+		display: none;
+		position: absolute;
+		bottom: 18px;
+		width: 420px;
+		max-height: 120px;
+		padding: 10px 12px;
+		white-space: pre-wrap;
+		font-size: 12px;
+		line-height: 1.5;
+		overflow: auto;
+		background-color: #fff;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
+		border-radius: 4px;
+		z-index: 10;
+	}
+	
+	.myhove:hover div {
+		display: block;
+	}
+</style>
 <!--表格-->
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="ibox float-e-margins">
-        <div class="ibox-title">
-            <h5>
+	<div class="ibox float-e-margins">
+		<div class="ibox-title">
+			<h5>
                 待处理工单
             </h5>
-        </div>
-        <div class="ibox-content">
-            <!--处理-->
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">
+		</div>
+		<div class="ibox-content">
+			<!--处理-->
+			<form class="form-horizontal">
+				<div class="form-group">
+					<label class="col-sm-1 control-label">
                         <span class="text-danger">*</span>
                         创建人
                     </label>
 
-                    <div class="col-sm-10">
-                        <p class="form-control-static">{{handleData.creator}}</p>
-                    </div>
-                </div>
+					<div class="col-sm-10">
+						<p class="form-control-static">{{handleData.creator}}</p>
+					</div>
+				</div>
 
-
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">
+				<div class="form-group">
+					<label class="col-sm-1 control-label">
                         <span class="text-danger">*</span>
                         类型
                     </label>
 
-                    <div class="col-sm-10">
-                        <p class="form-control-static">{{handleData.type | typeState}}</p>
-                    </div>
-                </div>
+					<div class="col-sm-10">
+						<p class="form-control-static">{{handleData.type | typeState}}</p>
+					</div>
+				</div>
 
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">
+				<div class="form-group">
+					<label class="col-sm-1 control-label">
                         <span class="text-danger">*</span>
                         内容
                     </label>
 
-                    <div class="col-sm-10">
-                        <p class="form-control-static"
-                           ng-bind-html="handleData.content | trustHtml:handleData.type"></p>
-                    </div>
-                </div>
+					<div class="col-sm-10">
+						<p class="form-control-static" ng-bind-html="handleData.content | trustHtml:handleData.type"></p>
+					</div>
+				</div>
 
-                <div class="form-group" ng-if="handleData.operateTeam">
-                    <label class="col-sm-1 control-label">
+				<div class="form-group" ng-if="handleData.operateTeam">
+					<label class="col-sm-1 control-label">
                         <span class="text-danger">*</span>
                         小组
                     </label>
 
-                    <div class="col-sm-10">
-                        <p class="form-control-static">
-                            {{handleData.operateTeam}}
-                        </p>
-                    </div>
-                </div>
-            </form>
+					<div class="col-sm-10">
+						<p class="form-control-static">
+							{{handleData.operateTeam}}
+						</p>
+					</div>
+				</div>
+			</form>
 
-            <div class="hr-line-dashed"></div>
+			<div class="hr-line-dashed"></div>
 
-            <!--tab选择-->
-            <uib-tabset active="ativeTab">
-                <uib-tab index="0" heading="工单处理" ng-if="fromPage!=='main.workOrder.dealedOrder'">
-                    <form class="form-horizontal m-t-md m-b-md">
-                        <div ng-repeat="logItem in handleData.logs">
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label">
+			<!--tab选择-->
+			<uib-tabset active="ativeTab">
+				<uib-tab index="0" heading="工单处理" ng-if="fromPage!=='main.workOrder.dealedOrder'">
+					<form class="form-horizontal m-t-md m-b-md" name="myForm" novalidate autocomplete="off">
+						<div ng-repeat="logItem in handleData.history">
+							<div class="form-group" ng-if="logItem.dealtLog">
+								<label class="col-sm-2 control-label">
                                     处理意见
                                 </label>
 
-                                <div class="col-sm-10">
-                                    <div class="form-control-static">
-                                        <span>{{logItem.name}}</span>
-                                    </div>
-                                    <p>
-                                        {{logItem.log}}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+								<div class="col-sm-10">
+									<div class="form-control-static">
+										<span>{{logItem.handler}}</span>
+									</div>
+									<p>
+										{{logItem.dealtLog}}
+									</p>
+								</div>
+							</div>
+						</div>
 
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">
+						<div class="form-group">
+							<label class="col-sm-2 control-label">
                                 <span class="text-danger">*</span>
                                 处理意见
                             </label>
 
-                            <div class="col-sm-10">
-                                <textarea cols="45" rows="10" ng-model="handleData.log"></textarea>
-                            </div>
-                        </div>
+							<div class="col-sm-8">
+								<textarea class="form-control" cols="45" rows="10" ng-model="handleData.log" required></textarea>
+							</div>
+						</div>
 
-                    </form>
-                </uib-tab>
-                <uib-tab index="1" heading="工单轨迹">
-                    <div id="vertical-timeline" class="vertical-container dark-timeline">
-                        <div class="vertical-timeline-block"
-                             ng-repeat="historyItem in handleData.history">
-                            <div class="vertical-timeline-icon navy-bg" ng-if="!historyItem.state">
-                                <i class="fa" ng-class="{'fa-smile-o':$index==0,'fa-edit':$index!=0}"></i>
-                            </div>
+						<div class="hr-line-dashed"></div>
 
-                            <div class="vertical-timeline-icon navy-bg" ng-if="historyItem.state==2">
-                                <i class="fa fa-exclamation-circle"></i>
-                            </div>
+						<div class="text-center m-b-lg">
+							<button class="btn btn-success btn-w-m" ng-disabled="!myForm.$valid" ng-click="endOrder()" ng-if="fromPage==='main.workOrder.dealingOrder'">工单完结
+                </button>
+							<button class="btn btn-primary btn-w-m m-l" type="button" ng-click="sendTurn()" ng-if="fromPage==='main.workOrder.dealingOrder'">转派
+                </button>
+							<button class="btn btn-white btn-w-m m-l" ng-click="cancel()">取消</button>
+						</div>
+					</form>
+				</uib-tab>
+				<uib-tab index="1" heading="工单轨迹">
+					<div id="vertical-timeline" class="vertical-container dark-timeline">
+						<div class="vertical-timeline-block" ng-repeat="historyItem in handleData.history">
+							<div class="vertical-timeline-icon navy-bg" ng-if="!historyItem.state">
+								<i class="fa" ng-class="{'fa-smile-o':$index==0,'fa-edit':$index!=0}"></i>
+							</div>
 
-                            <div class="vertical-timeline-content">
-                                <h2>
-                                    <div ng-if="!historyItem.state">
+							<div class="vertical-timeline-icon navy-bg" ng-if="historyItem.state==2">
+								<i class="fa fa-exclamation-circle"></i>
+							</div>
+
+							<div class="vertical-timeline-content">
+								<h2>
+									
+                                    <span ng-if="!historyItem.state">
                                         <span ng-if="$index==0">创建工单</span>
                                         <span ng-if="$index!=0">转派</span>
-                                    </div>
-                                    <div ng-if="historyItem.state==2">
-                                        <span>
-                                            完结
-                                        </span>
+                                    </span>
+                                    <span ng-if="historyItem.state==2">
+                                        <span>完结</span>
+                                    </span>
+                                    <div ng-if="historyItem.remark" class="myhove fa fa-comments-o">
+                                    	<div>{{ historyItem.remark }}</div>
                                     </div>
                                 </h2>
 
-                                <div class="clearfix">
-                                    <div class="pull-left">
-                                        <span ng-if="$index==0">
+								<div class="clearfix">
+									<div class="pull-left">
+										<span ng-if="$index==0">
                                             <span class="m-l-lg">
                                                 <b>创建人：</b>{{historyItem.handler}}
                                             </span>
-                                            <span class="m-l-lg">
+										<span class="m-l-lg">
                                                 <b>转派给：</b>{{historyItem.dealer}}
                                             </span>
-                                            <span class="m-l-lg"
-                                                  ng-if="fromPage=='main.workOrder.dealedOrder' && handleData.logs[$index].log">
-                                                <b>处理意见：</b>{{handleData.logs[$index].log }}
+										<span class="m-l-lg" ng-if="fromPage=='main.workOrder.dealedOrder' && historyItem.dealtLog">
+                                                <b>处理意见：</b>{{historyItem.dealtLog }}
                                             </span>
-                                        </span>
+										</span>
 
-                                        <span ng-if="$index!=0 && historyItem.state!=2">
+										<span ng-if="$index!=0 && historyItem.state!=2">
                                             <span class="m-l-lg">
                                                 <b>处理人：</b>{{historyItem.handler}}
                                             </span>
-                                            <span class="m-l-lg">
+										<span class="m-l-lg">
                                                 <b>转派给：</b>{{historyItem.dealer}}
                                             </span>
-                                            <span class="m-l-lg"
-                                                    ng-if="fromPage=='main.workOrder.dealedOrder' && handleData.logs[$index].log">
-                                                <b>处理意见：</b>{{handleData.logs[$index].log }}
+										<span class="m-l-lg" ng-if="fromPage=='main.workOrder.dealedOrder' && historyItem.dealtLog">
+                                                <b>处理意见：</b>{{historyItem.dealtLog }}
                                             </span>
-                                        </span>
+										</span>
 
-                                        <span ng-if="historyItem.state==2 && $last">
-                                            <span>处理人：</span>{{historyItem.handler}}
-                                        </span>
+										<span ng-if="historyItem.state==2 && $last">
+                                            <span class="m-l-lg">
+                                                <b>处理人：</b>{{historyItem.handler}}
+                                            </span>
+										<span class="m-l-lg" ng-if="fromPage=='main.workOrder.dealedOrder' && historyItem.dealtLog">
+                                                <b>处理意见：</b>{{historyItem.dealtLog }}
+                                            </span>
+										</span>
 
-                                    </div>
+									</div>
 
-                                    <div class="vertical-date pull-right">
-                                        <span ng-if="$index==0">创建时间：</span>
-                                        <span ng-if="$index!=0">处理时间：</span>
-                                        {{historyItem.dealtAt | date:'yyyy-MM-dd HH:mm:ss'}}
-                                    </div>
-                                </div>
+									<div class="vertical-date pull-right">
+										<span ng-if="$index==0">创建时间：</span>
+										<span ng-if="$index!=0">处理时间：</span> {{historyItem.dealtAt | date:'yyyy-MM-dd HH:mm:ss'}}
+									</div>
+								</div>
 
-                            </div>
+							</div>
 
-                        </div>
+						</div>
 
-                    </div>
-                </uib-tab>
-            </uib-tabset>
+					</div>
+				</uib-tab>
+			</uib-tabset>
+		</div>
+	</div>
 
-            <div class="hr-line-dashed"></div>
-
-            <div class="text-center m-b-lg">
-                <button class="btn btn-white m-r-lg" ng-click="endOrder()"
-                        ng-if="fromPage==='main.workOrder.dealingOrder'">工单完结
-                </button>
-                <button class="btn btn-white  m-r-lg" type="button" ng-click="sendTurn()"
-                        ng-if="fromPage==='main.workOrder.dealingOrder'">转派
-                </button>
-                <button class="btn btn-white btn-md" ng-click="cancel()">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <div load-icon is-load="isLoad"></div>
+	<div load-icon is-load="isLoad"></div>
 </div>

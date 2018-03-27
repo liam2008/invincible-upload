@@ -92,7 +92,12 @@
 				$scope.activeItem = val;
 			};
 			$scope.submitSave = function() {
-				if($scope.purchase.orderNumber && $scope.purchase.orderNumber && $scope.purchase.supplierName) {
+				var orderNumber = $scope.purchase.orderNumber;
+				var contractNumber = $scope.purchase.contractNumber;
+				var supplierName = $scope.purchase.supplierName;
+				var orderTime = $scope.purchase.orderTime;
+				if(!orderTime) document.getElementById("orderTime").value = '';
+				if(orderNumber && contractNumber && supplierName && orderTime) {
 					var purTotalPrice = 0;
 					var skuDetail = [];
 					$scope.purchase.orderTime = $('#orderTime').val();
@@ -120,10 +125,28 @@
 							});
 							return
 						};
+						if(!/^[1-2][0-9][0-9][0-9]-[0-1]{0,1}[0-9]-[0-3]{0,1}[0-9]$/.test($scope.purchase.purDetails[i]['conCovDate'])) {
+							$scope.purchase.purDetails[i]['conCovDate'] = '';
+						}
+						if(!$scope.purchase.purDetails[i]['conCovDate']) {
+							swal({
+								title: $scope.purchase.purDetails[i]['storeSku'],
+								text: '合同约定交期不能为空！',
+								timer: 2000
+							});
+							return
+						}
+						if($scope.purchase.purDetails[i]['delQuantity'] && !/^\d+$/.test($scope.purchase.purDetails[i]['delQuantity'])) {
+							swal({
+								title: $scope.purchase.purDetails[i]['storeSku'],
+								text: '交货数量只能填数字！',
+								timer: 2000
+							});
+						}
 						if($scope.purchase.purDetails[i]['delQuantity'] && !$scope.purchase.purDetails[i]['deliverDate'] || !$scope.purchase.purDetails[i]['delQuantity'] && $scope.purchase.purDetails[i]['deliverDate']) {
 							swal({
 								title: $scope.purchase.purDetails[i]['storeSku'],
-								text: '交货数量和实际交期需同时填写！',
+								text: '交货数量和交期日期需同时填写！',
 								timer: 2000
 							});
 							return
@@ -151,7 +174,7 @@
 						})
 					} else {
 						netManager.post('/purchase/purSave', $scope.purchase).then(function(res) {
-							$scope.purList.push({
+							$scope.purList.unshift({
 								skuDetail: skuDetail,
 								orderNumber: $scope.purchase.orderNumber,
 								contractNumber: $scope.purchase.contractNumber,
@@ -163,7 +186,7 @@
 							$scope.activeShow = null
 						}).catch(function(err) {
 							swal({
-								title: '该订单号已存在！',
+								title: '创建订单失败，请重新创建！',
 								timer: 2000
 							})
 						})

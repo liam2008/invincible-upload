@@ -136,7 +136,7 @@
         $scope.navList = permissionFn.navListFn(shareData.permissionList);
         $scope.getClickNavigatorMenuItemTitle = function (id) {
             $state.go(id);
-            if (id === 'nav.summary') {
+            if (id === 'main.summary') {
                 $scope.navigatorMenu = '';
                 $scope.navigatorMenuItem = '概述';
             } else {

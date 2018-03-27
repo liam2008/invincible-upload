@@ -1,47 +1,37 @@
 (function() {
 	var app = angular.module('app.files.views', []);
-	app.controller('fileViewsCtrl', ['$scope', '$http',
-		function($scope, $http) {
+	app.controller('fileViewsCtrl', ['$scope', 'netManager',
+		function($scope, netManager) {
+			// 筛选条件
 			$scope.where = {
-				type: '',
 				keyword: '',
-				currentPage: 1
+				currentPage: 1,
+				isSuthorize: true
 			};
-			$scope.operateDoc = ['admin'].indexOf($scope.account.role.type) != -1;
-
+			// 分页查询
 			$scope.handlePagination = function(page, type) {
 				$scope.where.type = type;
 				$scope.where.currentPage = page;
 				if(type) delete $scope.where.keyword;
-				$http({
-					method: 'GET',
-					url: App.config.server + '/files/list',
-					params: $scope.where
-				}).then(function(res) {
-					$scope.where.type = type;
+				netManager.get('/files/list', $scope.where).then(function(res) {
+					$scope.where.type = type || '';
 					$scope.list = res.data.results;
-					$scope.pageCount = res.data.pageCount;
-				})
+					$scope.pageCount = res.data.pageCount
+				});
 			};
 			$scope.handlePagination(1);
-			
+			// 操作类型
 			$scope.viewer = function(val) {
 				$scope.modalName = val.name;
 				if(val.type === 'pdf') {
-					$scope.pdfUrl = App.config.server + '/' + val.path;
+					var contentEl = document.getElementById('pdf-content');
+					contentEl.src = val.path;
 					$('#pdf-modal').modal('show');
-					$('#pdf-modal').on('shown.bs.modal', function() {
-						setTimeout(function() {
-							$('#zoomfit').click()
-						})
-					})
-				} else if(val.type === 'doc') {
-					var link = document.createElement('a');
-					link.href = App.config.server + '/' + val.path;
-					link.click()
 				} else if(val.type === 'mp4') {
-					$('#mp4-modal video').attr('src', App.config.server + '/' + val.path);
+					$('#mp4-modal video').attr('src', val.path);
 					$('#mp4-modal').modal('show');
+				} else if(val.type === 'doc' || val.type === 'zip') {
+					window.open(App.config.server + '/files/download?path=' + val.path + '&name=' + val.name)
 				}
 			};
 

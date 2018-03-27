@@ -7,8 +7,8 @@ var controller = require('../controllers').workOrder;
 var subfilter = require('../middleware/sub-filter');
 
 module.exports = {
-    path: "/workOrder",
-    route: router
+	path: "/workOrder",
+	route: router
 };
 
 router.use(app.authServer.authenticate());
@@ -23,13 +23,28 @@ router.post('/deleteCustomer', subfilter.operativeCustomer, controller.deleteCus
 
 router.post('/createOrder', subfilter.createOrder, controller.workOrderCreate);
 
-router.get('/newOrderList', subfilter.workOrder, controller.newOrderList);
-
 router.post('/dealOrder', subfilter.workOrder, controller.dealOrder);
 
-router.get('/dealtList', subfilter.workOrder, controller.dealtList);
-
+// 查询小组
 router.get('/orderReady', subfilter.workOrder, controller.orderReady);
 
+// 工单详情
 router.get('/openOrder', subfilter.workOrder, controller.openOrder);
 
+// 保存备注
+router.post('/saveRemark', subfilter.workOrder, controller.saveRemark);
+
+// 处理状态
+router.post('/handle', subfilter.workOrder, controller.handle);
+
+// 待处理列表
+router.get('/newOrderList', subfilter.workOrder, controller.newOrders);
+
+// 已处理列表
+router.get('/dealtList', subfilter.workOrder, controller.dealtList);
+
+// 点击任务列表
+router.get('/clickTask', controller.clickTaskList);
+
+// 点击任务保存
+router.post('/clickTask', controller.clickTaskSave);

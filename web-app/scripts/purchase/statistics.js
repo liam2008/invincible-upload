@@ -45,8 +45,7 @@
 			$scope.loading();
 			$scope.supplierModal = function(item) {
 				netManager.get('/supplier/supplierList').then(function(res) {
-					res.data = JSON.parse(Smartdo.Utils.pakoUnzip(res.data));
-					$scope.supplierList = res.data;
+					$scope.supplierList = JSON.parse(Smartdo.Utils.pakoUnzip(res.data));
 					$('#supplierModal').modal('show')
 				});
 				$scope.submitSupplier = function(supplier) {

@@ -262,6 +262,12 @@
 							"title": "小组管理",
 							"selected": true,
 							"permissionId": "48558fee2c0f4d2d851899feecddf9af"
+						},
+						{
+							"id": 'main.authority.creatVersionsLog',
+							"title": "添加日志",
+							"selected": true,
+							"permissionId": "481ca86831844004804b72fe59a90a7b"
 						}
 					]
 				},
@@ -273,6 +279,12 @@
 					"icon": 'fa-pencil-square-o',
 					"permissionId": "2122d126a6d844dc93132681d1303f2e",
 					"nodes": [{
+							"id": 'main.base.categoryManage',
+							"title": "品类管理",
+							"selected": true,
+							"permissionId": "910e2251d5a74c6ca6ccb2f86d55cf1c"
+						},
+						{
 							"id": 'main.base.goodsManage',
 							"title": "商品管理",
 							"selected": true,
@@ -295,6 +307,18 @@
 							"title": "出入库管理",
 							"selected": true,
 							"permissionId": "bf3c3260784942eb9bb0cee86019d44a"
+						},
+						{
+							"id": 'main.base.commodityManagement',
+							"title": "产品管理",
+							"selected": true,
+							"permissionId": "03d746f1544b479c9eaf4583cc5cca12"
+						},
+						{
+							"id": 'main.base.storeManagement',
+							"title": "仓库管理",
+							"selected": true,
+							"permissionId": "579b0c08feec4492a02282076bd8f8eb"
 						}
 					]
 				},
@@ -322,6 +346,12 @@
 							"title": "每日报表",
 							"selected": true,
 							"permissionId": "f9ab7eb705b94b389c5a8a2ebc253645"
+						},
+						{
+							"id": 'main.daily.operationSale',
+							"title": "运营销售情况",
+							"selected": true,
+							"permissionId": "dbc0f8ec81724bf28e173c9e29b177a5"
 						}
 					]
 				},
@@ -365,7 +395,7 @@
 					"title": "采购管理",
 					"selected": true,
 					"all": true,
-					"icon": 'fa fa-desktop',
+					"icon": 'fa fa-truck',
 					"permissionId": "91a0096cf86a4cc4ae61d307eeeb297d",
 					"nodes": [{
 							"id": 'main.purchase.program',
@@ -398,7 +428,7 @@
 					"title": "样品管理",
 					"selected": true,
 					"all": true,
-					"icon": 'fa fa-desktop',
+					"icon": 'fa fa-suitcase',
 					"permissionId": "b33a50a1415e4b12bdfae17b331ed3a0",
 					"nodes": [{
 							"id": 'main.sample.buy',
@@ -420,27 +450,27 @@
 						}
 					]
 				},
-				{
-					"id": 'main.margin',
-					"title": "毛利率统计报表",
-					"selected": true,
-					"all": true,
-					"icon": 'fa-bar-chart',
-					"permissionId": "3e98920726624d54ade18b654edcdb5d",
-					"nodes": [{
-							"id": 'main.margin.group',
-							"title": "小组毛利率",
-							"selected": true,
-							"permissionId": "ea319b6d63eb41a4ab36668c5a6db082"
-						},
-						{
-							"id": 'main.margin.gross',
-							"title": "SKU毛利率",
-							"selected": true,
-							"permissionId": "11e09c47cbbf4fa4b3ff156970fe8c70"
-						}
-					]
-				},
+				// {
+				// 	"id": 'main.margin',
+				// 	"title": "毛利率统计报表",
+				// 	"selected": true,
+				// 	"all": true,
+				// 	"icon": 'fa-bar-chart',
+				// 	"permissionId": "3e98920726624d54ade18b654edcdb5d",
+				// 	"nodes": [{
+				// 			"id": 'main.margin.group',
+				// 			"title": "小组毛利率",
+				// 			"selected": true,
+				// 			"permissionId": "ea319b6d63eb41a4ab36668c5a6db082"
+				// 		},
+				// 		{
+				// 			"id": 'main.margin.gross',
+				// 			"title": "SKU毛利率",
+				// 			"selected": true,
+				// 			"permissionId": "11e09c47cbbf4fa4b3ff156970fe8c70"
+				// 		}
+				// 	]
+				// },
 				{
 					"id": 'main.files',
 					"title": "在线学习",
@@ -497,30 +527,31 @@
 					"icon": 'fa-file-o',
 					"permissionId": "1e6f698aafc6485bb8c16b6df7a7354a",
 					"nodes": [{
-							"id": 'main.workOrder.createOrder',
-							"title": "创建工单",
-							"selected": true,
-							"permissionId": "5645127ef89f42d9b900d0411b256482"
-						},
-						{
-							"id": 'main.workOrder.dealingOrder',
-							"title": "待处理工单",
-							"selected": true,
-							"permissionId": "1621f31d43e94c3bb7b96d3f13b78061"
-						},
-						{
-							"id": 'main.workOrder.dealedOrder',
-							"title": "已处理工单",
-							"selected": true,
-							"permissionId": "d79a1d069fbf4382a04de3490161d260"
-						},
-						{
-							"id": 'main.workOrder.customerList',
-							"title": "客服任务分配表",
-							"selected": true,
-							"permissionId": "d1429d70541445a9ae5102e2a3f28c42"
-						}
-					]
+						"id": 'main.workOrder.clickTask',
+						"title": "点击任务",
+						"selected": true,
+						"permissionId": "647a9be3562347af9b666f6a16a6ccf9"
+					}, {
+						"id": 'main.workOrder.createOrder',
+						"title": "创建工单",
+						"selected": true,
+						"permissionId": "5645127ef89f42d9b900d0411b256482"
+					}, {
+						"id": 'main.workOrder.dealingOrder',
+						"title": "待处理工单",
+						"selected": true,
+						"permissionId": "1621f31d43e94c3bb7b96d3f13b78061"
+					}, {
+						"id": 'main.workOrder.dealedOrder',
+						"title": "已处理工单",
+						"selected": true,
+						"permissionId": "d79a1d069fbf4382a04de3490161d260"
+					}, {
+						"id": 'main.workOrder.customerList',
+						"title": "客服任务分配表",
+						"selected": true,
+						"permissionId": "d1429d70541445a9ae5102e2a3f28c42"
+					}]
 				}
 			]
 		};

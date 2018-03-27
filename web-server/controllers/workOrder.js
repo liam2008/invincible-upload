@@ -4,10 +4,15 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var async = require('async');
 var moment = require('moment');
+var MysqlADC = require('../databases/db.mysql.ADC');
 var InvincibleDB = require('../models/invincible');
 var OperativeCustomer = InvincibleDB.getModel('operativeCustomer');
 var WorkOrder = InvincibleDB.getModel('workOrder');
 var User = InvincibleDB.getModel('user');
+var Shop = InvincibleDB.getModel('shops');
+var DailySell = InvincibleDB.getModel('daily_sell');
+var Merchandise = InvincibleDB.getModel('merchandise');
+var StoresJournals = InvincibleDB.getModel('StoresJournals');
 var PadLeft = require('padleft');
 var Team = InvincibleDB.getModel('team');
 
@@ -20,25 +25,25 @@ var dealErr = require('../errors/controller-error');
 module.exports = {
 	name: "workOrder",
 
-	customerList: function (req, res, next) {
+	customerList: function(req, res, next) {
 		var findCondition = null;
 		var subFilter = req.subfilterOperativeCustomer || {};
-		if (subFilter.view == "*") {
+		if(subFilter.view == "*") {
 			findCondition = {};
-		}
-		else if (subFilter.view != null) {
-			findCondition = {customer_id: subFilter.view};
-		}
-		else {
+		} else if(subFilter.view != null) {
+			findCondition = {
+				customer_id: subFilter.view
+			};
+		} else {
 			res.error(ERROR_CODE.ACCESS_DENIED);
 			return;
 		}
 
-		if (req.query.teamID) findCondition.operate_team = mongoose.Types.ObjectId(req.query.teamID);
-		if (req.query.orderType) {
-			if (typeof (req.query.orderType) == "number") {
+		if(req.query.teamID) findCondition.operate_team = mongoose.Types.ObjectId(req.query.teamID);
+		if(req.query.orderType) {
+			if(typeof(req.query.orderType) == "number") {
 				findCondition.work_order_type = req.query.orderType;
-			}else {
+			} else {
 				findCondition.work_order_type = Utils.toNumber(req.query.orderType);
 			}
 		}
@@ -46,59 +51,71 @@ module.exports = {
 		var results = {};
 		async.series([
 				// 运营客服
-				function (callB) {
+				function(callB) {
 					OperativeCustomer.find(findCondition)
-						.sort({operateTeam: 1})
+						.sort({
+							operateTeam: 1
+						})
 						.populate("customer_id")
 						.populate("operate_team")
-						.exec(function (err, customerFounds) {
-						if (dealErr.findErr(err, res)) return callB(err);
-						var list = [];
-						customerFounds.forEach (function (customerFound) {
-							var result = {};
-							result.WOCustomerID = customerFound._id;
-							if (customerFound.operate_team) {
-								result.operateTeam = {
-									id: customerFound.operate_team.id,
-									name: customerFound.operate_team.name
+						.exec(function(err, customerFounds) {
+							if(dealErr.findErr(err, res)) return callB(err);
+							var list = [];
+							customerFounds.forEach(function(customerFound) {
+								var result = {};
+								result.WOCustomerID = customerFound._id;
+								if(customerFound.operate_team) {
+									result.operateTeam = {
+										id: customerFound.operate_team.id,
+										name: customerFound.operate_team.name
+									};
+								} else {
+									result.operateTeam = "全部";
+								}
+								result.WOType = customerFound.work_order_type;
+								if(customerFound.customer_id) result.customer = {
+									id: customerFound.customer_id._id,
+									name: customerFound.customer_id.name
 								};
-							}else {
-								result.operateTeam = "全部";
-							}
-							result.WOType = customerFound.work_order_type;
-							if (customerFound.customer_id) result.customer = {
-								id: customerFound.customer_id._id,
-								name: customerFound.customer_id.name
-							};
-							list.push(result);
-						});
-						results.list = list;
-						callB(null);
-					})
+								list.push(result);
+							});
+							results.list = list;
+							callB(null);
+						})
 				},
 
-				function (callB) {
+				function(callB) {
 					var team = [];
-					Team.find({},["name"])
-						.sort({name: 1})
-						.exec(function (err, teamListFound) {
-							if (dealErr.findErr(err, res)) return callB(err);
-							teamListFound.forEach (function (teamFound) {
-								team.push({id: teamFound._id, name: teamFound.name});
+					Team.find({}, ["name"])
+						.sort({
+							name: 1
+						})
+						.exec(function(err, teamListFound) {
+							if(dealErr.findErr(err, res)) return callB(err);
+							teamListFound.forEach(function(teamFound) {
+								team.push({
+									id: teamFound._id,
+									name: teamFound.name
+								});
 							});
 							results.team = team;
 							callB(null)
 						})
 				},
 
-				function (callB) {
+				function(callB) {
 					var customers = [];
-					User.find({role: mongoose.Types.ObjectId("5a264d69c4d23f1fcdb62191")})
+					User.find({
+							role: mongoose.Types.ObjectId("5a264d69c4d23f1fcdb62191")
+						})
 						.populate("customer_id")
-						.exec(function (err, customerFounds) {
-							if (dealErr.findErr(err, res)) return callB(err);
-							customerFounds.forEach (function (customerFound) {
-								var customer = {id: customerFound._id, name: customerFound.name};
+						.exec(function(err, customerFounds) {
+							if(dealErr.findErr(err, res)) return callB(err);
+							customerFounds.forEach(function(customerFound) {
+								var customer = {
+									id: customerFound._id,
+									name: customerFound.name
+								};
 								customers.push(customer);
 							});
 							results.customers = customers;
@@ -106,8 +123,8 @@ module.exports = {
 						})
 				}
 			],
-			function (err) {
-				if (err) {
+			function(err) {
+				if(err) {
 					debug(new Error(err));
 					return;
 				}
@@ -116,57 +133,61 @@ module.exports = {
 		)
 	},
 
-	saveCustomer: function (req, res, next) {
+	saveCustomer: function(req, res, next) {
 		var subFilter = req.subfilterOperativeCustomer || {};
-		if (!subFilter.add) {
+		if(!subFilter.add) {
 			res.error(ERROR_CODE.ACCESS_DENIED);
 			return;
 		}
 
-		if (!req.body.customerID) return res.error(ERROR_CODE.MISSING_ARGUMENT);
-		if (req.body.WOType) {
-			if (typeof (req.body.WOType) != "number") {
+		if(!req.body.customerID) return res.error(ERROR_CODE.MISSING_ARGUMENT);
+		if(req.body.WOType) {
+			if(typeof(req.body.WOType) != "number") {
 				req.body.WOType = Utils.toNumber(req.body.WOType);
 			}
 		}
-		if (req.body.operateTeam) req.body.operateTeam = mongoose.Types.ObjectId(req.body.operateTeam);
+		if(req.body.operateTeam) req.body.operateTeam = mongoose.Types.ObjectId(req.body.operateTeam);
 		req.body.customerID = mongoose.Types.ObjectId(req.body.customerID);
 
 		async.series([
-				function (callB) {
+				function(callB) {
 					var findRequire = {};
-					if (req.body.operateTeam || req.body.WOType || req.body.WOType == 0) {
-						if (req.body.operateTeam) findRequire.operate_team = {$in: [req.body.operateTeam, null]};
-						if (req.body.WOType) findRequire.work_order_type = {$in: [req.body.WOType, null]};
+					if(req.body.operateTeam || req.body.WOType || req.body.WOType == 0) {
+						if(req.body.operateTeam) findRequire.operate_team = {
+							$in: [req.body.operateTeam, null]
+						};
+						if(req.body.WOType) findRequire.work_order_type = {
+							$in: [req.body.WOType, null]
+						};
 					}
-					OperativeCustomer.find(findRequire, function (err, customerListFound) {
-						if (dealErr.findErr(err, res)) return callB(err);
-						if (customerListFound.length > 0) {
+					OperativeCustomer.find(findRequire, function(err, customerListFound) {
+						if(dealErr.findErr(err, res)) return callB(err);
+						if(customerListFound.length > 0) {
 							res.error(ERROR_CODE.ALREADY_EXISTS);
 							callB(ERROR_CODE.ALREADY_EXISTS);
-						}else {
+						} else {
 							callB(null);
 						}
 					})
 				},
 
-				function (callB) {
+				function(callB) {
 					var customer = new OperativeCustomer({
 						_id: new mongoose.Types.ObjectId(),
-						operate_team: req.body.operateTeam,                                                   // 运营小组
-						work_order_type: req.body.WOType,                                                        // 工单类型
-						customer_id: req.body.customerID,                                                      // 客服
+						operate_team: req.body.operateTeam, // 运营小组
+						work_order_type: req.body.WOType, // 工单类型
+						customer_id: req.body.customerID, // 客服
 						createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
 						updatedAt: moment().format("YYYY-MM-DD HH:mm:ss")
 					});
-					customer.save(function (err) {
-						if (dealErr.createErr(err, res)) return callB(err);
+					customer.save(function(err) {
+						if(dealErr.createErr(err, res)) return callB(err);
 						callB(null);
 					})
 				}
 			],
-			function (err) {
-				if (err) {
+			function(err) {
+				if(err) {
 					debug(new Error(err));
 					return;
 				}
@@ -175,56 +196,64 @@ module.exports = {
 		)
 	},
 
-	updateCustomer: function (req, res, next) {
+	updateCustomer: function(req, res, next) {
 		var subFilter = req.subfilterOperativeCustomer || {};
-		if (!subFilter.edit) {
+		if(!subFilter.edit) {
 			res.error(ERROR_CODE.ACCESS_DENIED);
 			return;
 		}
 
-		if (!req.body.customerID || !req.body.WOCustomerID) return res.error(ERROR_CODE.MISSING_ARGUMENT);
+		if(!req.body.customerID || !req.body.WOCustomerID) return res.error(ERROR_CODE.MISSING_ARGUMENT);
 		req.body.WOType = req.body.WOType || null;
 		req.body.operateTeam = req.body.operateTeam || null;
-		if (req.body.WOType && typeof (req.body.WOType) != "number") req.body.WOType = Utils.toNumber(req.body.WOType);
-		if (req.body.operateTeam) req.body.operateTeam = mongoose.Types.ObjectId(req.body.operateTeam);
+		if(req.body.WOType && typeof(req.body.WOType) != "number") req.body.WOType = Utils.toNumber(req.body.WOType);
+		if(req.body.operateTeam) req.body.operateTeam = mongoose.Types.ObjectId(req.body.operateTeam);
+		req.body.customerID = mongoose.Types.ObjectId(req.body.customerID);
 		req.body.WOCustomerID = mongoose.Types.ObjectId(req.body.WOCustomerID);
-
 		async.series([
 				// 判断数据是否是已删除数据
-				function (callB) {
+				function(callB) {
 					var findRequire = {};
-					if (req.body.operateTeam || req.body.WOType) {
-						if (req.body.operateTeam) findRequire.operate_team = {$in: [req.body.operateTeam, null]};
-						if (req.body.WOType) findRequire.work_order_type = {$in: [req.body.WOType, null]};
+					if(req.body.operateTeam || req.body.WOType) {
+						if(req.body.operateTeam) findRequire.operate_team = {
+							$in: [req.body.operateTeam, null]
+						};
+						if(req.body.WOType) findRequire.work_order_type = {
+							$in: [req.body.WOType, null]
+						};
 					}
-					OperativeCustomer.find(findRequire, function (err, customerListFound) {
-						if (dealErr.findErr(err, res)) return callB(err);
-						if (customerListFound.length > 0) {
-							if (customerListFound.length == 1) {
-								if (customerListFound[0]._id.toString() == req.body.WOCustomerID.toString()) return callB(null);
+					OperativeCustomer.find(findRequire, function(err, customerListFound) {
+						if(dealErr.findErr(err, res)) return callB(err);
+						if(customerListFound.length > 0) {
+							if(customerListFound.length == 1) {
+								if(customerListFound[0]._id.toString() == req.body.WOCustomerID.toString()) return callB(null);
 							}
 							callB(ERROR_CODE.ALREADY_EXISTS);
-						}else {
+						} else {
 							callB(null);
 						}
 					})
 				},
 
-				function (callB) {
-					OperativeCustomer.findOne({_id: req.body.WOCustomerID}, function (err, customerFound) {
-						if (dealErr.findErr(err, res)) return callB(err);
+				function(callB) {
+					OperativeCustomer.findOne({
+						_id: req.body.WOCustomerID
+					}, function(err, customerFound) {
+						console.log(customerFound)
+						if(dealErr.findErr(err, res)) return callB(err);
+						customerFound.customer_id = req.body.customerID;
 						customerFound.operate_team = req.body.operateTeam;
 						customerFound.work_order_type = req.body.WOType;
 						customerFound.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss");
-						customerFound.save(function (err) {
-							if (dealErr.updateErr(err, res)) return callB(err);
+						customerFound.save(function(err) {
+							if(dealErr.updateErr(err, res)) return callB(err);
 							callB(null);
 						})
 					})
 				}
 			],
-			function (err) {
-				if (err) {
+			function(err) {
+				if(err) {
 					debug(new Error(err));
 					res.error(err);
 					return;
@@ -234,113 +263,120 @@ module.exports = {
 		)
 	},
 
-	deleteCustomer: function (req, res, next) {
+	deleteCustomer: function(req, res, next) {
 		var subFilter = req.subfilterOperativeCustomer || {};
-		if (!subFilter.delete) {
+		if(!subFilter.delete) {
 			res.error(ERROR_CODE.ACCESS_DENIED);
 			return;
 		}
 
-		if (!req.body.WOCustomerID) return res.error(ERROR_CODE.MISSING_ARGUMENT);
+		if(!req.body.WOCustomerID) return res.error(ERROR_CODE.MISSING_ARGUMENT);
 		req.body.WOCustomerID = mongoose.Types.ObjectId(req.body.WOCustomerID);
 		var findRequire = {
 			_id: req.body.WOCustomerID
 		};
-		console.log(findRequire)
-		OperativeCustomer.remove(findRequire, function (err) {
-			if (dealErr.removeErr(err, res)) return debug(new Error(err));
+		OperativeCustomer.remove(findRequire, function(err) {
+			if(dealErr.removeErr(err, res)) return debug(new Error(err));
 			res.success();
 		})
 	},
 
-	workOrderCreate: function (req, res, next) {
+	workOrderCreate: function(req, res, next) {
 		var subFilter = req.subfilterCreateOrder || {};
-		if (!subFilter.add) {
+		if(!subFilter.add) {
 			res.error(ERROR_CODE.ACCESS_DENIED);
 			return;
 		}
 
-		if (!req.body.operateTeam || (!req.body.WOType && req.body.WOType != 0) || !req.body.content) return res.error(ERROR_CODE.MISSING_ARGUMENT);
-		if (typeof (req.body.WOType) != "number") req.body.WOType = Utils.toNumber(req.body.WOType);
+		if(!req.body.operateTeam || (!req.body.WOType && req.body.WOType != 0) || !req.body.content) return res.error(ERROR_CODE.MISSING_ARGUMENT);
+		if(typeof(req.body.WOType) != "number") req.body.WOType = Utils.toNumber(req.body.WOType);
 		req.body.operateTeam = mongoose.Types.ObjectId(req.body.operateTeam);
 		var orderID;
 		var handler = "";
 		var noDealter = true;
 		async.series([
 				// 生成工单编号
-				function (callB) {
+				function(callB) {
 					var regExp = new RegExp(moment().format("YYYYMMDD"));
 					var findRequire = {
 						order_id: regExp
 					};
-					WorkOrder.count(findRequire,function (err, OrderCount) {
-						if (dealErr.findErr(err, res)) return callB(err);
+					WorkOrder.count(findRequire, function(err, OrderCount) {
+						if(dealErr.findErr(err, res)) return callB(err);
 						orderID = (OrderCount + 1).toString();
-						if (orderID.length < 4) orderID = moment().format("YYYYMMDD") + orderID.padLeft(4, '0');
+						if(orderID.length < 4) orderID = moment().format("YYYYMMDD") + orderID.padLeft(4, '0');
 						callB(null);
 					});
 				},
 
 				// 获取处理人
-				function (callB) {
+				function(callB) {
 					var findRequire = {};
-					if (req.body.WOType != 0) {
+					if(req.body.WOType != 0) {
 						findRequire = {
-							operate_team: {$in: [req.body.operateTeam, null]},
-							work_order_type: {$in: [req.body.WOType, null]}
+							operate_team: {
+								$in: [req.body.operateTeam, null]
+							},
+							work_order_type: {
+								$in: [req.body.WOType, null]
+							}
 						};
-					}else {
+					} else {
 						callB(null);
 						return;
 					}
 					OperativeCustomer.find(findRequire, ["customer_id"])
-						.sort({work_order_type: -1})
-						.exec(function (err, customerListFound) {
-							if (dealErr.createErr(err, res)) return callB(err);
-							if (customerListFound.length > 1) {
+						.sort({
+							work_order_type: -1
+						})
+						.exec(function(err, customerListFound) {
+							if(dealErr.createErr(err, res)) return callB(err);
+							if(customerListFound.length > 1) {
 								res.error(ERROR_CODE.DB_VAL_ERROR);
 								callB(ERROR_CODE.DB_VAL_ERROR);
 								return;
-							}else if (customerListFound.length == 1) {
+							} else if(customerListFound.length == 1) {
 								handler = customerListFound[0].customer_id;
 								noDealter = false;
 								callB(null);
-							}else {
+							} else {
 								callB(null);
 							}
 						})
 				},
 
 				// 默认处理人
-				function (callB) {
-					if (noDealter) {
-						User.findOne({role: mongoose.Types.ObjectId("5a265adac4d23f1fcdb621f1")})
-							.exec (function (err, otherFound) {
-							if (dealErr.createErr(err, res)) return callB(err);
-							if (otherFound) {
-								handler = otherFound._id;
-								callB(null);
-							}else {
-								res.error(ERROR_CODE.MISSING_OPERATE);
-								callB(ERROR_CODE.MISSING_OPERATE);
-								return;
-							}
-						})
-					}else {
+				function(callB) {
+					if(noDealter) {
+						User.findOne({
+								role: mongoose.Types.ObjectId("5a265adac4d23f1fcdb621f1")
+							})
+							.exec(function(err, otherFound) {
+								if(dealErr.createErr(err, res)) return callB(err);
+								if(otherFound) {
+									handler = otherFound._id;
+									callB(null);
+								} else {
+									res.error(ERROR_CODE.MISSING_OPERATE);
+									callB(ERROR_CODE.MISSING_OPERATE);
+									return;
+								}
+							})
+					} else {
 						callB(null);
 					}
 				},
 
-				function (callB) {
+				function(callB) {
 					var newWorkOrder = new WorkOrder({
 						_id: mongoose.Types.ObjectId(),
-						order_id: orderID,                                                   // 工单编号
-						state: 0,                                                      // 状态(0：待处理， 1：已跟进， 2：已完结)
-						type: req.body.WOType,                                                       // 类型(1：评论异常， 2：发现跟单， 3：Lightning Deals， 4:销售权限， 5:品牌更改， 6:店铺IP问题， 0：其它)
-						creator: mongoose.Types.ObjectId(subFilter.add),              // 创建人
+						order_id: orderID, // 工单编号
+						state: 0, // 状态(0：待处理， 1：已跟进， 2：已完结)
+						type: req.body.WOType, // 类型(1：评论异常， 2：发现跟单， 3：Lightning Deals， 4:销售权限， 5:品牌更改， 6:店铺IP问题， 0：其它)
+						creator: mongoose.Types.ObjectId(subFilter.add), // 创建人
 						team_id: req.body.operateTeam,
-						content: req.body.content,                                                    // 工单内容
-						handler: handler,              // 当前处理人
+						content: req.body.content, // 工单内容
+						handler: handler, // 当前处理人
 						history: [{
 							log: "",
 							from: subFilter.add,
@@ -349,14 +385,14 @@ module.exports = {
 						createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
 						updatedAt: moment().format("YYYY-MM-DD HH:mm:ss")
 					});
-					newWorkOrder.save (function (err) {
-						if (dealErr.createErr(err, res)) return callB(err);
+					newWorkOrder.save(function(err) {
+						if(dealErr.createErr(err, res)) return callB(err);
 						callB(null);
 					})
 				}
 			],
-			function (err) {
-				if (err) {
+			function(err) {
+				if(err) {
 					debug(new Error(err));
 					return;
 				}
@@ -365,192 +401,69 @@ module.exports = {
 		)
 	},
 
-	newOrderList: function (req, res, next) {
-		var findCondition = null;
+	dealOrder: function(req, res, next) {
 		var subFilter = req.subfilterWorkOrder || {};
-		if (subFilter.view == "*") {
-			findCondition = {};
-		}
-		else if (subFilter.view != null) {
-			findCondition = {handler:  mongoose.Types.ObjectId(subFilter.view)};
-		}
-		else {
-			res.error(ERROR_CODE.ACCESS_DENIED);
-			return;
-		}
-		findCondition.state = {$nin: [2]};
-
-		var typeCount = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7":0, "8": 0, "0": 0};
-		var results = {
-			totalItems: 0
-		};
-		async.series([
-				// 分类数量
-				function (callB) {
-					WorkOrder.aggregate([
-						{$match: findCondition},
-						{$group : {_id : "$type", count: {$sum: 1}}}
-					], function (err, orderListFound) {
-						if (dealErr.findErr(err, res)) return debug(new Error(err));
-						var isErr = false;
-						orderListFound.forEach (function (orderFound) {
-							if (orderFound._id || orderFound._id == 0) {
-								typeCount[orderFound._id.toString()] = orderFound.count;
-							}else{
-								res.error(ERROR_CODE.UNKNOW_ERR);
-								callB(ERROR_CODE.UNKNOW_ERR);
-								isErr = true;
-								return;
-							}
-						});
-						if (isErr) return;
-						results.typeCount = typeCount;
-						callB(null);
-					})
-				},
-
-				// 主页信息
-				function (callB) {
-					var list = [];
-					var normal = [3, 4, 5, 6, 0];									// 普通工单
-					var currentPage = req.query.currentPage || 1;
-					if (typeof (currentPage) != "number") currentPage = Utils.toNumber(currentPage);
-					var pageSize = req.query.pageSize || 10;
-					if (typeof (pageSize) != "number") pageSize = Utils.toNumber(pageSize);
-					if (req.query.WOType) {
-						if (typeof (req.query.WOType) != "number")  req.query.WOType = Utils.toNumber(req.query.WOType);
-						if (req.query.WOType == 0) {
-							findCondition.type = {$in: normal};
-						}else {
-							findCondition.type = req.query.WOType;
-						}
-					}
-					WorkOrder.find(findCondition, ["_id", "order_id","state","type","creator","content","handler","createdAt"])
-						.sort({order_id: -1})
-						.skip((currentPage - 1) * pageSize)
-						.limit(pageSize)
-						.populate("creator")
-						.populate("handler")
-						.exec(function (err, orderListFound) {
-							if (dealErr.findErr(err, res)) return callB(err);
-							orderListFound.forEach(function (orderFound) {
-								var creator = "";
-								var handler = "";
-								if (orderFound.creator) {
-									creator = orderFound.creator.name;
-								}else {
-									creator = "预警机器人";
-								}
-								if (orderFound.handler) handler = orderFound.handler.name;
-								var result = {
-									id: orderFound._id,
-									orderID: orderFound.order_id,
-									type: orderFound.type,
-									creator: creator,
-									content: orderFound.content,
-									handler: handler
-								};
-								if (orderFound.createdAt) result.createdAt = moment(orderFound.createdAt).format("YYYY-MM-DD HH:mm:ss");
-								list.push(result);
-							});
-							results.list = list;
-							callB(null)
-						})
-				},
-
-				// 获取处理人
-				function (callB) {
-					var customers = [];
-					var findRequire = {
-						role: {$in: [mongoose.Types.ObjectId("5a264d69c4d23f1fcdb62191"), mongoose.Types.ObjectId("5a265adac4d23f1fcdb621f1"),
-							mongoose.Types.ObjectId("59f984c2513ecc57ffc1ddcf"), mongoose.Types.ObjectId("59fc32140ed72b7271f8d614")]}
-					};
-					User.find(findRequire,["name"])
-						.sort({name: 1})
-						.exec(function (err, userListFound) {
-							if (dealErr.findErr(err, res)) return callB(err);
-							userListFound.forEach (function (userFound) {
-								var handler = {};
-								handler.id = userFound._id;
-								handler.name = userFound.name;
-								customers.push(handler);
-							});
-							results.customers = customers;
-							callB(null);
-						})
-				}
-			],
-			function (err) {
-				if (err) {
-					debug(new Error(err));
-					return;
-				}
-				res.success(results);
-			}
-		)
-	},
-
-	dealOrder: function (req, res, next) {
-		var subFilter = req.subfilterWorkOrder || {};
-		if (!subFilter.edit) {
+		if(!subFilter.edit) {
 			res.error(ERROR_CODE.ACCESS_DENIED);
 			return;
 		}
 
 		// 转派人
 		var handlerID;
-		if (req.body.handlerID) handlerID = mongoose.Types.ObjectId(req.body.handlerID);
-		if (!req.body.id || !req.body.state || (!handlerID && req.body.state != 2)) return res.error(ERROR_CODE.MISSING_ARGUMENT);
-		if (typeof (req.body.state) != "number") req.body.state = Utils.toNumber(req.body.state);
+		if(req.body.handlerID) handlerID = mongoose.Types.ObjectId(req.body.handlerID);
+		if(!req.body.id || !req.body.state || (!handlerID && req.body.state != 2)) return res.error(ERROR_CODE.MISSING_ARGUMENT);
+		if(typeof(req.body.state) != "number") req.body.state = Utils.toNumber(req.body.state);
 
 		req.body.id = mongoose.Types.ObjectId(req.body.id);
 
 		async.series([
-				function (callB) {
+				function(callB) {
 					var findRequire = {
 						_id: req.body.id
 					};
-					WorkOrder.findOne(findRequire, function (err, orderFound) {
-						if (dealErr.findErr(err, res)) return callB(err);
-						if (orderFound) {
-							if (orderFound.history[0]) {
-								if ((orderFound.history[0].to.toString()) == (handlerID + "")) {
+					WorkOrder.findOne(findRequire, function(err, orderFound) {
+						if(dealErr.findErr(err, res)) return callB(err);
+						if(orderFound) {
+							if(orderFound.history[0]) {
+								if((orderFound.history[0].to.toString()) == (handlerID + "")) {
 									res.error(ERROR_CODE.INVALID_ARGUMENT);
 									callB(ERROR_CODE.INVALID_ARGUMENT);
 									return;
 								}
 								var log = req.body.log || "";
+								var remark = req.body.remark || "";
 								var history = {
 									log: log,
+									remark: remark,
 									from: mongoose.Types.ObjectId(subFilter.edit),
 									dealtAt: moment().format("YYYY-MM-DD HH:mm:ss")
 								};
-								if (handlerID) history.to = handlerID;
+								if(handlerID) history.to = handlerID;
 								orderFound.history.unshift(history);
-								if (handlerID) {
+								if(handlerID) {
 									orderFound.handler = handlerID;
-								}else {
+								} else {
 									orderFound.handler = null;
 								}
 								orderFound.state = req.body.state;
 								orderFound.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss")
-								orderFound.save(function (err) {
-									if (dealErr.updateErr(err, res)) return callB(err);
+								orderFound.save(function(err) {
+									if(dealErr.updateErr(err, res)) return callB(err);
 									callB(null);
 								})
-							}else {
+							} else {
 								res.error(ERROR_CODE.DB_ERROR);
 								callB(ERROR_CODE.DB_ERROR);
 							}
-						}else {
+						} else {
 							res.error(ERROR_CODE.NOT_EXISTS);
 							callB(ERROR_CODE.NOT_EXISTS);
 						}
 					})
 				}
 			],
-			function (err) {
-				if (err) {
+			function(err) {
+				if(err) {
 					debug(new Error(err));
 					return;
 				}
@@ -559,286 +472,586 @@ module.exports = {
 		)
 	},
 
-	dealtList: function (req, res, next) {
-		var findCondition = null;
-		var hasUser = true;
+	// 查询小组
+	orderReady: function(req, res, next) {
+		Team.find({}, {
+			name: 1
+		}, function(err, docs) {
+			if(err) res.error(ERROR_CODE.FIND_FAILED);
+			res.success({
+				team: docs
+			})
+		})
+	},
+
+	// 工单详情
+	openOrder: function(req, res, next) {
+		if(!req.query.id) return res.error(ERROR_CODE.MISSING_ARGUMENT);
+		WorkOrder.findOne({
+			_id: req.query.id
+		}).populate({
+			path: 'creator',
+			select: 'name'
+		}).populate({
+			path: 'team_id',
+			select: 'name'
+		}).populate({
+			path: 'history.from',
+			select: 'name'
+		}).populate({
+			path: 'history.to',
+			select: 'name'
+		}).exec(function(err, docs) {
+			if(!docs) res.error(ERROR_CODE.NOT_EXISTS);
+			let history = [];
+			docs.history.map(function(item) {
+				history.splice(0, 0, {
+					remark: item.remark,
+					dealtLog: item.log,
+					dealtAt: item.dealtAt || docs.createdAt,
+					dealer: item.to ? item.to.name : '预警机器人',
+					handler: item.from ? item.from.name : '预警机器人'
+				})
+			});
+			if(docs.state == 2) history[history.length - 1]['state'] = 2;
+			res.send({
+				history,
+				type: docs.type,
+				content: docs.content,
+				createdAt: docs.createdAt,
+				operateTeam: docs.team_id ? docs.team_id.name : '',
+				creator: docs.creator ? docs.creator.name : '预警机器人'
+			})
+		})
+	},
+
+	// 保存备注
+	saveRemark: function(req, res, next) {
+		if(!req.body._id) res.error(ERROR_CODE.MISSING_ARGUMENT);
+
+		async.series({
+			save: function(callback) {
+				WorkOrder.findOne({
+					_id: req.body._id
+				}, function(err, work) {
+					if(err || !work) callback(ERROR_CODE.FIND_FAILED);
+					work.remarks.unshift({
+						writer: req.agent.id,
+						content: req.body.content
+					});
+					work.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+					work.save(function(err, doc) {
+						err ? callback(ERROR_CODE.UPDATE_FAILED) : callback(null)
+					})
+				})
+			},
+			info: function(callback) {
+				WorkOrder.findOne({
+					_id: req.body._id
+				}).populate({
+					path: 'remarks.writer',
+					select: 'name'
+				}).exec(function(err, work) {
+					err ? callback(ERROR_CODE.UPDATE_FAILED) : callback(null, work)
+				})
+			}
+		}, function(err, results) {
+			err ? res.error(err) : res.send(results.info['remarks'])
+		})
+	},
+
+	// 处理状态
+	handle: function(req, res) {
+		if(!req.body._id) res.error(ERROR_CODE.MISSING_ARGUMENT);
+		WorkOrder.findOne({
+			_id: req.body._id
+		}, function(err, work) {
+			work.handle ? work.handle = false : work.handle = true;
+			work.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+			work.save(function(err, doc) {
+				err ? res.error(ERROR_CODE.UPDATE_FAILED) : res.send(doc)
+			})
+		})
+	},
+
+	// 待处理列表
+	newOrders: function(req, res) {
+		var pageSize = parseInt(req.query.pageSize) || 10;
+		var currentPage = parseInt(req.query.currentPage) || 1;
+		var where = {};
 		var subFilter = req.subfilterWorkOrder || {};
-		if (subFilter.view == "*") {
-			findCondition = {$or: [{creator: mongoose.Types.ObjectId(req.agent.id)}, {state: {$nin: [0]}}]};
-		}
-		else if (subFilter.view != null) {
-			findCondition = {"history.from": mongoose.Types.ObjectId(subFilter.view)};
-		}
-		else {
-			res.error(ERROR_CODE.ACCESS_DENIED);
-			return;
-		}
-
-		req.query.currentPage = req.query.currentPage || 1;
-		req.query.pageSize = req.query.itemsPerPage || 10;
-		if (typeof (req.query.currentPage) != "number") req.query.currentPage = Utils.toNumber(req.query.currentPage);
-		if (typeof (req.query.itemsPerPage) != "number") req.query.itemsPerPage = Utils.toNumber(req.query.itemsPerPage);
-
-		var results = {};
-		async.series([
-				// 找出搜索条件对应的人
-				function (callB) {
-					if (req.query.creator || req.query.handler || req.query.treated) {
-						var isSearch = false;
-						var hasCreator = true;
-						var hasHandler = true;
-						var hasTreated = true;
-						var findRequire = {};
-						var noCreator = false;
-						findRequire.name = {};
-						findRequire.name.$in = [];
-						if (req.query.creator) {
-							if (new RegExp(req.query.creator).test("预警机器人")) {
-								findCondition.creator = null;
-							}else {
-								findRequire.name.$in.push(new RegExp(req.query.creator));
-								hasCreator = false;
-								isSearch = true;
-							}
-						}
-						if (req.query.handler) {
-							findRequire.name.$in.push(new RegExp(req.query.handler));
-							hasHandler = false;
-							isSearch = true;
-						}
-						if (req.query.treated) {
-							if (new RegExp(req.query.treated).test("预警机器人")) {
-								findCondition.creator = null;
-								noCreator = true;
-							}else {
-								findRequire.name.$in.push(new RegExp(req.query.treated));
-								findCondition.$or = [];
-								if (subFilter.view == "*") findCondition.state = {$nin: [0]};
-								hasTreated = false;
-								isSearch = true;
-							}
-						}
-						if (isSearch) {
-							User.find(findRequire)
-								.exec(function (err, userListFound) {
-									if (dealErr.findErr(err, res)) return callB(err);
-
-									userListFound.forEach (function (userFound) {
-										if (req.query.creator && !new RegExp(req.query.creator).test("预警机器人")) {
-											if (new RegExp(req.query.creator).test(userFound.name + "")) {
-												findCondition.creator = findCondition.creator || {};
-												findCondition.creator.$in = findCondition.creator.$in || [];
-												findCondition.creator.$in.push(userFound._id);
-												if (!noCreator) hasCreator = true;
-											}
-										}
-
-										if (req.query.handler) {
-											if (new RegExp(req.query.handler).test(userFound.name + "")) {
-												findCondition.handler = findCondition.handler || {};
-												findCondition.handler.$in = findCondition.handler.$in || [];
-												findCondition.handler.$in.push(userFound._id);
-												hasHandler = true;
-											}
-										}
-
-										if (req.query.treated && !new RegExp(req.query.treated).test("预警机器人")) {
-											if (new RegExp(req.query.treated).test(userFound.name + "")) {
-												if (subFilter.view == "*") {
-													findCondition.$or.push({"history.from": {$all: [userFound._id]}});
-												}else {
-													findCondition.$or.push({"history.from": {$all: [subFilter.view, userFound._id]}});
-												}
-												hasTreated = true;
-											}
-										}
-									});
-									if (!hasCreator || !hasHandler || !hasTreated) {
-										hasUser = false;
-										return callB(null);
-									}
-									callB(null);
-								})
-						}else {
-							callB(null);
-						}
-					}else {
-						callB(null);
-					}
-				},
-
-				function (callB) {
-					if (hasUser) {
-						var list = [];
-						findCondition.createdAt = {};
-						if (req.query.startDate) {
-							findCondition.createdAt.$gte = moment(req.query.startDate).format("YYYY-MM-DD HH:mm:ss");
-						}else {
-							findCondition.createdAt.$gte = moment().subtract(30, 'days').format("YYYY-MM-DD HH:mm:ss");
-						}
-						if (req.query.endDate) {
-							findCondition.createdAt.$lte = moment(req.query.endDate).add(1, 'days').format("YYYY-MM-DD HH:mm:ss");
-						}else {
-							findCondition.createdAt.$lte = moment().format("YYYY-MM-DD HH:mm:ss");
-						}
-						if (req.query.state) findCondition.state = req.query.state;
-						if (req.query.type) findCondition.type = req.query.type;
-						WorkOrder.find(findCondition)
-							.skip((req.query.currentPage - 1) * req.query.itemsPerPage)
-							.limit(req.query.itemsPerPage)
-							.sort({state: 1, order_id: -1})
-							.populate("creator")
-							.populate("handler")
-							.exec(function (err, orderListFound) {
-								if (dealErr.findErr(err, res)) return callB(err);
-								orderListFound.forEach (function (orderFound) {
-									var creator = "";
-									var handler = "";
-									if (orderFound.creator) {
-										creator = orderFound.creator.name;
-									}else {
-										creator = "预警机器人";
-									}
-									if (orderFound.handler) handler = orderFound.handler.name;
-									var result = {
-										ID: orderFound._id,
-										orderID: orderFound.order_id,
-										state: orderFound.state,
-										type: orderFound.type,
-										creator: creator,
-										content: orderFound.content,
-										handler: handler
-									};
-									if (orderFound.createdAt) result.createdAt = moment(orderFound.createdAt).format("YYYY-MM-DD HH:mm:ss");
-									list.push(result);
-								});
-								results.list = list;
-								WorkOrder.count(findCondition, function (err, orderCount) {
-									if (err) {
-										callB(err);
-										res.error(ERROR_CODE.DB_ERROR);
-										return
-									}
-									results.totalItems  = orderCount;
-									callB(null);
-								})
-							})
-					}else {
-						callB(null);
-					}
-				}
-			],
-			function (err) {
-				if (err) {
-					debug(new Error(err));
-					return;
-				}
-				res.success(results);
+		if(subFilter.view == "*") {
+			where = {}
+		} else if(subFilter.view != null) {
+			where = {
+				handler: mongoose.Types.ObjectId(subFilter.view)
 			}
-		)
+		} else {
+			res.error(ERROR_CODE.ACCESS_DENIED)
+		};
+		where.state = {
+			$nin: [2]
+		};
+		if(req.query.asin) {
+			where['data.ASIN'] = {
+				$regex: req.query.asin,
+				$options: 'i'
+			}
+		};
+		if(req.query.startTime) {
+			where.createdAt = {
+				$gte: new Date(req.query.startTime)
+			}
+		};
+		if(req.query.endTime) {
+			var time = new Date(req.query.endTime);
+			time.setDate(time.getDate() + 1);
+			where.createdAt = {
+				$lte: new Date(time)
+			}
+		};
+		if(req.query.startTime && req.query.endTime) {
+			var time = new Date(req.query.endTime);
+			time.setDate(time.getDate() + 1);
+			where.createdAt = {
+				$gte: new Date(req.query.startTime),
+				$lte: new Date(time)
+			}
+		};
+		if(req.query.handle && req.query.handle === '0') {
+			where.$or = [{
+				handle: null
+			}, {
+				handle: parseInt(req.query.handle)
+			}]
+		};
+		if(req.query.handle && req.query.handle === '1') {
+			where.handle = parseInt(req.query.handle)
+		};
+		var types = req.query.type;
+		if(types && typeof types == 'string') {
+			if(types.length >= 3) {
+				where['type'] = parseInt(types)
+			} else {
+				where['data.type'] = parseInt(types)
+			}
+		} else if(types) {
+			var typeIn = {
+				type: {
+					$in: []
+				}
+			};
+			var dataTypeIn = {
+				'data.type': {
+					$in: []
+				}
+			};
+			where.$or = [];
+			for(var i = 0; i < types.length; i++) {
+				if(types[i].length >= 3) {
+					typeIn.type.$in.push(parseInt(types[i]))
+				} else {
+					dataTypeIn['data.type'].$in.push(parseInt(types[i]))
+				}
+			};
+			if(typeIn.type.$in.length) where.$or.push(typeIn);
+			if(dataTypeIn['data.type'].$in.length) where.$or.push(dataTypeIn);
+		};
+		var customers = [];
+		var pageCount = 1;
+		var teamJson = {};
+		var workOrder = {};
+		var dailySell = {};
+		var merchandise = {};
+
+		async.series([
+			// 获取小组组长
+			function(callback) {
+				User.find({
+					team: {
+						$ne: null
+					}
+				}, function(err, docs) {
+					docs.map(function(item) {
+						teamJson[item.team] = item.name
+					});
+					callback(null)
+				})
+			},
+			// 获取工单信息
+			function(callback) {
+				WorkOrder.find(where).sort({
+					order_id: -1
+				}).skip((currentPage - 1) * pageSize).limit(pageSize).populate({
+					path: 'creator',
+					select: 'name'
+				}).populate({
+					path: 'handler',
+					select: 'name'
+				}).populate({
+					path: 'team_id',
+					select: 'name'
+				}).populate({
+					path: 'remarks.writer',
+					select: 'name'
+				}).exec(function(err, docs) {
+					docs.map(function(item) {
+						if(item['team_id']) {
+							item.team_name = item['team_id']['name'];
+							item.leader = teamJson[item['team_id']['_id']];
+						};
+						workOrder[item.order_id] = item;
+					});
+					callback(null)
+				})
+			},
+			// 获取商品信息
+			function(callback) {
+				Merchandise.find({}, {
+					asin: 1,
+					state: 1,
+					shop_name: 1,
+					team_id: 1,
+					store_sku: 1
+				}).populate({
+					path: 'team_id',
+					select: 'name'
+				}).exec(function(err, docs) {
+					docs.map(function(item) {
+						if(item['team_id']) {
+							item.team_name = item['team_id']['name'];
+							item.leader = teamJson[item['team_id']['_id']];
+						};
+						merchandise[item.asin] = item;
+					});
+					callback(null)
+				})
+			},
+			//			// 获取FBA库存 
+			//			function(callback) {
+			//				DailySell.find({}, ['asin', 'sellable_stock', 'transport_stock'], function(err, docs) {
+			//					docs.map(function(item) {
+			//						dailySell[item.asin] = item.sellable_stock + item.sellable_stock
+			//					});
+			//					callback(err)
+			//				})
+			//			},
+			// 获取处理人
+			function(callback) {
+				User.find({
+					role: {
+						$in: [
+							mongoose.Types.ObjectId("5a264d69c4d23f1fcdb62191"),
+							mongoose.Types.ObjectId("5a265adac4d23f1fcdb621f1"),
+							mongoose.Types.ObjectId("59f984c2513ecc57ffc1ddcf"),
+							mongoose.Types.ObjectId("59fc32140ed72b7271f8d614")
+						]
+					}
+				}, {
+					name: 1
+				}).sort({
+					name: 1
+				}).exec(function(err, docs) {
+					customers = docs;
+					callback(null)
+				})
+			},
+			// 获取类型统计
+			function(callback) {
+				WorkOrder.count(where, function(err, count) {
+					pageCount = Math.ceil(count / pageSize);
+					callback(null)
+				})
+			}
+		], function(err, results) {
+			let list = [];
+			let states = ["停售", "未开售", "推广期", "在售期", "清仓期", "归档", "备用"];
+			for(let key in workOrder) {
+				let work = workOrder[key];
+				let asin = null;
+
+				if(work['data']) asin = work['data']['ASIN'];
+
+				let merchan = merchandise[asin] || {};
+
+				list.push({
+					asin,
+					id: work['_id'],
+					type: work['type'],
+					handle: work['handle'],
+					remarks: work['remarks'],
+					content: work['content'],
+					orderID: work['order_id'],
+					createdAt: work['createdAt'],
+					creator: work['creator'] ? work['creator']['name'] : '预警机器人',
+					handler: work['handler'] ? work['handler']['name'] : '预警机器人',
+					leader: work['leader'] ? work['leader'] : merchan['leader'],
+					team_name: work['team_name'] ? work['team_name'] : merchan['team_name'],
+					shop_name: merchan['shop_name'],
+					status: states[merchan['state']] ? states[merchan['state']] : '不存在'
+				})
+			};
+			res.send({
+				list,
+				pageCount,
+				customers
+			})
+		})
 	},
 
-	orderReady: function (req, res, next) {
-		var results = {};
-		async.series([
-				function (callB) {
-					var team = [];
-					Team.find({},["name"]).exec(function (err, teamListFound) {
-						if (dealErr.findErr(err, res)) return callB(err);
-						teamListFound.forEach (function (teamFound) {
-							team.push({id: teamFound._id, name: teamFound.name})
-						});
-						results.team = team;
-						callB(null);
-					})
-				}
-			],
-			function (err) {
-				if (err) {
-					debug(new Error(err));
-					return;
-				}
-				res.success(results);
+	// 已处理列表
+	dealtList: function(req, res, next) {
+		var pageSize = parseInt(req.query.itemsPerPage) || 10;
+		var currentPage = parseInt(req.query.currentPage) || 1;
+		var subFilter = req.subfilterWorkOrder || {};
+		var where = {
+			state: {
+				$nin: [0]
 			}
-		)
-	},
+		};
 
-	openOrder: function (req, res, next) {
-		if (!req.query.id) return res.error(ERROR_CODE.MISSING_ARGUMENT);
-		req.query.id = mongoose.Types.ObjectId(req.query.id);
+		if(subFilter.view != '*' && subFilter.view != null) {
+			where['history.from'] = {
+				$in: [mongoose.Types.ObjectId(subFilter.view)]
+			}
+		};
+		if(req.query.asin) {
+			where['data.ASIN'] = {
+				$regex: req.query.asin,
+				$options: 'i'
+			}
+		};
+		if(req.query.startDate) {
+			where.createdAt = {
+				$gte: new Date(req.query.startDate)
+			}
+		};
+		if(req.query.endDate) {
+			var time = new Date(req.query.endDate);
+			time.setDate(time.getDate() + 1);
+			where.createdAt = {
+				$lte: new Date(time)
+			}
+		};
+		if(req.query.startDate && req.query.endDate) {
+			var time = new Date(req.query.endDate);
+			time.setDate(time.getDate() + 1);
+			where.createdAt = {
+				$gte: new Date(req.query.startDate),
+				$lte: new Date(time)
+			}
+		};
+		var type = req.query.type;
+		if(type && type.length >= 3) {
+			where.type = parseInt(type)
+		} else if(type) {
+			where['data.type'] = parseInt(type)
+		};
+		if(req.query.state) {
+			where.state = req.query.state
+		};
+		if(req.query.creator) {
+			where.creator = mongoose.Types.ObjectId(req.query.creator)
+		};
+		if(req.query.handler) {
+			where.handler = mongoose.Types.ObjectId(req.query.handler)
+		};
+		if(req.query.treated) {
+			if(where['history.from']) {
+				where['history.from']['$in'].push(mongoose.Types.ObjectId(req.query.treated))
+			} else {
+				where['history.from'] = mongoose.Types.ObjectId(req.query.treated)
+			}
+		};
 
-		var results = {};
+		var customers = [];
+		var totalItems = 0;
+		var teamJson = {};
+		var workOrder = {};
+		var merchandise = {};
+
 		async.series([
-				function (callB) {
-					var findRequire = {
-						_id: req.query.id
+			// 获取工单总数
+			function(callback) {
+				WorkOrder.count(where, function(err, count) {
+					totalItems = count;
+					callback(null)
+				})
+			},
+			// 获取小组组长
+			function(callback) {
+				User.find({
+					team: {
+						$ne: null
+					}
+				}, function(err, docs) {
+					docs.map(function(item) {
+						teamJson[item.team] = item.name
+					});
+					callback(null)
+				})
+			},
+			// 获取工单信息
+			function(callback) {
+				WorkOrder.find(where).sort({
+					order_id: -1
+				}).skip((currentPage - 1) * pageSize).limit(pageSize).populate({
+					path: 'creator',
+					select: 'name'
+				}).populate({
+					path: 'handler',
+					select: 'name'
+				}).populate({
+					path: 'team_id',
+					select: 'name'
+				}).populate({
+					path: 'remarks.writer',
+					select: 'name'
+				}).populate('team_id').exec(function(err, docs) {
+					docs.map(function(item) {
+						if(item['team_id']) {
+							item.team_name = item['team_id']['name'];
+							item.leader = teamJson[item['team_id']['_id']];
+						};
+						workOrder[item.order_id] = item;
+					});
+					callback(null)
+				})
+			},
+			// 获取商品信息
+			function(callback) {
+				Merchandise.find({}, {
+					asin: 1,
+					state: 1,
+					shop_name: 1,
+					team_name: 1,
+					store_sku: 1
+				}).populate({
+					path: 'team_id',
+					select: 'name'
+				}).exec(function(err, docs) {
+					docs.map(function(item) {
+						if(item['team_id']) {
+							item.team_name = item['team_id']['name'];
+							item.leader = teamJson[item['team_id']['_id']];
+						};
+						merchandise[item.asin] = item;
+					});
+					callback(null)
+				})
+			},
+			// 获取处理人
+			function(callback) {
+				User.find({}, {
+					name: 1
+				}).sort({
+					name: 1
+				}).exec(function(err, docs) {
+					customers = docs;
+					callback(null)
+				})
+			}
+		], function(err, results) {
+			let list = [];
+			let states = ["停售", "未开售", "推广期", "在售期", "清仓期", "归档", "备用"];
+			for(let key in workOrder) {
+				let work = workOrder[key];
+				let asin = null;
+
+				if(work['data']) {
+					asin = work['data']['ASIN']
+				};
+
+				let merchan = merchandise[asin] || {};
+
+				list.push({
+					asin,
+					ID: work['_id'],
+					type: work['type'],
+					state: work['state'],
+					handle: work['handle'],
+					remarks: work['remarks'],
+					content: work['content'],
+					orderID: work['order_id'],
+					createdAt: work['createdAt'],
+					creator: work['creator'] ? work['creator']['name'] : '预警机器人',
+					handler: work['handler'] ? work['handler']['name'] : '预警机器人',
+					leader: work['leader'] ? work['leader'] : merchan['leader'],
+					team_name: work['team_name'] ? work['team_name'] : merchan['team_name'],
+					shop_name: merchan['shop_name'],
+					status: states[merchan['state']] ? states[merchan['state']] : '不存在',
+				})
+			};
+			res.send({
+				list,
+				customers,
+				totalItems
+			})
+		})
+	},
+	// 点击任务列表
+	clickTaskList: function(req, res) {
+		MysqlADC.query('SELECT * FROM ClickConfig', function(error, results) {
+			res.send(results)
+		})
+	},
+	// 点击任务保存
+	clickTaskSave: function(req, res) {
+		var {
+			Asin,
+			Category,
+			ExecuteNum,
+			ExecuteTime,
+			Id,
+			Keyword,
+			Note,
+			UpNote,
+			OperTime,
+			SellerId,
+			Status
+		} = req.body;
+		Note = Note || '';
+		Status = parseInt(Status) || 0;
+		ExecuteNum = parseInt(ExecuteNum) || 1;
+		ExecuteTime = moment(ExecuteTime).format('YYYY-MM-DD HH:mm:ss');
+		OperTime = moment().format('YYYY-MM-DD HH:mm:ss');
+
+		if(Id) {
+			async.series([
+				function(callback) {
+					if(UpNote) {
+						callback(null);
+						return
 					};
-					WorkOrder.findOne(findRequire)
-						.populate("creator")
-						.populate("team_id")
-						.populate("history.from")
-						.populate("history.to")
-						.exec(function (err, orderFound) {
-						if (dealErr.findErr(err, res)) return callB(err);
-						if (orderFound) {
-							var order = {
-								type: orderFound.type,
-								createdAt: orderFound.createdAt,
-								content: orderFound.content,
-								logs: [],
-								history: []
-							};
-							if (orderFound.creator) {
-								order.creator = orderFound.creator.name;
-							}else {
-								order.creator = "预警机器人";
-							}
-							if (orderFound.team_id) order.operateTeam = orderFound.team_id.name;
-							for (var m = 0; m < orderFound.history.length; m++) {
-								var allHistory = orderFound.history[m];
-								var history = {};
-								if (m != orderFound.history.length - 1) {
-									var logs = {};
-									if (allHistory.from) {
-										logs.name = allHistory.from.name;
-									}else {
-										logs.name = "预警机器人";
-									}
-									logs.log = allHistory.log;
-									order.logs.push(logs);
-									history.dealtAt = allHistory.dealtAt
-								}else {
-									history.dealtAt = orderFound.createdAt
-								}
-
-								if (allHistory.from) {
-									history.handler = allHistory.from.name;
-								}else {
-									history.handler = "预警机器人";
-								}
-								if (allHistory.to) {
-									history.dealer = allHistory.to.name;
-								}
-								if (m == 0 && orderFound.state == 2) history.state = orderFound.state;
-								order.history.unshift(history);
-							}
-
-							results.order = order;
-							callB(null);
-						}else {
-							res.error(ERROR_CODE.NOT_EXISTS);
-							callB(ERROR_CODE.NOT_EXISTS);
-						}
+					var sql = `SELECT * FROM ClickConfig WHERE (Id="${Id}")`;
+					MysqlADC.query(sql, function(error, results) {
+						if(results[0]['Status'] != 0) callback({
+							message: 'The completed state cannot be updated'
+						});
+						callback(error, results)
+					})
+				},
+				function(callback) {
+					var sql = `UPDATE ClickConfig SET Asin="${Asin}",Category="${Category}",ExecuteNum="${ExecuteNum}",ExecuteTime="${ExecuteTime}",Keyword="${Keyword}",Note="${Note}",OperTime="${OperTime}",SellerId="${SellerId}" WHERE (Id="${Id}")`;
+					MysqlADC.query(sql, function(error, results) {
+						callback(error, results)
 					})
 				}
-			],
-			function (err) {
-				if (err) {
-					debug(new Error(err));
-					return;
-				}
-				res.success(results);
-			}
-		)
+			], function(error, results) {
+				res.send({
+					results,
+					error: error ? error.message : null
+				})
+			})
+		} else {
+			var sql = `INSERT INTO ClickConfig (ExecuteTime,ExecuteNum,Category,Keyword,Asin,SellerId,OperTime) VALUES ("${ExecuteTime}","${ExecuteNum}","${Category}","${Keyword}","${Asin}","${SellerId}","${OperTime}")`;
+			MysqlADC.query(sql, function(error, results) {
+				res.send({
+					results,
+					error: error ? error.message : null
+				})
+			})
+		}
 	}
+
 }

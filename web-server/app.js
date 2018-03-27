@@ -79,7 +79,7 @@ app.set('view engine', 'ejs');
 
 app.use(favicon(path.join(dirname, 'public', 'favicon.ico')));
 app.use(log4js.connectLogger(log4js.getLogger('access'), { level: "auto" }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit:'100mb'}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.raw());
 app.use(bodyParser.text());

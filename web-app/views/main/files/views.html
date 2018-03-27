@@ -9,9 +9,9 @@
 					<nav class="form-inline m-b text-right">
 						<div class="btn-group pull-left">
 							<button class="btn btn-white {{where.type==''?'active':''}}" ng-click="handlePagination(1,'')">全部</button>
-							<button class="btn btn-white {{where.type=='pdf'?'active':''}}" ng-click="handlePagination(1,'pdf')">PDF</button>
-							<button class="btn btn-white {{where.type=='doc'?'active':''}}" ng-click="handlePagination(1,'doc')">DOC</button>
-							<button class="btn btn-white {{where.type=='mp4'?'active':''}}" ng-click="handlePagination(1,'mp4')">MP4</button>
+							<button class="btn btn-white {{where.type=='pdf'?'active':''}}" ng-click="handlePagination(1,'pdf')">学习文档</button>
+							<button class="btn btn-white {{where.type=='mp4'?'active':''}}" ng-click="handlePagination(1,'mp4')">学习视频</button>
+							<button class="btn btn-white {{where.type=='doc+zip'?'active':''}}" ng-click="handlePagination(1,'doc+zip')">作业</button>
 						</div>
 						<div class="input-group">
 							<input placeholder="请输入文件名搜索" class="form-control" ng-model="where.keyword" style="width: 768px;">
@@ -20,30 +20,32 @@
 					</nav>
 					<article class="table-responsive">
 						<table class="table table-hover issue-tracker">
-							<thead>
+							<thead ng-if="list.length">
 								<tr>
-									<td width="44">类型</td>
 									<td>文件名</td>
-									<td>大小</td>
-									<td>修改时间</td>
+									<td width="200">标签</td>
+									<td class="text-right">大小</td>
+									<td width="400" style="padding-left:150px;">修改时间</td>
 									<td width="112" class="text-center">操作</td>
 								</tr>
 							</thead>
 							<tbody>
 								<tr ng-repeat="item in list">
-									<td style="font-size:16px;text-align:center;">
+									<td>
 										<i ng-if="item.type==='pdf'" class="fa fa-file-pdf-o"></i>
 										<i ng-if="item.type==='doc'" class="fa fa-file-word-o"></i>
 										<i ng-if="item.type==='mp4'" class="fa fa-file-video-o"></i>
+										<i ng-if="item.type==='zip'" class="fa fa-file-zip-o"></i>
+										<span>{{ item.name }}</span>
 									</td>
-									<td class="issue-info">{{ item.name }}</td>
-									<td>{{ item.size }}</td>
-									<td>{{ item.time }}</td>
-									<td class="text-center">
+									<td style="display:block;width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.tips||'-' }}</td>
+									<td class="text-right">{{ item.size }}</td>
+									<td width="400" style="padding-left:150px;">{{ item.updated }}</td>
+									<td width="112" class="text-center">
 										<button class="btn btn-primary btn-outline btn-sm" ng-click="viewer(item)">
 											<span ng-if="item.type==='pdf'">查看</span>
-											<span ng-if="item.type==='doc'">下载</span>
 											<span ng-if="item.type==='mp4'">播放</span>
+											<span ng-if="item.type==='doc'||item.type==='zip'">下载</span>
 										</button>
 									</td>
 								</tr>
@@ -61,13 +63,12 @@
 </div>
 <div class="modal fade" id="pdf-modal">
 	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-			<div class="modal-header">
+		<div class="modal-content" style="overflow: hidden;">
+			<div class="modal-header" style="position:absolute;left:0;right:0;background-color:#fff;">
 				<button class="close" data-dismiss="modal">&times;</button>
 				<h4 class="modal-title">{{ modalName }}</h4>
 			</div>
-			<ng-pdf template-url="./views/common/pdf_viewer.html" scale="page-fit"></ng-pdf>
-			<canvas id="pdf-canvas"></canvas>
+			<embed width="100%" height="768" id="pdf-content" style="vertical-align:top;"></embed>
 		</div>
 	</div>
 </div>

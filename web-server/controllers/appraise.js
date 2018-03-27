@@ -497,7 +497,12 @@ module.exports = {
                             var reg = new RegExp("[0-9]*$");
                             var num = reg.exec(lastTask.task_id);
                             if (num) {
-                                lastId = "review_desc_" + (Utils.toNumber(num[0]) + 1).toString();
+                                var date = num[0].substring(0, num[0].length - 3);
+                                if (date.toString() == moment().format("YYYYMMDD").toString()) {
+                                    lastId = "review_desc_" + (Utils.toNumber(num[0]) + 1).toString();
+                                }else {
+                                    lastId = "review_desc_" + moment().format("YYYYMMDD") + "001";
+                                }
                             }else {
                                 res.error(ERROR_CODE.UNKNOW_ERR);
                                 return;
@@ -519,7 +524,7 @@ module.exports = {
                                 if (row.site.toUpperCase() == "WALMART") {
                                     site = "SI_WALMART";
                                 }else {
-                                    site = "SI_" + row.site.substring(row.side.indexOf("co.") + 3, row.site.lastIndexOf("\/")).toUpperCase();
+                                    site = "SI_" + row.site.toUpperCase();
                                 }
                                 taskRule.push({
                                     asin: row.asin,
@@ -554,7 +559,7 @@ module.exports = {
                     debug(new Error(err));
                     return;
                 }
-                res.success();
+                res.success(true);
             })
     },
 
@@ -769,6 +774,41 @@ module.exports = {
                 res.success(result);
             }
         )
+    },
+
+    reviewSite: function (req, res, next) {
+        var results = {
+            site: []
+        };
+        async.series([
+                function (callB) {
+                    var sql = "SELECT code, name, type_code, status, val, create_time " +
+                        "FROM t_sys_parament AS t_sys_parament WHERE type_code = 'SI'";
+                    MysqlCrawlerTask.query(sql, null, function (err, paramentsFound) {
+                        if (err) {
+                            // 出错了
+                            callB(err);
+                            res.error(ERROR_CODE.FIND_FAILED);
+                            return;
+                        }
+                        paramentsFound.forEach(function (paramentFound) {
+                            var site = {};
+                            site.name = paramentFound.name;
+                            site.value = paramentFound.val;
+
+                            results.site.push(site);
+                        })
+                        callB(null);
+                    })
+                }
+            ],
+            function (err) {
+                if (err) {
+                    return debug(new Error(err));
+                }
+                res.success(results);
+            })
+
     }
 
 

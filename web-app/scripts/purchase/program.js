@@ -22,7 +22,7 @@
 					}
 				})
 				.withButtons([])
-
+				
 			//条件搜索
 			$scope.statuses = Smartdo.PURCHASE_PLAN_STATUSES;
 			$scope.where = {
@@ -45,9 +45,10 @@
 					reqData.endTime = $('#daterange').val().split(' 至 ')[1];
 				};
 				netManager.get('/purchasePlan/show', reqData).then(function(res) {
+					$scope.count = res.data.count;
+					$scope.addDisabled = res.data.add;
 					$scope.purchasePlan = res.data.datas;
 					$scope.pageCount = res.data.pageCount;
-					$scope.addDisabled = res.data.add
 				})
 				netManager.get('/purchasePlan/getPeoples').then(function(res) {
 					$scope.people = res.data;
@@ -55,7 +56,7 @@
 						for(var i = 0; i < $scope.people.applicant.length; i++) {
 							if($scope.people.applicant[i]['name'] == $scope.where.applicant['name']) {
 								$scope.where.applicant = $scope.people.applicant[i];
-								return
+								break
 							}
 						}
 					}
@@ -63,7 +64,7 @@
 						for(var i = 0; i < $scope.people.operator.length; i++) {
 							if($scope.people.operator[i]['name'] == $scope.where.operator['name']) {
 								$scope.where.operator = $scope.people.operator[i];
-								return
+								break
 							}
 						}
 					}
@@ -71,7 +72,7 @@
 						for(var i = 0; i < $scope.people.supplyChain.length; i++) {
 							if($scope.people.supplyChain[i]['name'] == $scope.where.supplyChain['name']) {
 								$scope.where.supplyChain = $scope.people.supplyChain[i];
-								return
+								break
 							}
 						}
 					}

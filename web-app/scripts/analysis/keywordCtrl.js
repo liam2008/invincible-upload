@@ -81,14 +81,16 @@
 
             //点击导出excel
             $scope.exprotExcel = function(){
-                $scope.postData.isExcel = true;
-                netManager.get('/appraise/keywordExcel', $scope.postData).then(function (res) {
-                    $timeout(function(){
-                        genExcel(res.data.list);
-                    },0);
-                }, function (err) {
-                    console.error(err);
-                });
+               $scope.postData.isExcel = true;
+               netManager.get('/appraise/keywordExcel', $scope.postData).then(function (res) {
+                   $timeout(function(){
+                       genExcel(res.data.list);
+                   },0);
+                   console.log("res.data.list", res.data.list)
+               }, function (err) {
+                   console.error(err);
+               });
+			
 
                 function s2ab(s) {
                     if (typeof ArrayBuffer !== 'undefined') {

@@ -9,6 +9,10 @@ module.exports = {
 	route: router
 };
 
+// 文件下载
+router.get('/download', controller.Download);
+
+// 访问权限
 router.use(app.authServer.authenticate());
 
 // 文件列表
@@ -19,6 +23,9 @@ router.post('/update', controller.Update);
 
 // 文件移除
 router.get('/remove', controller.Remove);
+
+// 文件判断
+router.get('/exists', controller.Exists);
 
 // 文件上传
 router.post('/upload', controller.Upload);

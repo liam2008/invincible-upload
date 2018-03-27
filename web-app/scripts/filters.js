@@ -32,8 +32,6 @@
         return function (input, type) {
             if (type == 1 || type == 2 || type == 7 || type == 8) {
                 var splitArr = input.split(/\t+|[\r\n]\s+/g);
-                console.log('input', input);
-                console.log('splitArr', splitArr);
                 var asin = splitArr[1];
                 var side = splitArr[3];
                 var asinUrl, asinHtml, sideUrl, sideHtml, formatHtml = '';

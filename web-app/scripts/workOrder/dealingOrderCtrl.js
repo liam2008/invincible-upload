@@ -1,115 +1,96 @@
-(function () {
-    var app = angular.module('app.workOrder.dealingOrder', []);
+(function() {
+	var app = angular.module('app.workOrder.dealingOrder', []);
 
-    app.controller('dealingOrderCtrl', ['$scope', 'netManager', 'SweetAlert', '$timeout', '$state','$stateParams',
-        function ($scope, netManager, SweetAlert, $timeout, $state,$stateParams) {
-            //初始化数据
-            $scope.tabItem = [false, false, false, false, false];
+	app.controller('dealingOrderCtrl', ['$scope', 'netManager', 'SweetAlert', '$timeout', '$state', '$stateParams',
+		function($scope, netManager, SweetAlert, $timeout, $state, $stateParams) {
+			//数据模型
+			$scope.where = {
+				currentPage: 1,
+				pageSize: 10
+			};
+			$scope.pageCount = 1;
+			
+			//分页查询
+			$scope.handlePagination = function(page) {
+				$scope.isLoad = true;
+				$stateParams.currentPage = page;
+				$scope.where.currentPage = page;
+				if($scope.where.startTime != null) {
+					$scope.where.startTime = moment($scope.where.startTime).format('YYYY-MM-DD')
+				};
+				if($scope.where.endTime != null) {
+					$scope.where.endTime = moment($scope.where.endTime).format('YYYY-MM-DD')
+				};
+				netManager.get('/workOrder/newOrderList', $scope.where).then(function(res) {
+					$scope.tableList = res.data.list;
+					$scope.asinList = res.data.asinList;
+					$scope.pageCount = res.data.pageCount;
+					$scope.fromPage = $state.current.name;
+					window.sessionStorage.setItem('customers', angular.toJson(res.data.customers));
+					window.sessionStorage.setItem('currentPage', page);
+					$timeout(function() {
+						$('.footable').trigger('footable_redraw');
+					}, 100);
+					$scope.isLoad = false;
+				})
+			}
+			$scope.handlePagination($stateParams.currentPage || 1)
 
-            $scope.currentPage = $stateParams.currentPage || 1;
+			//重置查询条件
+			$scope.resetFn = function() {
+				$scope.where = {
+					currentPage: 1,
+					pageSize: 10
+				};
+				$scope.handlePagination(1)
+			}
 
-            $scope.pageChanged = function () {
-                init();
-            };
+			//改变处理状态
+			$scope.toggleHandleState = function(value) {
+				var send = {
+					_id: value.id
+				};
+				netManager.post('/workOrder/handle', send).then(function(res) {
+					value.handle = res.data.handle;
+				});
+			}
+			//添加备注文本对象
+			$scope.remarkText = {};
+			//操作备注
+			$scope.operateRemark = function(index) {
+				var targetElements = document.querySelectorAll('.addRemarkList');
+				if(targetElements[index].style.display === 'none') {
+					$scope.remarkText.remark = '';
+					targetElements[index].style.display = 'block';
+				} else {
+					//清空原文本
+					$scope.remarkText.remark = '';
+					targetElements[index].style.display = 'none';
+				}
+			}
+			//保存备注
+			$scope.saveRemark = function(value, index) {
+				var targetElements = document.querySelectorAll('.addRemarkList');
+				var sendRemark = {
+					_id: value.id,
+					content: $scope.remarkText.remark
+				};
+				if($scope.remarkText.remark != '' && $scope.remarkText.remark !== undefined) { //备注为空时不能保存
+					netManager.post("/workOrder/saveRemark", sendRemark).then(function(res) {
+						if(res.status === 200) {
+							//页面信息同步
+							value.remarks = res.data;
+							console.log("resRemark", res);
+							//清空并关闭文本框
+							$scope.remarkText.remark = '';
+							targetElements[index].style.display = 'none';
+						}
+					}, function(err) {
+						console.error("saveRemark", err);
+					});
+				}
+			}
 
-            init();
-
-            //点击筛选
-            $scope.dataFilter = function (index) {
-                for (var i = 0, iLen = $scope.tabItem.length; i < iLen; i++) {
-                    if (index == i) {
-                        $scope.tabItem[i] = !$scope.tabItem[i];
-                    } else {
-                        $scope.tabItem[i] = false;
-                    }
-                }
-                if($scope.tabItem[index]){
-                    switch (index) {
-                        case 0:
-                            $scope.WOType = 1;
-                            break;
-                        case 1:
-                            $scope.WOType = 2;
-                            break;
-                        case 2:
-                            $scope.WOType = 7;
-                            break;
-                        case 3:
-                            $scope.WOType = 8;
-                            break;
-                        case 4:
-                            $scope.WOType = 0;
-                            break;
-                        default :
-                            $scope.WOType = null;
-                            break;
-                    }
-                    $scope.totalItems = $scope.typeCount[index];
-                }else{
-                    $scope.WOType = null;
-                    $scope.totalItems = $scope.allCount;
-                    $stateParams.currentPage = 1;
-                    $scope.currentPage = 1;
-                }
-                init();
-            };
-
-            //初始化
-            function init() {
-                $scope.isLoad = true;
-                var sendData = {
-                    currentPage:$scope.currentPage,
-                    WOType: $scope.WOType,
-                    pageSize: 10
-                };
-                console.log('send', sendData);
-                netManager.get('/workOrder/newOrderList', sendData).then(function (res) {
-                    console.log('res', res.data);
-                    $scope.tableList = res.data.list;
-                    $scope.typeCount = formatTypeCount(res.data.typeCount);
-                    $scope.fromPage = $state.current.name;
-
-                    if($scope.allCount===undefined){
-                        var allCount = 0;
-                        for (var key in $scope.typeCount) {
-                            allCount += $scope.typeCount[key];
-                        }
-                        $scope.allCount = allCount;
-                        $scope.totalItems = allCount;
-                    }
-
-                    console.log('$scope.totalItems', $scope.totalItems);
-
-                    $timeout(function () {
-                        $('.footable').trigger('footable_redraw');
-                    }, 100);
-
-                    window.sessionStorage.setItem('customers', angular.toJson(res.data.customers));
-                    window.sessionStorage.setItem('currentPage', $scope.currentPage);
-                    $scope.isLoad = false;
-                }, function (err) {
-                    console.error(err);
-                });
-            }
-
-            //修改tab状态格式
-            function formatTypeCount(typeCount) {
-                if (typeCount) {
-                    var data = [];
-                    var sumData = 0;
-                    for (var i = 3; i < 7; i++) {
-                        sumData += typeCount[i];
-                    }
-                    data[0] = typeCount[1];
-                    data[1] = typeCount[2];
-                    data[2] = typeCount[7];
-                    data[3] = typeCount[8];
-                    data[4] = sumData + typeCount[0];
-                    console.log('typeCount', data);
-                    return data;
-                }
-            }
-
-        }
-    ]);
+		}
+	]);
 }());

@@ -1,7 +1,7 @@
 (function() {
 	var app = angular.module('app.analysis.task', []);
-	app.controller('taskCtrl', ['$scope', 'netManager', 'DTOptionsBuilder',
-		function($scope, netManager, DTOptionsBuilder) {
+	app.controller('taskCtrl', ['$scope', 'netManager', 'DTOptionsBuilder', "SweetAlert",
+		function($scope, netManager, DTOptionsBuilder, SweetAlert) {
 			$scope.dtOptions = DTOptionsBuilder.newOptions()
 				.withDOM('<"html5buttons"B>lTfgitp')
 				.withButtons([])
@@ -28,6 +28,9 @@
 			$scope.where = {
 				classify: 'amws'
 			};
+			netManager.get('/appraise/reviewSite').then(function(res) {
+				$scope.reviewSite = res.data.site || []
+			});
 			$scope.handlePagination = function(page) {
 				$scope.where.currentPage = page;
 				netManager.get('/appraise/reviewContent', $scope.where).then(function(res) {
@@ -38,12 +41,21 @@
 				})
 			}
 			$scope.handlePagination(1)
+
+			//添加任务或清空
 			$scope.active = function(show) {
-				$scope.reviewTask = [{}];
-				$scope.activeShow = show;
-				$scope.activeItem = {};
+				if($scope.where.classify == 'walmart') {
+					$scope.reviewTask = [{
+						site: $scope.reviewSite[$scope.reviewSite.length - 1]["value"]
+					}]
+				} else {
+					$scope.reviewTask = [{
+						site: $scope.reviewSite[0]["value"]
+					}]
+				}
 			};
 
+			//提交
 			$scope.submitSave = function() {
 				//验证
 				var inputEl = document.querySelectorAll('input[valid]');
@@ -54,24 +66,38 @@
 							inputEl[i].value = '';
 							inputEl[i].style.borderColor = '#ed5565';
 							inputEl[i].placeholder = '不能为空！';
-							return
+							return;
 						}
 					}
 				};
-				netManager.post('/appraise/setReviewDescTask', {
-					content: $scope.reviewTask
-				}).then(function(res) {
-					swal('提示', '添加成功！', 'success');
-					delete $scope.reviewTask;
-					$scope.active(null)
-				})
+				var num = 0;
+				SweetAlert.swal({
+					title: "提示",
+					text: "您确认添加任务吗？",
+					type: "info",
+					showCancelButton: true,
+					closeOnConfirm: false,
+					confirmButtonText: "确认",
+					cancelButtonText: "取消"
+				}, function(isConfirm) {
+					num++;
+					if(isConfirm && num == 1) {
+						netManager.post('/appraise/setReviewDescTask', {
+							content: $scope.reviewTask
+						}).then(function(res) {
+							swal('提示', '添加成功！', 'success');
+							console.log($scope.reviewTask);
+							delete $scope.reviewTask;
+							$("#addModal").modal("hide");
+						}, function(err) {
+							swal('提示', '添加失败!', 'error');
+							console.error(err);
+						})
+					}
+				});
 			};
 			$scope.remove = function(index) {
-				if($scope.reviewTask.length > 1) {
-					$scope.reviewTask.splice(index, 1)
-				} else {
-					swal('提示', '至少保留一条数据', 'warning')
-				}
+				$scope.reviewTask.length > 1 ? $scope.reviewTask.splice(index, 1) : swal('提示', '至少保留一条数据', 'warning')
 			};
 
 			function s2ab(s) {
@@ -109,6 +135,7 @@
 					var data = res.data || {};
 					var content = data.content || [];
 					genExcel(content);
+					console.log("content", content)
 				})
 			}
 
@@ -125,7 +152,7 @@
 				delete $scope.where.taskId;
 				$scope.handlePagination(1)
 			}
-			
+
 		}
 	])
 })();

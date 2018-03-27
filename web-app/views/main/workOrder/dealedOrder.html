@@ -1,140 +1,291 @@
+<style>
+	.mydropdown {
+		position: relative;
+	}
+	
+	.mydropdown-nav {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.mydropdown-nav span {
+		display: inline-block;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	
+	.mydropdown-content {
+		display: none;
+		position: absolute;
+		z-index: 5;
+		line-height: 20px;
+		right: 100%;
+		bottom: 0;
+		width: 470px;
+		max-width: 470px;
+		min-height: 80px;
+		max-height: 250px;
+		margin-bottom: 0;
+		padding: 8px 10px 10px 10px;
+		white-space: normal;
+		overflow-y: auto;
+		background-color: #fff;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, .15);
+		border-radius: 4px;
+	}
+	
+	.mydropdown-content li {
+		padding-top: 10px;
+		border-top: 1px solid #eaeefb;
+	}
+	
+	.mydropdown-content-title {
+		text-align: center;
+		font-size: 16px;
+		font-weight: bold;
+		height: 30px;
+		line-height: 30px;
+	}
+	
+	.mydropdown-content-title span {
+		display: inline-block;
+		position: relative;
+		left: 41%;
+		width: 30px;
+		height: 20px;
+		line-height: 20px;
+		text-align: center;
+		border-radius: 3px;
+	}
+	
+	.mydropdown-content-title span:hover {
+		background-color: #F2FBFF;
+	}
+	
+	.mydropdown-content li:first-child {
+		margin-top: 0;
+		padding-top: 2px;
+		border-top: none;
+	}
+	
+	.mydropdown:hover .mydropdown-content {
+		display: block
+	}
+	
+	.addRemarkList {
+		white-space: normal !important;
+	}
+	
+	.saveOkIcon {
+		width: 30px;
+		height: 20px;
+		line-height: 20px;
+		text-align: center;
+		margin-left: 363px;
+	}
+	
+	.saveRemoveIcon {
+		width: 30px;
+		height: 20px;
+		line-height: 20px;
+		text-align: center;
+		margin-left: 5px;
+	}
+	
+	.saveOkIcon:hover {
+		background-color: #1ab394;
+		border-radius: 3px;
+	}
+	
+	.saveRemoveIcon:hover {
+		background-color: #ed5565;
+		border-radius: 3px;
+	}
+</style>
 <!--表格-->
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="ibox float-e-margins">
-        <div class="ibox-title">
-            <h5>
-                已处理工单
-            </h5>
-        </div>
-        <div class="ibox-content">
-            <!--选择-->
-            <form role="form" class="form-inline" name="formOption" role="form" novalidate>
-                <div class="row m-b-md">
-                    <div class="col-lg-2">
-                        <div class="form-group">
-                            <input type="text" name="creator" ng-model="optionData.creator" class="form-control" placeholder="提出人">
-                        </div>
-                    </div>
+	<div class="ibox float-e-margins">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="ibox-title">
+					<h5> 已处理工单 </h5>
+					<div ibox-tools></div>
+				</div>
+				<div class="ibox-content">
+					<!--选择-->
+					<div>
+						<form role="form" class="form-inline" name="formOption" role="form" novalidate>
+							<div class="row m-b-md">
+								<div class="col-lg-2">
+									<div class="form-group">
+										<input type="text" name="creator" ng-model="optionData.creator" class="form-control" placeholder="提出人">
+									</div>
+								</div>
 
-                    <div class="col-lg-2">
-                        <div class="form-group">
-                            <input type="text" name="handler" ng-model="optionData.handler" class="form-control" placeholder="当前处理人">
-                        </div>
-                    </div>
+								<div class="col-lg-2">
+									<div class="form-group">
+										<input type="text" name="handler" ng-model="optionData.handler" class="form-control" placeholder="当前处理人">
+									</div>
+								</div>
 
-                    <div class="col-lg-2">
-                        <div class="form-group">
-                            <input type="text" name="treated" ng-model="optionData.treated" class="form-control" placeholder="参与处理人">
-                        </div>
-                    </div>
+								<div class="col-lg-2">
+									<div class="form-group">
+										<input type="text" name="treated" ng-model="optionData.treated" class="form-control" placeholder="参与处理人">
+									</div>
+								</div>
 
-                    <div class="col-lg-3">
-                        <div class="form-group">
-                            <label class="form-label">开始日期</label>
+								<div class="col-lg-3">
+									<div class="form-group">
+										<label class="form-label">开始日期</label>
 
-                            <div class="input-group date">
-                                <input type="datetime" class="form-control" date-time ng-model="optionData.startDate"
-                                       view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
-                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            </div>
+										<div class="input-group date">
+											<input type="datetime" class="form-control" date-time ng-model="optionData.startDate" view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+											<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+										</div>
 
-                        </div>
-                    </div>
+									</div>
+								</div>
 
-                    <div class="col-lg-3">
-                        <div class="form-group">
-                            <label class="form-label">结束日期&nbsp;</label>
+								<div class="col-lg-3">
+									<div class="form-group">
+										<label class="form-label">结束日期&nbsp;</label>
 
-                            <div class="input-group date">
-                                <input type="datetime" class="form-control" date-time ng-model="optionData.endDate"
-                                       view="date"
-                                       auto-close="true" min-view="date" format="YYYY-MM-DD">
-                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-2">
-                        <div class="form-group">
-                            <select class="form-control" name="type" ng-options="item.id as item.name for item in typeList" ng-model="optionData.type">
-                                <option value="">类型</option>
-                            </select>
-                        </div>
-                    </div>
+										<div class="input-group date">
+											<input type="datetime" class="form-control" date-time ng-model="optionData.endDate" view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+											<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-2">
+									<div class="form-group">
+										<select class="form-control" name="type" ng-options="item.id as item.name for item in typeList" ng-model="optionData.type" style="width: 196px;">
+											<option value="">类型</option>
+										</select>
+									</div>
+								</div>
 
-                    <div class="col-lg-2">
-                        <div class="form-group">
-                            <select class="form-control" name="state" ng-options="item.id as item.name for item in stateList" ng-model="optionData.state">
-                                <option value="">状态</option>
-                            </select>
-                        </div>
-                    </div>
+								<div class="col-lg-2">
+									<div class="form-group">
+										<select class="form-control" name="state" ng-options="item.id as item.name for item in stateList" ng-model="optionData.state" style="width: 196px;">
+											<option value="">处理状态</option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-2">
+									<div class="form-group">
+										<input class="form-control" ng-model="optionData.asin" placeholder="ASIN">
+									</div>
+								</div>
+								<div class="col-lg-4">
+									<button class="btn btn-primary btn-md m-r-lg" ng-click="checkFn()" style="margin-left: 11%;">查询</button>
+									<button class="btn btn-white btn-md" ng-click="resetFn()">重置</button>
+								</div>
+							</div>
+						</form>
+					</div>
+					<!--表格-->
+					<div class="m-t-lg">
+						<table class="footable table table-stripped toggle-arrow-tiny">
+							<thead>
+								<tr>
+									<th data-toggle="true">序号</th>
+									<th>工单编号</th>
+									<th>ASIN</th>
+									<th>店铺</th>
+									<th>处理状态</th>
+									<th>类型</th>
+									<th>创建人</th>
+									<th>当前处理人</th>
+									<th>组长</th>
+									<th>小组名</th>
+									<th>创建时间</th>
+									<th>ASIN状态</th>
+									<th>备注</th>
+									<th>操作</th>
+									<th data-hide="all">工单内容</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="tableItem in tableList">
+									<td>
+										{{$index+1}}
+									</td>
+									<td>
+										{{tableItem.orderID || '-'}}
+									</td>
+									<td>
+										{{ tableItem.asin || '-'}}
+									</td>
+									<td>
+										{{ tableItem.shop_name || '-'}}
+									</td>
+									<td>
+										{{tableItem.state | historyState }}
+									</td>
+									<td>
+										{{tableItem.type | typeState }}
+									</td>
+									<td>
+										{{tableItem.creator || '-'}}
+									</td>
+									<td>
+										{{tableItem.state==2?'已完结':tableItem.handler}}
+									</td>
+									<td>
+										{{tableItem.leader || '-'}}
+									</td>
+									<td>
+										{{tableItem.team_name || '-'}}
+									</td>
+									<td>
+										{{tableItem.createdAt |date:'yyyy-MM-dd HH:mm:ss' || '-'}}
+									</td>
 
-                    <div class="col-lg-offset-6 col-lg-2">
-                        <button class="btn btn-primary btn-md m-r-lg" ng-click="checkFn()">查询</button>
-                        <button class="btn btn-white btn-md" ng-click="resetFn()">重置</button>
-                    </div>
-                </div>
-            </form>
+									<td>
+										{{tableItem.status || '-'}}
+									</td>
+									<td class="mydropdown" style="max-width: 150px;">
+										<div class="mydropdown-nav">
+											<span>{{tableItem.remarks[0].content || '-'}}</span>
+										</div>
+										<ol class="mydropdown-content" ng-show="true" style="list-style: none;">
+											<li class="mydropdown-content-title">历史备注<span class="fa fa-edit" title="添加备注" ng-click="operateRemark($index)"></span></li>
+											<li class="addRemarkList" style="display: none;">
+												<form name="addRemarkForm">
+													<div>
+														<textarea class="form-control" placeholder="请在此添加备注" name="remarkText" ng-model="remarkText.remark" rows="3" cols="10"></textarea>
+													</div>
+													<div>
+														<span class="saveOkIcon glyphicon glyphicon-ok" ng-click="saveRemark(tableItem, $index)"></span>
+														<span class="saveRemoveIcon glyphicon glyphicon-remove" ng-click="operateRemark($index)"></span>
+													</div>
+												</form>
+											</li>
+											<li ng-repeat="remark in tableItem.remarks">
+												<span><i class="fa fa-user-circle" style="display: inline-block;margin-right: 10px;"></i> {{remark.writer.name}} </span>
+												<span style="margin-left: 30%;"><i class="fa fa-clock-o" style="display: inline-block;margin-right: 13px;"></i> {{remark.createdAt | date: 'yyyy-MM-dd HH:mm:ss'}} </span><br>
+												<div style="display: inline;word-wrap: break-word;"><i class="fa fa-stack-exchange" style="display: inline-block;margin-right: 15px;"></i> {{remark.content || '-'}} </div>
+											</li>
 
-
-            <!--表格-->
-            <div class="table-responsive m-t-lg">
-                <table class="footable table table-stripped toggle-arrow-tiny">
-                    <thead>
-                    <tr>
-                        <th data-toggle="true">序号</th>
-                        <th>工单编号</th>
-                        <th>状态</th>
-                        <th>类型</th>
-                        <th>创建人</th>
-                        <th>当前处理人</th>
-                        <th>创建时间</th>
-                        <th>操作</th>
-                        <th data-hide="all">工单内容</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="tableItem in tableList">
-                        <td>
-                            {{$index+1}}
-                        </td>
-                        <td>
-                            {{tableItem.orderID || '-'}}
-                        </td>
-                        <td>
-                            {{tableItem.state | historyState }}
-                        </td>
-                        <td>
-                            {{tableItem.type | typeState }}
-                        </td>
-                        <td>
-                            {{tableItem.creator || '-'}}
-                        </td>
-                        <td>
-                            {{tableItem.state==2?'已完结':tableItem.handler}}
-                        </td>
-                        <td>
-                            {{tableItem.createdAt || '-'}}
-                        </td>
-                        <td>
-                            <button class="btn btn-primary btn-outline btn-sm" type="button"
-                                    ui-sref="main.workOrder.toDeal({id:tableItem.ID,fromPage:'main.workOrder.dealedOrder'})">查看工单记录
+										</ol>
+									</td>
+									<td>
+										<button class="btn btn-primary btn-outline btn-sm" type="button" ui-sref="main.workOrder.toDeal({id:tableItem.ID,fromPage:'main.workOrder.dealedOrder'})">查看工单记录
                             </button>
-                        </td>
-                        <td ng-bind-html="tableItem.content | trustHtml:tableItem.type"></td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <!--分页-->
-                <div class="pull-right">
-                    <ul uib-pagination total-items="totalItems" ng-model="optionData.currentPage" max-size="5" class="pagination-sm" boundary-links="true" rotate="false" ng-change="pageChanged()"></ul>
-                </div>
-            </div>
-
-        </div>
-    </div>
+									</td>
+									<td ng-bind-html="tableItem.content | trustHtml:tableItem.type"></td>
+								</tr>
+							</tbody>
+						</table>
+						<!--分页-->
+						<div class="pull-right">
+							<ul uib-pagination total-items="totalItems" ng-model="optionData.currentPage" max-size="5" class="pagination-sm" boundary-links="true" rotate="false" ng-change="pageChanged()"></ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
-

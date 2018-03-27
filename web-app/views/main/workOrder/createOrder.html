@@ -1,94 +1,85 @@
 <!--表格-->
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="ibox float-e-margins">
-        <div class="ibox-title">
-            <h5>
-                创建工单
-            </h5>
-        </div>
-        <div class="ibox-content">
-            <form class="form-horizontal" name="formAdd" role="form" novalidate>
-                <div class="row">
-                    <div class="form-group col-lg-4">
-                        <label class="col-sm-3 control-label">
-                            <span class="text-danger">*</span>
-                            创建人
-                        </label>
-
-                        <div class="col-sm-2 control-label">
-                            {{account.name}}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-lg-4">
-                        <label class="col-sm-3 control-label" for="teams">
-                            <span class="text-danger">*</span>
-                            小组
-                        </label>
-
-                        <div class="col-sm-9">
-                            <select class="chosen-select" name="teams" id="teams" chosen ng-model="initData.operateTeam" ng-options="item['id'] as item.name for item in teamList" required>
-                                <option value>请选择小组</option>
-                            </select>
-
-                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.teams.$invalid">
-                                <small class="text-danger" ng-show="formAdd.teams.$error.required">
-                                    小组不能为空
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-lg-4">
-                        <label class="col-sm-3 control-label" for="WOType">
-                            <span class="text-danger">*</span>
-                            问题类型
-                        </label>
-
-                        <div class="col-sm-9">
-                            <select class="form-control" name="WOType" id="WOType" ng-model="initData.WOType" ng-options="item['id'] as item.name for item in typeList" required>
-                                <option value>请选择类型</option>
-                            </select>
-
-                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.WOType.$invalid">
-                                <small class="text-danger" ng-show="formAdd.WOType.$error.required">
-                                    问题类型不能为空
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-lg-4">
-                        <label class="col-sm-3 control-label" for="content">
-                            <span class="text-danger">*</span>
-                            内容
-                        </label>
-
-                        <div class="col-sm-9">
-                            <textarea name="content" id="content" cols="45" rows="10" ng-model="initData.content" required></textarea>
-
-                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.content.$invalid">
-                                <small class="text-danger" ng-show="formAdd.content.$error.required">
-                                    内容不能为空
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-
-            <div class="text-center m-b-lg">
-                <button class="btn btn-primary btn-md m-r-lg" ng-click="post()">提交</button>
-                <button class="btn btn-white btn-md" ng-click="cancel()">取消</button>
-            </div>
-
-        </div>
-    </div>
+	<div class="ibox float-e-margins">
+		<div class="ibox-title">
+			<h5>创建工单</h5>
+		</div>
+		<div class="ibox-content">
+			<div class="row p-xs">
+				<form class="form-horizontal col-xs-4" name="formAdd" role="form" novalidate>
+					<fieldset class="form-group">
+						<label><span class="text-danger">*</span>创建人</label>
+						<input class="form-control" ng-model="account.name" readonly>
+					</fieldset>
+					<fieldset class="form-group">
+						<label><span class="text-danger">*</span>小组</label>
+						<select class="chosen-select" name="teams" id="teams" chosen ng-model="initData.operateTeam" ng-options="item['_id'] as item.name for item in teamList" required>
+							<option value>请选择小组</option>
+						</select>
+						<div class="m-t-xs" ng-show="formAdd.submitted && formAdd.teams.$invalid">
+							<small class="text-danger" ng-show="formAdd.teams.$error.required">小组不能为空</small>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label><span class="text-danger">*</span>问题类型</label>
+						<select class="form-control" name="WOType" id="WOType" ng-model="initData.WOType" ng-options="item['id'] as item.name for item in typeList" required>
+							<option value>请选择类型</option>
+						</select>
+						<div class="m-t-xs" ng-show="formAdd.submitted && formAdd.WOType.$invalid">
+							<small class="text-danger" ng-show="formAdd.WOType.$error.required">问题类型不能为空</small>
+						</div>
+					</fieldset>
+					<fieldset class="form-group">
+						<label><span class="text-danger">*</span>内容</label>
+						<textarea class="form-control" name="content" id="content" cols="45" rows="10" ng-model="initData.content" required placeholder="内容由客服部提供"></textarea>
+						<div class="m-t-xs" ng-show="formAdd.submitted && formAdd.content.$invalid">
+							<small class="text-danger" ng-show="formAdd.content.$error.required">内容不能为空</small>
+						</div>
+					</fieldset>
+					<button class="btn btn-primary btn-w-m" ng-click="post()">提交</button>
+					<button class="btn btn-white btn-w-m m-l" ng-click="cancel()">取消</button>
+				</form>
+				<ul class="col-xs-4 col-xs-offset-3 list-unstyled">
+					<li ng-if="initData.WOType == 3">
+						<h2>Lightning Deal工单说明：</h2>
+						<p>需要参加亚马逊Lightning Deals(秒杀)活动的Lisitng，请提供链接Asin码 和 店铺</p>
+						<p>简称（例如：B0792SFGZ6+Amazon-CXSM-US）</p>
+						<p>1.工作时间24小时内完成，处理结果请看工单内容；</p>
+						<p>2.客服回复 暂时不能报名，表示该链接还没有达到参加秒杀的资格。当周内不能再重复提出申请，如有需求请下一周再来提交新的工单；</p>
+						<p>3.已报名的可以自行在店铺后台取消，客服只负责报名活动。</p>
+						<p>4.其他关于秒杀的费用、资格等问题请自行咨询亚马逊平台客服。</p>
+					</li>
+					<li ng-if="initData.WOType == 5">
+						<h2>更改品牌 工单说明：</h2>
+						<p>给链接更换品牌，需要提供 ASIN+Asin创建店铺+原品牌+新品牌+改品牌的原因</p>
+						<p>1.只能提交资源ASIN的品牌更改需求（评论、QA Asin等）</p>
+						<p>2.在售链接的品牌由运营小组自行修改，不能开工单</p>
+					</li>
+					<li ng-if="initData.WOType == 4">
+						<h2>销售权限 工单说明：</h2>
+						<p>链接的品牌和类目受到限制，并且分配的店铺没有权限，需要店铺做对应的权限授权。</p>
+						<p>通常有两种情况：</p>
+						<p>类别1.新产品属于特殊类目/特殊品牌，分配的店铺没有该类目/品牌销售权</p>
+						<p>类别2.在售listing需要转移店铺销售，分配店铺因类目/品牌问题无法跟卖过去</p>
+						<p>请在工单中提供以下信息：</p>
+						<p>所属类别+ASIN（类别1可能没有Asin）+产品英文名/中文名(类别1必填)+产品上架时间/理想完成时间+店铺名+申请项目（类目/品牌）</p>
+						<p>注意：若信息提供不完整，工单将会被打回。</p>
+						<p>品牌授权将会在48小时内完成，而类目授权用时较长，无法预估及无法保证达到。</p>
+					</li>
+					<li ng-if="initData.WOType == 6">
+						<h2>店铺IP问题 工单说明：</h2>
+						<p>IP规范用法:</p>
+						<p>1.每次用完IP要点击远程桌面左下角“注销”退出IP，而不是直接点击右上方“X”关闭；当电脑比较卡的时候可以自行尝试点“重新启动”重启电脑，但一定不能点关机；</p>
+						<p>2.远程电脑不同于本机电脑，内存较少，不要存放过多的文件，尽量不要下载其他新软件，及时清理自己创建的过期无效文件</p>
+						<p class="text-center"><b>不规范的用法就会导致远程总是登不上、卡慢、卡机。</b></p>
+						<p>常见问题：</p>
+						<p>1.登不进远程：自行尝试至少5遍，重开、重输正确的密码或重开凭证，用别人的电脑尝试登陆，辨别是远程问题还是电脑问题，电脑问题找技术部，远程问题直接钉钉找 赵安润 解决，不用开工单。</p>
+						<p>2.缺少工具：远程浏览器上是保存有各工具的账号密码，亚马逊后台、邮箱、即时销售报告等。如果有需要的工具没有账号直接登陆，请开工单说明情况。</p>
+						<p>3.IP不够：随着小组增多，可能会出现IP不够用的情况，可以提出申请，客服会审核具体情况决定添不添加新的IP</p>
+						<p>4.除了登不上远程，其他有关店铺IP问题都要创建工单。</p>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
 </div>
-

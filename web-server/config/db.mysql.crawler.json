@@ -1,31 +1,31 @@
 {
-    "debug": {
-        "host"              : "192.168.1.125",
-        "port"              : "3306",
-        "user"              : "root",
-        "password"          : "smartdo2017",
-        "database"          : "crawler_data",
-        "connectionLimit"   : 5,
-        "multipleStatements": true
-    },
+	"debug": {
+		"host": "192.168.1.125",
+		"port": "3306",
+		"user": "root",
+		"password": "smartdo2017",
+		"database": "crawler_data",
+		"connectionLimit": 5,
+		"multipleStatements": true
+	},
 
-    "development": {
-        "host"              : "192.168.1.125",
-        "port"              : "3306",
-        "user"              : "root",
-        "password"          : "smartdo2017",
-        "database"          : "crawler_data",
-        "connectionLimit"   : 5,
-        "multipleStatements": true
-    },
+	"development": {
+		"host": "192.168.1.125",
+		"port": "3306",
+		"user": "root",
+		"password": "smartdo2017",
+		"database": "edw",
+		"connectionLimit": 5,
+		"multipleStatements": true
+	},
 
-    "production": {
-        "host"              : "192.168.1.130",
-        "port"              : "3306",
-        "user"              : "root",
-        "password"          : "amws2017",
-        "database"          : "crawler_data",
-        "connectionLimit"   : 30,
-        "multipleStatements": true
-    }
+	"production": {
+		"host": "192.168.1.130",
+		"port": "3306",
+		"user": "edw_user",
+		"password": "edw_user!456",
+		"database": "edw",
+		"connectionLimit": 30,
+		"multipleStatements": true
+	}
 }

@@ -17,8 +17,8 @@ var helper = require('../middleware/helper');
  */
 
 module.exports = {
-    path: "/users",
-    route: router
+	path: "/users",
+	route: router
 };
 
 router.use(app.authServer.authenticate());
@@ -29,3 +29,4 @@ router.post('/', users.create);
 router.get('/:id', users.get);
 router.put('/:id', users.update);
 router.delete('/:id', users.delete);
+

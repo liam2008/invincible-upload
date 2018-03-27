@@ -86,10 +86,13 @@
 
             //初始化页面
             function init(){
-                //渲染页面
                 netManager.get('/base/shops').then(function (res) {
-                    $scope.tableData = res.data;
-                    console.log('resdata', res.data);
+                	$scope.tableData = res.data.list;
+                	$scope.authority = res.data.rights;
+                	
+                	if(!$scope.authority.add){
+                		delete $scope.dtOptions['buttons'][0];
+                	}
                     $scope.isLoad = false;
                 }, function (err) {
                     console.error(err);

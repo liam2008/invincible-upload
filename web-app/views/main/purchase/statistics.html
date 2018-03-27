@@ -48,7 +48,7 @@
 								<td>{{ item.buyer||'-' }}</td>
 								<td>{{ item.supplierName||'-' }}</td>
 								<td>{{ item.proStoreSku }}<br>{{ item.proNameCN }}</td>
-								<td>-</td>
+								<td>{{ item.shelfTime || '-' }}</td>
 								<td>{{ item.salesVolume||'-' }}</td>
 								<td>{{ item.totalVolume||'-' }}</td>
 								<td>
@@ -59,8 +59,8 @@
 									<br><span>FBA库存：</span>{{ item.FBAStore }}
 								</td>
 								<td>
-									<span>当天退货个数：</span>-
-									<br><span>上架→目前退货统计：</span>-
+									<span>当天退货个数：</span>{{ item.returnToday!=undefined?item.returnToday:'-' }}
+									<br><span>上架→目前退货统计：</span>{{ item.returnTotal!=undefined?item.returnTotal:'-' }}
 									<br><span>退货率：</span>-
 								</td>
 							</tr>

@@ -164,13 +164,13 @@
 				<div class="ibox-content" style="border-top:none;">
 					<ul class="nav nav-tabs m-b" role="tablist">
 						<li role="presentation" class="active" ng-click="handlePagination(1,where.workbench=1)">
-							<a href="#wordbench" aria-controls="wordbenchA" role="tab" data-toggle="tab">待处理</a>
+							<a href="#wordbench" aria-controls="wordbenchA" role="tab" data-toggle="tab">待处理<small style="font-weight:normal;color:#f30;">（{{ count.indexA }}）</small></a>
 						</li>
 						<li role="presentation" ng-click="handlePagination(1,where.workbench=2)">
-							<a href="#wordbench" aria-controls="wordbenchB" role="tab" data-toggle="tab">进行中</a>
+							<a href="#wordbench" aria-controls="wordbenchB" role="tab" data-toggle="tab">进行中<small style="font-weight:normal;color:#f30;">（{{ count.indexB }}）</small></a>
 						</li>
 						<li role="presentation" ng-click="handlePagination(1,where.workbench=3)">
-							<a href="#wordbench" aria-controls="wordbenchC" role="tab" data-toggle="tab">已通过</a>
+							<a href="#wordbench" aria-controls="wordbenchC" role="tab" data-toggle="tab">已通过<small style="font-weight:normal;color:#f30;">（{{ count.indexC }}）</small></a>
 						</li>
 					</ul>
 					<nav class="row form-inline m-b">
@@ -489,7 +489,7 @@
 								<td>
 									<div>
 										<label>预计日销量：</label>
-										<input class="form-control input-sm" ng-model="item['expected_sales']" readonly>
+										<input class="form-control input-sm text-danger" ng-model="item['expected_sales']" readonly>
 									</div>
 									<div>
 										<label>国内运输和验货天数：</label>
@@ -497,7 +497,7 @@
 									</div>
 									<div>
 										<label>国际运输和入仓天数：</label>
-										<input class="form-control input-sm" ng-model="item['abroad_transport']" readonly>
+										<input class="form-control input-sm text-danger" ng-model="item['abroad_transport']" readonly>
 									</div>
 									<div>
 										<label>备货周期：</label>
@@ -509,7 +509,7 @@
 									</div>
 									<div>
 										<label>安全库存天数：</label>
-										<input class="form-control input-sm" ng-model="item['safety_stock']" readonly>
+										<input class="form-control input-sm text-danger" ng-model="item['safety_stock']" readonly>
 									</div>
 									<div>
 										<label>建议采购数量：</label>
@@ -517,7 +517,7 @@
 									</div>
 									<div>
 										<label>执行采购数量：</label>
-										<input class="form-control input-sm" ng-model="item['purchase_amount']" readonly>
+										<input class="form-control input-sm text-danger" ng-model="item['purchase_amount']" readonly>
 									</div>
 									<div>
 										<label>贷款总额：</label>

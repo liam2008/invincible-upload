@@ -1,31 +1,28 @@
-/*
- * Base Dependencies
- */
 var express = require('express');
 var router = express.Router();
-
-/*
- * Server Dependencies
- */
 var debug = require('debug')('smartdo:route:teams');
 var app = require('../app');
-var controller = require('../controllers').teams;
+var controller = require('../controllers').team;
 var helper = require('../middleware/helper');
 
-/*
- * UModules Dependencies
- */
-
 module.exports = {
-    path: "/teams",
-    route: router
+	path: "/team",
+	route: router
 };
 
 router.use(app.authServer.authenticate());
 
-router.get('/', helper.team_list, controller.list);
-router.post('/', controller.create);
+// 小组选项
+router.get('/opt', controller.teamOpt);
 
-router.get('/:id', controller.get);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
+// 小组列表
+router.get('/list', controller.teamList);
+
+// 小组添加
+router.post('/save', controller.teamSave)
+
+// 小组更新
+router.post('/update', controller.teamUpdate)
+
+// 小组删除
+router.get('/remove', controller.teamRemove)

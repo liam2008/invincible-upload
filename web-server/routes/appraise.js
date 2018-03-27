@@ -26,6 +26,9 @@ router.post('/setReviewDescTask', controller.setReviewDescTask);
 
 router.get('/reviewContent', controller.reviewContent);
 
+// 评论任务站点
+router.get('/reviewSite', controller.reviewSite);
+
 router.get('/reviewExcel', controller.reviewTaskExcel);
 
 router.get('/keywordExcel', controller.keywordExcel);

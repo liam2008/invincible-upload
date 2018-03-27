@@ -428,7 +428,7 @@
 							<td>
 								<div class="input-group">
 									<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-									<input class="form-control conCovDate" ng-model="item.conCovDate" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+									<input class="form-control conCovDate" ng-model="item.conCovDate" date-time view="date" auto-close="true" min-view="date" format="YYYY-MM-DD" ng-disabled>
 								</div>
 							</td>
 							<td>
@@ -632,7 +632,7 @@
 </div>
 <!-- 选择商品 -->
 <aside class="modal fade" id="skuModal">
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog" style="width:1024px;">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button class="close" data-dismiss="modal">&times;</button>
@@ -664,7 +664,7 @@
 <!-- /选择商品 -->
 <!-- 选择供应商 -->
 <aside class="modal fade" id="supplierModal">
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog" style="width:1024px;">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button class="close" data-dismiss="modal">&times;</button>

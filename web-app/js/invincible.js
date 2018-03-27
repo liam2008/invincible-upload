@@ -1,4 +1,4 @@
-/*!  2018-01-11 */
+/*!  2018-03-23 */
 //! moment.js
 //! version : 2.11.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -4274,20 +4274,22 @@
         DB_VAL_ERROR:                   '1063',
         NOT_ARRAY:                      '1064',
         UNKNOW_ERR:                     '1065',
-        IS_SELLING:                     '1066'
+        IS_SELLING:                     '1066',
+        IS_BORROWING:                   '1067',
+        FILE_UPLOAD_ERR:                '1068'
     };
 
     var Message = root.MESSAGE = {
         "1000": [ 500, "InternalError" ],
         "1001": [ 400, "InvalidArgument" ],
-        "1002": [ 400, "MissingArgument" ],
+        "1002": [ 400, "缺少输入值" ],
         "1003": [ 400, "已存在" ],
-        "1004": [ 400, "数据不存在" ],
+        "1004": [ 400, "不存在" ],
         "1005": [ 400, "密码错误" ],
         "1006": [ 401, "UnauthorizedRequest" ],
         "1007": [ 401, "InvalidToken" ],
         "1008": [ 400, "没有权限访问" ],
-        "1009": [ 400, "InvalidRequest" ],
+        "1009": [ 400, "无效请求" ],
         "1010": [ 400, "InvalidAuthorizeCode" ],
         "1011": [ 500, "RemoteServerError" ],
         "1012": [ 400, "ObjectHavingNullValue" ],
@@ -4330,20 +4332,22 @@
         "1049": [ 400, "MissingOperate" ],
         "1050": [ 400, "MissingTableName" ],
         "1051": [ 400, "MissingStatus" ],
-        "1052": [ 400, "CreateFailed" ],
-        "1053": [ 400, "DeleteFailed" ],
-        "1054": [ 400, "UpdateFailed" ],
+        "1052": [ 400, "数据创建错误" ],
+        "1053": [ 400, "数据删除错误" ],
+        "1054": [ 400, "数据修改错误" ],
         "1055": [ 400, "PriorityValueError" ],
         "1056": [ 400, "MissingPassword" ],
         "1057": [ 400, "MissingConfirmPassword" ],
         "1058": [ 400, "MissingAccount" ],
         "1060": [ 400, "TokenExpired" ],
-        "1061": [ 400, "FindFailed" ],
-        "1062": [ 400, "NumberTooLarge" ],
+        "1061": [ 400, "数据查询错误" ],
+        "1062": [ 400, "超出允许最大值" ],
         "1063": [ 400, "数据库数据有误" ],
         "1064": [ 400, "此数据不为数组" ],
         "1065": [ 400, "未知错误" ],
-        "1066": [ 400, "商品仍在售" ]
+        "1066": [ 400, "商品仍在售" ],
+        "1067": [ 400, "有样品未归还" ],
+        "1068": [ 400, "文件上传错误" ]
     };
 }(Smartdo));
 (function (root) {
@@ -4384,6 +4388,14 @@
             app_route: "main.authority.teamsManage",
             server_route: ["/teams"]
         },
+        "481ca86831844004804b72fe59a90a7b": {
+            app_route: "main.authority.creatVersionsLog",
+            server_route: ["/logs"]
+        },
+        "910e2251d5a74c6ca6ccb2f86d55cf1c": {
+            app_route: "main.base.categoryManage",
+            server_route: ['/base/category']
+        },
         "f0edb847bc264cfb89f8e2a1b8b4e387": {
             app_route: "main.base.goodsManage",
             server_route: ['/base/list', '/teams']
@@ -4400,6 +4412,14 @@
             app_route: "main.base.storeLog",
             server_route: ['/stores/list']
         },
+        "03d746f1544b479c9eaf4583cc5cca12": {
+        	app_route: "main.base.commodityManagement",
+            server_route: ['/base/commodityManagement']
+        },
+        "579b0c08feec4492a02282076bd8f8eb": {
+        	app_route: "main.base.storeManagement",
+            server_route: ['/base/storeManagement']
+        },
         "bba9d842ba1443a9ba94ce056876dd62": {
             app_route: "main.daily.import",
             server_route: ['/daily/import']
@@ -4411,6 +4431,10 @@
         "f9ab7eb705b94b389c5a8a2ebc253645": {
             app_route: "main.daily.report",
             server_route: ["/daily/show"]
+        },
+        "dbc0f8ec81724bf28e173c9e29b177a5": {
+            app_route: "main.daily.operationSale",
+            server_route: ['/daily/operationSale']
         },
         "a92ef3d366a84885b35d9bc4f174c096": {
             app_route: "main.count.counter",
@@ -4440,14 +4464,14 @@
             app_route: "main.purchase.supplier",
             server_route: ['/supplier/supplierList']
         },
-        "ea319b6d63eb41a4ab36668c5a6db082": {
-            app_route: "main.margin.group",
-            server_route: ['/profit/teamProfitShow']
-        },
-        "11e09c47cbbf4fa4b3ff156970fe8c70": {
-            app_route: "main.margin.gross",
-            server_route: ['/profit/profitShow']
-        },
+        // "ea319b6d63eb41a4ab36668c5a6db082": {
+        //     app_route: "main.margin.group",
+        //     server_route: ['/profit/teamProfitShow']
+        // },
+        // "11e09c47cbbf4fa4b3ff156970fe8c70": {
+        //     app_route: "main.margin.gross",
+        //     server_route: ['/profit/profitShow']
+        // },
         "3d2a114512644e3d82bbc552dec865c9": {
             app_route: "main.files.views",
             server_route: ['/files/fileManager']
@@ -4456,6 +4480,10 @@
             app_route: "main.files.manage",
             server_route: ['/files/fileManager']
         },
+        "d592ea43e5484661885d1f37ffca8bfa": {
+            app_route: "main.analysis.task",
+            server_route: ['/appraise/task']
+        },
         "abd72f4e0ca649f3aad54e838f27243d": {
             app_route: "main.analysis.review",
             server_route: ['/appraise/EVALTask']
@@ -4463,6 +4491,10 @@
         "cb398c7d38da415f8a6af3044fbee6ce": {
             app_route: "main.analysis.keyword",
             server_route: ['/appraise/keyword']
+        },
+        "647a9be3562347af9b666f6a16a6ccf9": {
+            app_route: "main.workOrder.clickTask",
+            server_route: ['/workOrder/clickTask']
         },
         "5645127ef89f42d9b900d0411b256482": {
             app_route: "main.workOrder.createOrder",

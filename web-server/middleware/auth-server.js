@@ -23,6 +23,7 @@ var CryptoJS = Shared.CryptoJS;
 
 var DB = require('../models/invincible');
 var User = DB.getModel('user');
+var TeamManager = DB.getModel('team_manager');
 
 /*
  * UModules Dependencies
@@ -94,9 +95,10 @@ AuthServer.prototype.authenticate = function() {
                         team = record.team.toJSON();
                         teamId = team._id.toString();
                     }
+                    var userId = record._id.toString();
 
                     var agent = {
-                        id:         record._id.toString(),
+                        id:         userId,
                         name:       record.name,
                         account:    record.account,
                         password:   record.password,
@@ -129,7 +131,17 @@ AuthServer.prototype.authenticate = function() {
                     req.agent = agent;
                     req.scope = record.scope;
 
-                    next();
+                    TeamManager.findOne({user: userId}, function(e, r) {
+                        if (e) {
+                            res.error(ERROR_CODE.DB_ERROR);
+                            return;
+                        }
+
+                        if (r) {
+                            agent.teamManager = JSON.parse(JSON.stringify(r.teams));
+                        }
+                        next();
+                    });
                 });
         });
     };

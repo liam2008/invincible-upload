@@ -13,8 +13,13 @@ module.exports = {
 		},
 		type: String, // 类型
 		size: String, // 大小
-		path: String, // 地址
+		tips: String, // 标签
+		fileId: String, // UUID
 		authorize: [Schema.Types.ObjectId], // 权限
+		exists: { // 没删除
+			type: Boolean,
+			default: true
+		},
 		updated: { // 更新时间
 			type: String,
 			default: moment().format('YYYY-MM-DD HH:mm:ss')

@@ -27,3 +27,18 @@ router.put('/order/:purId', controller.orderEdit);
 
 // 创建样品
 router.post('/', controller.sampleSave);
+
+// 样品申请列表
+router.get('/borrow', controller.splBorrowList);
+
+// 样品申请借出
+router.post('/borrow', controller.splBorrowSave);
+
+// 样品已申请借出列表
+router.get('/borrow/borrowed', controller.splBorrowed);
+
+// 样品申请借出取消
+router.put('/borrow/borrowed/:borrowId', controller.borrowCancel);
+
+// 样品列表借还管理
+router.get('/borrow/manager', controller.splManager);

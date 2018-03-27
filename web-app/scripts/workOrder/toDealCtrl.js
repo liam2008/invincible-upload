@@ -42,11 +42,8 @@
                     $scope.ativeTab = 1
                 }
                 netManager.get('/workOrder/openOrder', {id: $stateParams.id}).then(function (res) {
-                    console.log('res.data', res.data);
-                    $scope.handleData = res.data.order;
-                }, function (err) {
-                    console.error(err);
-                });
+                    $scope.handleData = res.data;
+                })
             }
 
 

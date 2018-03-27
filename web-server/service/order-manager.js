@@ -14,6 +14,8 @@ var moment = require('moment');
 var PadLeft = require('padleft');
 
 var debug = require('debug')('smartdo:service:order');
+var Shared = require('../../shared/');
+var Utils = Shared.Utils;
 
 var OrderManager = module.exports = {};
 
@@ -66,8 +68,31 @@ OrderManager.resetOrder = function(cb) {
             return;
         }
 
+        var earlyTime;
+        var lastTime;
+        findResults.forEach(function (findResult) {
+            if (!earlyTime || !lastTime) {
+                earlyTime = findResult.createdAt;
+                lastTime = findResult.createdAt
+            }
+            if (findResult.createdAt < earlyTime) earlyTime = findResult.createdAt;
+            if (findResult.createdAt > lastTime) lastTime = findResult.createdAt;
+        });
+
+        var findRequire = {data: {$ne: null}};
+        if (earlyTime) {
+            earlyTime = moment(earlyTime).startOf('day').format("YYYY-MM-DD HH:mm:ss");
+            findRequire.createdAt = findRequire.createdAt || {};
+            findRequire.createdAt.$gte = earlyTime;
+        }
+        if (lastTime) {
+            lastTime = moment(lastTime).endOf('day').format("YYYY-MM-DD HH:mm:ss");
+            findRequire.createdAt = findRequire.createdAt || {};
+            findRequire.createdAt.$lte = lastTime;
+        }
+
         var nowData;
-        WorkOrder.find({},["data", "createdAt"], function (err, oldOrderListFound) {
+        WorkOrder.find(findRequire, ["data", "createdAt"], function (err, oldOrderListFound) {
             if (err) {
                 cb(err);
                 return;
@@ -88,13 +113,18 @@ OrderManager.resetOrder = function(cb) {
                 var hasCustomer = false;
                 var content;
                 var key;
+                var reducePercent = 1;
+                if ([0, 1, 2, 3, 4, 5, 6, 7 ,8 ,9 ,10].indexOf(abnormalObj.data.type) == -1) {
+                    return callback(null);
+                }
                 nowData = moment(abnormalObj.createdAt).format("YYYYMMDD");
                 if (abnormalObj.data.type >= 1 && abnormalObj.data.type <= 3) {
+                    if (abnormalObj.data.type == 3) reducePercent = abnormalObj.data.currCnt / abnormalObj.data.lastCnt;
                     key = (nowData + abnormalObj.data.ASIN + abnormalObj.data.type);
                 }else if (abnormalObj.data.type == 4) {
                     key = (nowData + abnormalObj.data.ASIN + abnormalObj.data.sellerId);
                 }
-                if (loaded.indexOf(key) == -1) {
+                if (loaded.indexOf(key) == -1 || reducePercent <= 0.8) {
                     async.series([
                             // 设置处理人和报警内容
                             function (callB) {
@@ -107,20 +137,18 @@ OrderManager.resetOrder = function(cb) {
 
                                         type = 2;
                                     }else if (abnormalObj.data.type == 5) {
-                                        content += ("\tasin被篡改");
+                                        content += ("\tasin被篡改\r\n原ASIN：" + abnormalObj.data.ASIN);
+                                        if (abnormalObj.data.afterAsin) content += ("\r\n现ASIN：" + abnormalObj.data.afterAsin);
 
                                         type = 7;
                                     }else if (abnormalObj.data.type >= 6 && abnormalObj.data.type <= 9) {
                                         if (abnormalObj.data.type == 6) {
                                             content += ("\t品牌被篡改\r\n被篡改成的品牌：" + abnormalObj.data.brand);
-                                        }
-                                        if (abnormalObj.data.type == 7) {
+                                        }else if (abnormalObj.data.type == 7) {
                                             content += ("\t标题被篡改\r\n被篡改成的标题：" + abnormalObj.data.title);
-                                        }
-                                        if (abnormalObj.data.type == 8) {
+                                        }else if (abnormalObj.data.type == 8) {
                                             content += ("\t简介被篡改\r\n被篡改成的简介：" + abnormalObj.data.introduction);
-                                        }
-                                        if (abnormalObj.data.type == 9) {
+                                        }else if (abnormalObj.data.type == 9) {
                                             content += ("\t描述被篡改\r\n被篡改成的描述：" + abnormalObj.data.description);
                                         }
 
@@ -131,13 +159,17 @@ OrderManager.resetOrder = function(cb) {
                                         }else if (abnormalObj.data.type == 2) {
                                             content += ("\t总评价低于4.3分");
                                         }else if (abnormalObj.data.type == 3) {
-                                            content += ("\t评论数量变少");
+                                            content += ("\t评论数量变少\r\n原评论数：" + abnormalObj.data.lastCnt + "\r\n现评论数：" + abnormalObj.data.currCnt);
                                         }else {
                                             callB("Unknow type in abnormalObj");
                                             return;
                                         }
 
                                         type = 1;
+                                    }else if (abnormalObj.data.type == 10) {
+                                        content += ("\t主图被篡改\r\n原图名称：" + abnormalObj.data.beforeImagePath + "\r\n被篡改成的图片：" + abnormalObj.data.nowImagePath);
+
+                                        type = 9
                                     }
                                 }
                                 callB(null);
@@ -167,7 +199,7 @@ OrderManager.resetOrder = function(cb) {
                                                 return;
                                             }
                                             if (merdFound) {
-                                                if (abnormalObj.data.type <= 9 && abnormalObj.data.type >= 5 && abnormalObj.data.type != 6) {
+                                                if (abnormalObj.data.type <= 10 && abnormalObj.data.type >= 5 && abnormalObj.data.type != 6) {
                                                     findRequire = {
                                                         team: merdFound.team_id,
                                                         role: mongoose.Types.ObjectId("59fc32140ed72b7271f8d614")
@@ -185,18 +217,25 @@ OrderManager.resetOrder = function(cb) {
                                                         callB(null);
                                                     })
                                                 }else {
+                                                    // 由于适应全部小组的时候，work_order_type存的是null，所以这里需要同时找team_id和null
                                                     findRequire = {
-                                                        operate_team: merdFound.team_id,
+                                                        operate_team: {$in: [merdFound.team_id, null]},
                                                         work_order_type: type
                                                     };
-                                                    OperativeCustomer.findOne(findRequire, function (err, customerFound) {
+                                                    // 找出team_id和null之后，倒序排一下，这样，符合条件的信息中，如果设定了小组的，则给指定这个小组的人员处理，如果没指定这个小组，那么至少也会找到null
+                                                    OperativeCustomer.aggregate([
+                                                        {$match: findRequire},
+                                                        {$sort: {operate_team: -1}}
+                                                    ], function (err, customerFound) {
                                                         if (err) {
                                                             callB(err);
                                                             return;
                                                         }
-                                                        if (customerFound) {
+                                                        // 使用找出来的第一个数据
+                                                        if (Utils.isArray(customerFound) && customerFound[0] != null) {
+                                                            var row = customerFound[0];
                                                             teamID = merdFound.team_id;
-                                                            handler = customerFound._id;
+                                                            handler = row.customer_id;
                                                             hasCustomer = true;
                                                         }
                                                         callB(null);
@@ -282,6 +321,7 @@ OrderManager.resetOrder = function(cb) {
                             function(callB) {
                                 // 修改abnormalObj的status为1（已处理）
                                 abnormalObj.status = 1;
+                                abnormalObj.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss");
                                 abnormalObj.save(function(e) {
                                     if (e) {
                                         callB(e);
@@ -302,6 +342,7 @@ OrderManager.resetOrder = function(cb) {
                 }else {
                     // 修改abnormalObj的status为1（已处理）
                     abnormalObj.status = 1;
+                    abnormalObj.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss");
                     abnormalObj.save(function(e) {
                         if (e) {
                             callback(e);

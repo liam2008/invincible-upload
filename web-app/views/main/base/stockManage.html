@@ -1,241 +1,267 @@
+<style type="text/css">
+	.btn-primary[disabled] {
+		background-color: #000000;
+	}
+	
+	.btn-primary[disabled]:focus {
+		background-color: #000000!important;
+	}
+</style>
 <!--表格-->
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h5>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h5>
                         产品库存管理
                     </h5>
 
-                    <div ibox-tools></div>
-                </div>
-                <div class="ibox-content">
-                    <div class="table-responsive">
-                        <table datatable="ng" dt-options="dtOptions" class="table table-striped table-bordered table-hover dataTables-example table-responsive">
-                            <thead>
-                            <tr>
-                                <th>序号</th>
-                                <th>库存sku</th>
-                                <th>中文名</th>
-                                <th>库存数量</th>
-                                <th>单位</th>
-                                <th>action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="value in tableData">
-                                <td>
-                                    {{$index+1}}
-                                </td>
-                                <td>{{value['store_sku']}}</td>
-                                <td>{{value['name_cn']}}</td>
-                                <td>{{value['stock']==""?"-":value['stock']}}</td>
-                                <td>{{value['unit']==""?"-":value['unit']}}</td>
-                                <td>
-                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
-                                            data-target="#editRow" ng-click="edit($index)">编辑
-                                    </button>
+					<div ibox-tools></div>
+				</div>
+				<div class="ibox-content">
 
-                                    <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
-                                            data-target="#logmodal" ng-click="logData.checkLog(value['id'])">出入库日志
-                                    </button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+					<div style="position:absolute;right:460px;">
+						<label>仓库</label>
+						<select class="form-control input-sm" ng-model="mainHouse" name="mainHouse" ng-change="queryHouse()" style="display:inline-block;width:177px;">
+							<option value="">请选择</option>
+							<option ng-repeat="item in houseList" value="{{item._id}}">{{item.name}}</option>
+						</select>
+					</div>
+
+					<div class="table-responsive" style="white-space: nowrap;">
+						<table datatable="ng" dt-options="dtOptions" class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+							<thead style="white-space: nowrap;">
+								<tr>
+									<th>序号</th>
+									<th>库存sku</th>
+									<th>中文名</th>
+									<th>单位</th>
+									<th>所在仓库</th>
+									<th>库存数量</th>
+									<th>在库天数</th>
+									<th>创建时间</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="value in tableData">
+									<td>{{$index+1}}</td>
+									<td>{{value['sku']}}</td>
+									<td>{{value['name']}}</td>
+									<td>{{value['unit']||'-'}}</td>
+									<td>{{value['house'].name}}</td>
+									<td>{{value['stock']!=undefined?value['stock']:'-'}}</td>
+									<td>{{value['duration']!=undefined?value['duration']:'-'}}</td>
+									<td>{{value['createdAt'] |date: 'yyyy-MM-dd HH:mm:ss' || '-'}}</td>
+									<td>
+										<!---->
+										<button class="btn btn-primary btn-outline " type="button" data-toggle="modal" data-target="#editRow" ng-click="edit($index)" ng-show="authority.edit">编辑 </button>
+
+										<button class="btn btn-primary btn-outline" type="button" data-toggle="modal" data-target="#logmodal" ng-click="logData.checkLog(value)" ng-show="authority.info">出入库日志</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <!--查看日志-->
 <div class="modal inmodal fade" id="logmodal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" style="width: 70%">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+	<div class="modal-dialog modal-lg" style="width: 70%">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
                         class="sr-only">Close</span></button>
-                <h4 class="modal-title">查看库存日志</h4>
+				<h4 class="modal-title">查看库存日志</h4>
 
-                <div class="form-group m-t-xs">
-                    <div class="row m-t-md">
-                        <div class="col-lg-4">
-                            <div class="col-lg-4">
-                                <label class="m-t-sm">开始日期</label>
-                            </div>
-                            <div class="input-group col-lg-8 date">
-                                <input type="datetime" class="form-control" date-time ng-model="logData.startDate"
-                                       view="date" auto-close="true" min-view="date" format="YYYY-MM-DD" id="start">
-                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="col-lg-4">
-                                <label  class="m-t-sm">结束日期</label>
-                            </div>
+				<div class="form-group m-t-xs">
+					<div class="row m-t-md">
+						<div class="col-lg-4">
+							<div class="col-lg-4">
+								<label class="m-t-sm">开始日期</label>
+							</div>
+							<div class="input-group col-lg-8 date">
+								<input autocomplete="off" type="datetime" class="form-control" date-time ng-model="logData.startDate" view="date" auto-close="true" min-view="date" format="YYYY-MM-DD" id="start">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							</div>
+						</div>
+						<div class="col-lg-4">
+							<div class="col-lg-4">
+								<label class="m-t-sm">结束日期</label>
+							</div>
 
-                            <div class="input-group col-lg-8 date">
-                                <input type="datetime" class="form-control" date-time ng-model="logData.endDate" view="date"
-                                       auto-close="true" min-view="date" format="YYYY-MM-DD">
-                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <button class="btn btn-w-m btn-default" ng-click="logData.checkDateLog()">查询</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table datatable="ng" dt-options="logData.dtOptions" class="table table-striped table-bordered table-hover dataTables-example table-responsive">
-                        <thead style="white-space: nowrap;">
-	                        <tr>
-	                            <th>日期</th>
-	                            <th>SKU</th>
-	                            <th>中文名</th>
-	                            <th>期初库存</th>
-	                            <th>入库</th>
-	                            <th>出库</th>
-	                            <th>本期库存</th>
-	                            <th style="width: 100px;">备注</th>
-	                            <th>记录时间</th>
-	                        </tr>
-                        </thead>
-                        <tbody>
-	                        <tr ng-repeat="value in logData.recordList">
-	                            <td>
-	                                {{value['time']}}
-	                            </td>
-	                            <td>
-	                                {{value['sku']}}
-	                            </td>
-	                            <td>
-	                                {{value['name']}}
-	                            </td>
-	                            <td>
-	                                {{value['stocked']}}
-	                            </td>
-	                            <td>
-	                                {{value['enter']}}
-	                            </td>
-	                            <td>
-	                                {{value['output']}}
-	                            </td>
-	                            <td>
-	                                {{value['stock']}}
-	                            </td>
-	                            <td>
-	                                {{value['note']}}
-	                            </td>
-	                            <td>
-	                                {{value['updatedAt']}}
-	                            </td>
-	                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+							<div class="input-group col-lg-8 date">
+								<input type="datetime" class="form-control" date-time ng-model="logData.endDate" view="date" auto-close="true" min-view="date" format="YYYY-MM-DD">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							</div>
+						</div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
-            </div>
-        </div>
-    </div>
+						<div class="col-lg-4">
+							<button class="btn btn-w-m btn-default" ng-click="logData.checkDateLog()">查询</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-body">
+				<div class="table-responsive">
+					<table datatable="ng" dt-options="logData.dtOptions" class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+						<thead style="white-space: nowrap;">
+							<tr>
+								<th>序号</th>
+								<th>日期</th>
+								<th>SKU</th>
+								<th>中文名</th>
+								<th>所在仓库</th>
+								<th>期初库存</th>
+								<th>入库</th>
+								<th>出库</th>
+								<th>本期库存</th>
+								<th style="width: 100px;">备注</th>
+								<th>记录时间</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="value in logData.recordList">
+								<td>
+									{{$index+1}}
+								</td>
+								<td>
+									{{value['time']}}
+								</td>
+								<td>
+									{{value['sku']}}
+								</td>
+								<td>
+									{{value['name']}}
+								</td>
+								<td>
+									{{value['house']}}
+								</td>
+								<td>
+									{{value['stocked']}}
+								</td>
+								<td>
+									{{value['enter']}}
+								</td>
+								<td>
+									{{value['output']}}
+								</td>
+								<td>
+									{{value['stock']}}
+								</td>
+								<td>
+									{{value['note']}}
+								</td>
+								<td>
+									{{value['updatedAt']}}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
 </div>
 
-<!--弹出框编辑框-->
+<!--弹出编辑框-->
 <div class="modal inmodal fade" id="editRow" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
                         class="sr-only">Close</span></button>
-                <h4 class="modal-title">产品库编辑</h4>
-            </div>
-            <div class="modal-body">
-                <form method="get" class="form-horizontal">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">库存sku</label>
+				<h4 class="modal-title">产品库编辑</h4>
+			</div>
+			<div class="modal-body">
+				<form method="get" class="form-horizontal">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">库存sku</label>
 
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" name="storm_sku" ng-model="editData['store_sku']">
-                        </div>
-                    </div>
+						<div class="col-sm-10">
+							<input autocomplete="off" type="text" class="form-control" name="storm_sku" ng-model="editData['store_sku']">
+						</div>
+					</div>
 
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">中文名</label>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">中文名</label>
 
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" name="name_cn" ng-model="editData['name_cn']">
-                        </div>
-                    </div>
-                </form>
-            </div>
+						<div class="col-sm-10">
+							<input autocomplete="off" type="text" class="form-control" name="name_cn" ng-model="editData['name_cn']">
+						</div>
+					</div>
+				</form>
+			</div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveEdit()">编辑</button>
-            </div>
-        </div>
-    </div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveEdit()">编辑</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <!--弹出添加商品框-->
 <div class="modal inmodal fade" id="addGoodModule" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
                         class="sr-only">Close</span></button>
-                <h4 class="modal-title">添加产品库存</h4>
-            </div>
-            <div class="modal-body">
-                <form class="form-horizontal" name="formAdd" role="form"  novalidate>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
+				<h4 class="modal-title">添加产品库存</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" name="formAdd" role="form" novalidate>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
                             <span class="text-danger">*</span>
                             库存sku
                         </label>
 
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" name="stormSku" ng-model="addStore['store_sku']" required>
+						<div class="col-sm-10">
+							<input type="text" class="form-control" name="stormSku" ng-model="addStore['store_sku']" required>
 
-                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.stormSku.$invalid">
-                                <small class="text-danger" ng-show="formAdd.stormSku.$error.required">
+							<div class="m-t-xs" ng-show="formAdd.submitted && formAdd.stormSku.$invalid">
+								<small class="text-danger" ng-show="formAdd.stormSku.$error.required">
                                     库存sku不能为空
                                 </small>
-                            </div>
-                        </div>
-                    </div>
+							</div>
+						</div>
+					</div>
 
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
                             <span class="text-danger">*</span>
                             中文名
                         </label>
 
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" name="nameCn" ng-model="addStore['name_cn']" required>
+						<div class="col-sm-10">
+							<input type="text" class="form-control" name="nameCn" ng-model="addStore['name_cn']" required>
 
-                            <div class="m-t-xs" ng-show="formAdd.submitted && formAdd.nameCn.$invalid">
-                                <small class="text-danger" ng-show="formAdd.nameCn.$error.required">
+							<div class="m-t-xs" ng-show="formAdd.submitted && formAdd.nameCn.$invalid">
+								<small class="text-danger" ng-show="formAdd.nameCn.$error.required">
                                     中文名不能为空
                                 </small>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" ng-click="saveStore()">保存</button>
-            </div>
-        </div>
-    </div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary" ng-click="saveStore()">保存</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <div load-icon is-load="isLoad"></div>

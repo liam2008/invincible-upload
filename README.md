@@ -33,8 +33,8 @@
         "updatedAt":"更新时间",
         "team":小组id,
         "creator":{
-          "id":"创建者id",
-          "account":"创建者用户名",
+account":"创建者用户          "id":"创建者id",
+                                    "名",
           "name":"创建者姓名"
         }
       },
@@ -951,29 +951,41 @@ true
   返回：
 
   ```json
-  [
-    {
-      "asin":ASIN,
-      "name":商品名称,
-      "projectedSales":预计日销量,
-      "receiptingStock":期间最新待收货库存,
-      "salesPrice":期间累计净销售额,
-      "salesVolume":期间累计销量,
-      "sellableStock":期间最新可售库存,
-      "sellerSku":MSKU,
-    	"shop":{name: 店铺名, id: 店铺id},
-      "state":状态,
-      "storeSku":库存SKU,
-    	"teamName":小组名,
-    	"transportStock":期间最新转库中库存,
-    	"unitPrice":期间最新单价
-      "shelfTime":上架时间
-    },
-    {
-        ...
-    }
-  ]
-  ```
+  [{
+		"asin":ASIN,
+		"name":商品名称,
+		"projectedSales":预计日销量,
+		"receiptingStock":期间最新待收货库存,
+		"salesPrice":期间累计净销售额,
+		"salesVolume":期间累计销量,
+		"sellableStock":期间最新可售库存,
+		"sellerSku":MSKU,
+		"shop":{name: 店铺名, id: 店铺id},
+		"state":状态,
+		"storeSku":库存SKU,
+		"teamName":小组名,
+		"transportStock":期间最新转库中库存,
+		"unitPrice":期间最新单价,
+		"shelfTime":上架时间,
+		"epitaph": 墓志铭
+    }]
+    ```
+
+- `墓志铭选择 GET /daily/epitaph/opt`
+
+	``` bash
+	# 返回值
+	[{ _id: 商品Id, asin:商品Asin, epitaph:墓志铭内容 }]
+	```
+
+- `墓志铭保存 POST /daily/epitaph`
+
+	``` bash
+	# 请求参数
+	asin String 商品Asin 
+	content String 墓志铭内容 
+	```
+
 
 - 每日报表
 
@@ -1031,12 +1043,18 @@ true
   }
   ```
 
+- `运营销售情况 GET /daily/sales`
 
-
-
-
-
-
+	``` bash
+	# 请求参数
+	level String 运营级别
+	team String 所属小组
+	manager String 所属用户
+	startTime String 开始时间
+	endTime String 结束时间
+	# 返回值
+	[{ ranking: 排名, team:  小组, manager: 成员,  level:  级别, asin:  Asin, salesVolume: 销售额, totalSales: 销售总额, monthlySales: 月销量  }]
+	```
 
 ### [me] 用户自身管理
 
@@ -1058,69 +1076,70 @@ true
   {
     
   }
-  ```
+  ```​
 
-  ​
+### [teams]小组管理
 
-### [teams] 小组管理
+- `小组列表 GET /team/list`
 
-- 小组列表
+	``` bash
+	# 返回值
+	{
+		// 品类选择
+		categories: [{ _id, name }],
+		// 用户选择
+		selectUser： [{ _id, account, name, role }]
+		// 级别选择
+		selectLevel： [ ]
+		// 小组
+		result:[{ 
+			_id,
+			name, 
+			avatar, 
+			teamInfo: [{ _id, account, name, role, level }], 
+			categories: [{ _id, name }], 
+			createdAt, 
+			updatedAt
+		}]	
+	}
+	```
 
-  路由：/teams
+- `小组添加 POST /team/save`
 
-  方法：GET
-
-  参数：无
-
-  返回：
-
-  ```json
-  [
-    {
-      _id: "小组id",
-      name: "小组名",
-      leader: {
-        _id: "组长的用户id",
-        account: "组长的用户名",
-        name: "组长的姓名"
-      },
-      members: [
-      	{_id: "组员的用户id", account: "组员的用户名", name: "组员的姓名"},
-        {...}
-      ],
-      createdAt: "创建时间",
-      updatedAt: "更新时间"
-    },
-    {...}
-  ]
-  ```
-
-  ​
+	``` bash
+	# 请求参数
+	name String 小组名称 
+	teamInfo Array 成员列表  [{ _id, level }]
+	categories Array 品类列表 [ _id ]
+	avatar Base64 团队图片
+	 
+	# 返回值
+	{ success: true, result: result }
+	```
 
 
-- 注册小组
+- `小组更新 POST /team/update`
 
-  路由：/teams
+	``` bash
+	# 请求参数
+	id String 小组ID
+	name String 小组名称 
+	teamInfo Array 成员列表  [{ _id, level }]
+	categories Array 品类列表 [ _id ]
+	avatar Base64 团队图片
+	 
+	# 返回值
+	{ success: true, result: result }
+	```
 
-  方法：POST
+- `小组移除 GET /team/remove`
 
-  参数：
-
-  | Key  | Data Type | Description |
-  | ---- | --------- | ----------- |
-  | name | String    | 小组名（可任意字符）  |
-  |      |           |             |
-  |      |           |             |
-
-  返回：
-
-  ```json
-  {
-    
-  }
-  ```
-
-  ​
+	``` bash
+	# 请求参数
+	id String 小组ID 
+	# 返回值
+	{ success: true, result: result }
+	```
 
 ### [roles]角色管理
 
@@ -1439,6 +1458,29 @@ true
   }
   ```
 
+
+
+- 评论任务站点列表：
+
+  路由：/appraise/reviewSite
+
+  方法：GET
+
+  参数：无
+
+  返回：
+
+  ```json
+  {
+    site:[{
+      name: "站点名称"，
+      value: "站点值"
+    }]
+  }
+  ```
+
+### 
+
 ### [profit]毛利率统计报表
 
 - sku详情：
@@ -1753,7 +1795,7 @@ true
   | Key         | Data Type | Description                              |
   | ----------- | --------- | ---------------------------------------- |
   | currentPage | Number    | 当前页码                                     |
-  | WOType      | Number    | 问题类型( 1：评论异常， 2：发现跟单， 7 ASIN被篡改, 8 文案被修改， 0：普通工单) |
+  | WOType      | Number    | 问题类型( 1：评论异常( 1.1： 评论变少， 1.2：总评分低于预警值， 1.3：出现差评)， 2：发现跟单， 7 ASIN被篡改, 8 文案被修改， 0：普通工单) |
   | pageSize    | Number    | 一页数据数量                                   |
   | date        | Date      | 时间范围                                     |
 
@@ -2247,11 +2289,187 @@ true
   无
   ```
 
-  ###  
+### [categorys]品类管理 
 
-- ​
+- `品类列表 GET /category/list`
 
-  ​
+- `品类添加 POST /category/save`
 
+	``` bash
+	# 请求参数
+	name String 品类名称  必填
+	shortName String 品类简称  必填
+	chineseName String 品类中文  选填
+	```
+
+- `品类更新 POST /category/update`
+
+	``` bash
+	# 请求参数
+	id String 品类ID 必填
+	name String 品类名称  必填
+	shortName String 品类简称  必填
+	chineseName String 品类中文  选填
+	```
+
+- `品类移除 GET /category/remove`
+
+	``` bash
+	# 请求参数
+	id String 品类ID 
+	```
+
+### [product]产品SKU 
+
+- `产品信息 GET /product/info`
+
+	``` bash
+	# 请求参数
+	store_sku String 产品sku 必填 
+	```
+
+- `产品列表 GET /product/list`
+
+	``` bash
+	# 请求参数
+	name String 产品英文名 模糊匹配
+	name_cn String 产品中文名 模糊匹配
+	categories String 产品品类
+	# 返回值
+	{ categories: [ _id, name ], result: [{_id, name, name_cn, store_sku, categories, combination, createdAt, deleted}] }
+	```
+
+- `产品添加 POST /product/save`
+
+	``` bash
+	# 请求参数
+	name String 产品英文名 必填 
+	name_cn String 产品中文名 必填
+	name_brief String 产品简称 必填
+	categories String 产品品类ID 必填 
+	categorieBrief String 产品品类简称  必填 
+	combination:  [{ count: 数量, store_sku: 产品id }] 产品组合信息 
+	```
+
+- `产品更新 POST /product/update`
+
+	``` bash
+	# 请求参数
+	store_sku String 产品sku 必填
+	name String 产品英文名 
+	name_cn String 产品中文名
+	combination:  [{ count: 数量, store_sku: 产品id }] 产品组合信息 
+	```
+
+- `产品移除 GET /product/remove`
+
+	``` bash
+	# 请求参数
+	store_sku String 产品sku 必填 
+	```
+
+### [UpdateLog]更新日志
+
+- `最新版本号 GET /system/version`
+
+- `推送日志内容 GET /system/pushlog`
+
+- `更新日志列表 GET /system/updatelog`
+
+	``` bash
+	# 请求参数
+	limit String 列表数量
+	```
+
+- `添加日志内容 POST /system/addlog`
+
+	``` bash
+	# 请求参数
+	version String 版本号
+	content String 日志内容
+	```
+
+- `编辑日志内容 POST /system/editlog`
+
+	``` bash
+	# 请求参数
+	_id String 日志id
+	version String 版本号
+	content String 日志内容
+	```
+
+### [StoresHouses] 库存仓库
+
+- `仓库列表 GET /stores/houses`
+
+
+- `仓库保存 POST /stores/ihouse`
+
+	``` bash
+	# 请求参数
+	name String 仓库名称
+	```
+
+- `仓库更新 POST /stores/uhouse`
+
+	``` bash
+	# 请求参数
+	_id ObjectId 仓库id
+	name String 仓库名称
+	```
+
+### [StoresJournal] 出入库管理
+
+- `出入库列表 GET /stores/list`
+
+	``` bash
+	# 返回值
+	{ houseSelect: 仓库选项, productList：库存列表 }
+	```
+
+- `出入库日志 GET /stores/journal`
+
+	``` bash
+	# 请求参数
+	id String 产品id
+	house String 仓库_id
+	startTime String 开始时间
+	endTime String 结束时间
+	```
+
+- `出入库登记 POST /stores/register`
+
+	``` bash
+	# 请求参数
+	id String 产品id
+	unit String 单位
+	time String 出入库日期
+	house String 仓库_id
+	stock String 当前库存
+	enter String 入库数量
+	output String 出库数量
+	note String 备注信息
+	```
+
+### [StoresJournal] 库存管理
+
+- `库存列表 GET /base/product`
+
+	``` bash
+	# 请求参数
+	house String 仓库_id
+	# 返回值
+	{ authority: 权限控制, houseSelect: 仓库选项, productList：库存列表 }
+	```
+
+- `出入库日志 GET /stores/journal`
+
+	``` bash
+	# 请求参数
+	id String 产品id
+	house String 仓库_id
+	startTime String 开始时间
+	endTime String 结束时间
+	```
 
 

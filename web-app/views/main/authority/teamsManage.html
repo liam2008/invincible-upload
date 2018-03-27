@@ -1,192 +1,456 @@
+<style>
+	.chosen-container {
+		width: 100%!important;
+	}
+	
+	.upload input {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 120%;
+		opacity: 0;
+		cursor: pointer;
+	}
+	
+	.imgBackgroundStyle {
+		position: relative;
+		height: 100px;
+		line-height: 96px;
+		overflow: hidden;
+		text-align: center;
+		background-color: #fff;
+	}
+	
+	table.table tr td {
+		vertical-align: middle;
+	}
+	
+	table.table tr img {
+		cursor: pointer;
+	}
+	
+	.selectStyle {
+		border: none;
+		width: 150px;
+		background-color: inherit!important;
+		cursor: default!important;
+		/*不亮显边框*/
+		outline: none;
+		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	}
+	/* 品类多的时候，以三个点显示 */
+	
+	.lin-dropdown {
+		position: relative;
+		width: 100px;
+	}
+	
+	.lin-dropdown:hover .lin-dropdown-content {
+		display: block;
+	}
+	
+	.lin-dropdown .lin-dropdown-nav {
+		width: 200px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		cursor: pointer;
+	}
+	
+	.lin-dropdown .lin-dropdown-content {
+		display: none;
+		position: absolute;
+		right: 100%;
+		bottom: 0;
+		width: 300px;
+		background-color: #fff;
+		border: 1px #fff solid;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
+		border-radius: 4px;
+		cursor: default;
+		z-index: 10;
+		cursor: pointer;
+	}
+	
+	.lin-dropdown .lin-dropdown-content:after {
+		position: absolute;
+		bottom: 18px;
+		right: -11px;
+		width: 0;
+		height: 0;
+		content: '';
+		border: 6px solid transparent;
+		border-left-color: #fff;
+	}
+	
+	/*下拉框*/
+	.select{
+		width: 100%;
+		height: 35px;
+		border:1px solid #E8F2FF;
+	}
+</style>
 <!--表格-->
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h5>
-                        注册小组
-                    </h5>
-
-                    <div ibox-tools></div>
-                </div>
-                <div class="ibox-content">
-                    <div class="table-responsive">
-                        <table datatable="ng" dt-options="dtOptions"
-                               class="table table-striped table-bordered table-hover dataTables-example table-responsive">
-                            <thead>
-                            <tr>
-                                <th>序号</th>
-                                <th>小组名</th>
-                                <th>组长</th>
-                                <!--  <th>组员</th>-->
-                                <th>创建时间</th>
-                                <th>更新时间</th>
-                                <!--<th>action</th>-->
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="value in tableData">
-                                <td>
-                                    {{$index+1}}
-                                </td>
-                                <td>
-                                    {{value.name}}
-                                </td>
-                                <td>
-                                    {{value.leader.name}}
-                                </td>
-                                <!--<td>
-                                    <span ng-repeat="memeber in value.members">{{memeber.account}}&nbsp;&nbsp;</span>
-                                </td>-->
-                                <td>
-                                    {{value.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}
-                                </td>
-                                <td>
-                                    {{value.updatedAt | date:'yyyy-MM-dd HH:mm:ss'}}
-                                </td>
-                                <!-- <td>
-                                     <button class="btn btn-primary btn-outline" type="button" data-toggle="modal"
-                                             data-target="#editRow" ng-click="edit(value)">编辑
-                                     </button>
-                                 </td>-->
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h5>注册小组</h5>
+					<div ibox-tools></div>
+				</div>
+				<div class="ibox-content">
+					<div class="table-responsive">
+						<table datatable="ng" dt-options="dtOptions" class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+							<thead>
+								<tr>
+									<th width="60">序号</th>
+									<th width="200">图片</th>
+									<th>小组名</th>
+									<th>组长</th>
+									<th>组员</th>
+									<th>品类</th>
+									<th>创建时间</th>
+									<th>修改时间</th>
+									<th width="100" class="text-center">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="value in tableData.result">
+									<td>{{$index+1}}</td>
+									<td>
+										<a ng-if="value.avatar" ng-click="sendSrcToModal(value.avatar)">
+											<img data-toggle="modal" data-target="#pictureCheck" style="width: 186px;height: 42px;margin: -10px 0;" ng-src="{{value.avatar}}">
+										</a>
+									</td>
+									<td>{{value.name || '-'}}</td>
+									<td>
+										<!--<div ng-repeat="member in value.teamInfo">
+											<span ng-if="member.role === '运营组长'?true:false">{{member.name}}</span>
+										</div>-->
+										{{value.leader.name || '-'}}
+									</td>
+									<!--组员-->
+									<td class="lin-dropdown">
+										<span ng-if="!value.members.length">-</span>
+										<div ng-if="value.members.length" class="lin-dropdown-nav">
+											<span ng-repeat="member in value.members">{{member.name}}&nbsp;&nbsp;</span>
+										</div>
+										<div ng-if="value.members.length" class="lin-dropdown-content">
+											<div style="padding:12px;max-height:288px;overflow-x:auto;">
+												<span ng-repeat="member in value.members">{{member.name}}&nbsp;&nbsp;</span>
+											</div>
+										</div>
+									</td>
+									<!--/组员-->
+									<td class="lin-dropdown">
+										<span ng-if="!value.categories.length">-</span>
+										<div ng-if="value.categories.length" class="lin-dropdown-nav">
+											<span ng-repeat="category in value.categories">{{category.name+'('+category.shortName+')'}}&nbsp;&nbsp;</span>
+										</div>
+										<div ng-if="value.categories.length" class="lin-dropdown-content">
+											<div style="padding:12px;max-height:288px;overflow-x:auto;">
+												<span ng-repeat="category in value.categories">{{category.name+'('+category.shortName+')'}}&nbsp;&nbsp;</span>
+											</div>
+										</div>
+									</td>
+									<td>{{value.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+									<td>{{value.updatedAt | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+									<td align="center">
+										<button class="btn btn-primary btn-outline btn-sm" type="button" data-toggle="modal" data-target="#reviseModal" ng-click="edit(value,$index)">修改</button>
+										<button class="btn btn-danger btn-outline btn-sm" type="button" ng-click="delete(value,$index)">删除</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
-<!--弹出框编辑框-->
-<!--<div class="modal inmodal fade" id="editRow" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
-                        class="sr-only">Close</span></button>
-                <h4 class="modal-title">编辑小组</h4>
-            </div>
-            <div class="modal-body">
-                <form class="form-horizontal" role="form" name="formEdit" novalidate>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
-                            小组名
+<!--弹出框修改框-->
+<div class="modal inmodal fade" id="reviseModal" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">小组信息修改</h4>
+			</div>
+
+			<div class="modal-body">
+				<form class="form-horizontal" role="form" name="formEdit" novalidate autocomplete="off">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                        	<span class="text-danger">*</span>小组名：
                         </label>
 
-                        <div class="col-sm-10">
-                            <input type="text" name="name" class="form-control" ng-model="editData.name"
-                                   ng-model-options="{ updateOn: 'blur'}">
-                        </div>
-                    </div>
-                    &lt;!&ndash;<div class="hr-line-dashed"></div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
-                            组长
+						<div class="col-sm-10">
+							<input type="text" name="name" class="form-control" ng-model="editData.name" ng-model-options="{ updateOn: 'blur' }" required>
+							<div class="m-t-xs" ng-show="formEdit.submitted && formEdit.name.$invalid">
+								<small class="text-danger" ng-show="formEdit.name.$error.required">
+                                	 小组名不能为空
+                                </small>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                        	品类：
                         </label>
+						<div class="col-sm-10">
+							<select multiple name="categories" chosen class="chosen-select" ng-model="editData.categories" width="694">
+								<option ng-value="category._id" ng-repeat="category in categorys">{{category.name}}</option>
+							</select>
+						</div>
+					</div>
 
-                        <div class="col-sm-10">
-                            <input type="text" name="leader" class="form-control" ng-model="editData.leader">
-                        </div>
-                    </div>
-                    <div class="hr-line-dashed"></div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
-                            组员
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                        	图片：
                         </label>
+						<div class="col-sm-10 upload">
+							<div class="imgBackgroundStyle">
+								<img src="{{ editData.avatar || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAMCAYAAACEJVa/AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZSURBVDhPY/hPBTBqCCYYNQQTDCtD/v8HAMiaLP7P1rDRAAAAAElFTkSuQmCC' }}" width="100%" height="100%" alt="请选择图片上传">
+								<input id="revisePicture" type="file" accept="image/jpeg" onchange="angular.element(this).scope().uploadChanged(this)">
+							</div>
+							<div class="m-t-xs">
+								<small class="text-info">
+                                	图片格式为：jpg
+                                </small>
+							</div>
+						</div>
+					</div>
+				</form>
+				
+				<div class="hr-line-dashed"></div>
+				
+				<div style="height: 300px;overflow: auto;overflow-y: auto;">
+					<!--小组成员添加-->
+					<table class="table table-striped table-bordered table-hover text-center table-responsive">
+						<thead>
+							<tr>
+								<th class="text-center">序号</th>
+								<th class="text-center" style="width: 20%;">成员</th>
+								<th class="text-center">运营级别</th>
+								<th class="text-center">角色</th>
+								<th class="text-center">
+									<button class="btn btn-primary btn-xs" ng-click="teamAddMember('edit')"> 添 加 </button>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in editData.details">
+								<td>{{ $index+1 }}</td>
+								<td style="width: 20%;">
+									<button class="btn btn-white" ng-click="memberSelect(item)" style="width: 164px;">
+										{{ item.member||'点击选择成员' }}
+									</button>
+									<input type="text" ng-model="item.memberId" class="form-control" readonly="readonly" style="display: none;" />
+								</td>
+								<td>
+									<select class="select" name="memberLevel" id="memberLevel"  ng-model="item.memberLevel">
+		                           		<option value="{{item}}" ng-repeat="item in selectLevel">{{item}}</option>
+									</select>
+								</td>
+								<td>{{item.role || ''}}</td>
+								<td>
+									<button class="btn btn-danger btn-xs" ng-click="removeMember($index,'edit')"> 删 除 </button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<!--/小组成员添加-->
+				</div>
+			</div>
 
-                        <div class="col-sm-10">
-                            <select multiple chosen class="chosen-select" ng-model="editData.selMember" width="670">
-                                <option value="">select</option>
-                                <option ng-value="member" ng-repeat="member in members">{{member}}</option>
-                            </select>
-                        </div>
-                    </div>&ndash;&gt;
-                </form>
-            </div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white btn-w-m" data-dismiss="modal">取 消</button>
+				<button type="button" class="btn btn-primary btn-w-m" ng-click="saveEdit()">保 存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!--/小组编辑-->
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveEdit()">保存</button>
-            </div>
-        </div>
-    </div>
-</div>-->
-
-<!--弹出添加用户框-->
+<!--弹出注册用户框-->
 <div class="modal inmodal fade" id="addTeamsModule" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
-                        class="sr-only">Close</span></button>
-                <h4 class="modal-title">注册小组</h4>
-            </div>
-            <div class="modal-body">
-                <form class="form-horizontal" role="form" name="formAdd" novalidate>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
-                            <span class="text-danger">*</span>小组名
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</link></button>
+				<h4 class="modal-title">注册小组</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" id="registerTeam" role="form" name="formAdd" novalidate autocomplete="off">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                            <span class="text-danger">*</span>小组名：
                         </label>
 
-                        <div class="col-sm-10">
-                            <input type="text" name="name" class="form-control" ng-model="addTeams.name"
-                                   ng-model-options="{ updateOn: 'blur' }" required>
-
-                            <div class="m-t-xs" ng-show="addTeams.submitted && formAdd.name.$invalid">
-                                <small class="text-danger" ng-show="formAdd.name.$error.required">
-                                    小组名不能为空
+						<div class="col-sm-10">
+							<input type="text" name="name" class="form-control" ng-model="addTeams.name" ng-model-options="{ updateOn: 'blur' }" required>
+							<div class="m-t-xs" ng-show="addTeams.submitted && formAdd.name.$invalid">
+								<small class="text-danger" ng-show="formAdd.name.$error.required">
+                                	 小组名不能为空
                                 </small>
-                            </div>
-                        </div>
-                    </div>
-                    <!--<div class="hr-line-dashed"></div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
-                            <span class="text-danger">*</span>组长
+							</div>
+						</div>
+					</div>
+
+					<div class="hr-line-dashed"></div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                        	品类：
                         </label>
+						<div class="col-sm-10">
+							<select multiple name="categories" chosen class="chosen-select" ng-model="addTeams.categories" width="694">
+								<option ng-value="category._id" ng-repeat="category in categorys">{{category.name}}</option>
+							</select>
+						</div>
+					</div>
 
-                        <div class="col-sm-10">
-                            <input type="text" name="leader" class="form-control" ng-model="addTeams.leader"
-                                   ng-model-options="{ updateOn: 'blur' }" required>
-
-                            <div class="m-t-xs" ng-show="addTeams.submitted && formAdd.leader.$invalid">
-                                <small class="text-danger" ng-show="formAdd.leader.$error.required">
-                                    组长不能为空
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hr-line-dashed"></div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">
-                            <span class="text-danger">*</span>组员
+					<div class="form-group">
+						<label class="col-sm-2 control-label">
+                        	图片：
                         </label>
-
-                        <div class="col-sm-10">
-                            <select multiple chosen class="chosen-select" ng-model="addTeams.selMember" width="670">
-                                <option ng-value="member" ng-repeat="member in members">{{member}}</option>
-                            </select>
-
-                            <div class="m-t-xs" ng-show="addTeams.submitted && !addTeams.selMember.length">
-                                <small class="text-danger" ng-show="!addTeams.selMember.length">
-                                    组员不能为空
+						<div class="col-sm-10 upload">
+							<div class="imgBackgroundStyle">
+								<img id="resisterPicture" src="{{ addTeams.avatar }}" width="100%" height="100%" alt="请选择图片上传">
+								<input id="registryPicture" type="file" accept="image/jpeg" onchange="angular.element(this).scope().uploadChanged(this)">
+							</div>
+							<div class="m-t-xs">
+								<small class="text-info">
+                                	图片格式为：jpg
                                 </small>
-                            </div>
-                        </div>
-                    </div>-->
-                </form>
-            </div>
+							</div>
+						</div>
+					</div>
+				</form>
+				
+				<div class="hr-line-dashed"></div>
+				
+				<!--小组成员添加-->
+				<div style="height: 300px;overflow: auto;overflow-y: auto;">
+					<table class="table table-striped table-bordered table-hover text-center table-responsive">
+						<thead>
+							<tr>
+								<th class="text-center">序号</th>
+								<th class="text-center" style="width: 20%;">成员</th>
+								<th class="text-center">运营级别</th>
+								<th class="text-center">角色</th>
+								<th class="text-center">
+									<!--<button class="btn btn-primary btn-xs" ng-click="addTeams.details.push({memberLevel:selectLevel[0]})"> 添 加 </button>-->
+									<button class="btn btn-primary btn-xs" ng-click="teamAddMember('registry')"> 添 加 </button>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="item in addTeams.details">
+								<td>{{ $index+1 }}</td>
+								<td style="width: 20%;">
+									<button class="btn btn-white" ng-click="memberSelect(item)" style="width: 164px;">
+										{{ item.member||'点击选择成员' }}
+									</button>
+									<input type="text" ng-model="item.memberId" class="form-control" readonly="readonly" style="display: none;" />
+								</td>
+								<td>
+									<select class="select" name="memberLevel" id="memberLevel"  ng-model="item.memberLevel">
+		                           		<option value="{{item}}" ng-repeat="item in selectLevel">{{item}}</option>
+									</select>
+								</td>
+								<td>{{item.role || ''}}</td>
+								<td>
+									<button class="btn btn-danger btn-xs" ng-click="removeMember($index,'add')"> 删 除 </button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<!--/小组成员添加-->
+				</div>
+			</div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" ng-click="saveTeams()">保存</button>
-            </div>
-        </div>
-    </div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white btn-w-m" data-dismiss="modal">取 消</button>
+				<button type="button" class="btn btn-primary btn-w-m" ng-click="saveTeams()">确 认</button>
+			</div>
+		</div>
+	</div>
 </div>
+<!--/小组注册-->
+
+<!--图片查看-->
+<div class="modal inmodal fade" id="pictureCheck" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">图片预览</h4>
+			</div>
+
+			<div id="orderDetails" class="modal-body">
+				<img width="100%">
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--/图片查看-->
+
+<!--小组成员选择-->
+<div class="modal inmodal fade" id="selectMember" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">小组成员选择</h4>
+			</div>
+			<div class="modal-body">
+				<div class="table-responsive">
+					<table datatable="ng" dt-options="dtOptions" class="table table-striped table-bordered table-hover dataTables-example table-responsive">
+						<thead>
+							<tr>
+								<th>序号</th>
+								<th>成员</th>
+								<th>角色</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="peopleItem in selectUser">
+								<td>
+									{{$index+1}}
+								</td>
+								<td>
+									{{peopleItem.name}}
+								</td>
+								<td>
+									{{peopleItem.role}}
+								</td>
+								<td>
+									<button class="btn btn-primary btn-outline" type="button" data-toggle="modal" data-target="#selectMember" ng-click="chooseMember(peopleItem)">
+										选择
+                                	</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!--/小组成员选择-->
 
 <div load-icon is-load="isLoad"></div>
-

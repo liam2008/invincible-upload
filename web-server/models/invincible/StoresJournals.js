@@ -1,8 +1,15 @@
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+//仓库出入库日志
 module.exports = {
-	//仓库出入库日志
 	name: "StoresJournals",
 	schema: {
 		id: String, //产品ID
+		house: { // 仓库信息
+			type: Schema.Types.ObjectId,
+			ref: 'StoresHouses'
+		},
 		unit: String, //单位
 		stock: Number, //当前库存
 		stocked: Number, //期初库存

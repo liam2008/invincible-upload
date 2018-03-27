@@ -36,6 +36,14 @@
             app_route: "main.authority.teamsManage",
             server_route: ["/teams"]
         },
+        "481ca86831844004804b72fe59a90a7b": {
+            app_route: "main.authority.creatVersionsLog",
+            server_route: ["/logs"]
+        },
+        "910e2251d5a74c6ca6ccb2f86d55cf1c": {
+            app_route: "main.base.categoryManage",
+            server_route: ['/base/category']
+        },
         "f0edb847bc264cfb89f8e2a1b8b4e387": {
             app_route: "main.base.goodsManage",
             server_route: ['/base/list', '/teams']
@@ -52,6 +60,14 @@
             app_route: "main.base.storeLog",
             server_route: ['/stores/list']
         },
+        "03d746f1544b479c9eaf4583cc5cca12": {
+        	app_route: "main.base.commodityManagement",
+            server_route: ['/base/commodityManagement']
+        },
+        "579b0c08feec4492a02282076bd8f8eb": {
+        	app_route: "main.base.storeManagement",
+            server_route: ['/base/storeManagement']
+        },
         "bba9d842ba1443a9ba94ce056876dd62": {
             app_route: "main.daily.import",
             server_route: ['/daily/import']
@@ -63,6 +79,10 @@
         "f9ab7eb705b94b389c5a8a2ebc253645": {
             app_route: "main.daily.report",
             server_route: ["/daily/show"]
+        },
+        "dbc0f8ec81724bf28e173c9e29b177a5": {
+            app_route: "main.daily.operationSale",
+            server_route: ['/daily/operationSale']
         },
         "a92ef3d366a84885b35d9bc4f174c096": {
             app_route: "main.count.counter",
@@ -92,14 +112,14 @@
             app_route: "main.purchase.supplier",
             server_route: ['/supplier/supplierList']
         },
-        "ea319b6d63eb41a4ab36668c5a6db082": {
-            app_route: "main.margin.group",
-            server_route: ['/profit/teamProfitShow']
-        },
-        "11e09c47cbbf4fa4b3ff156970fe8c70": {
-            app_route: "main.margin.gross",
-            server_route: ['/profit/profitShow']
-        },
+        // "ea319b6d63eb41a4ab36668c5a6db082": {
+        //     app_route: "main.margin.group",
+        //     server_route: ['/profit/teamProfitShow']
+        // },
+        // "11e09c47cbbf4fa4b3ff156970fe8c70": {
+        //     app_route: "main.margin.gross",
+        //     server_route: ['/profit/profitShow']
+        // },
         "3d2a114512644e3d82bbc552dec865c9": {
             app_route: "main.files.views",
             server_route: ['/files/fileManager']
@@ -108,6 +128,10 @@
             app_route: "main.files.manage",
             server_route: ['/files/fileManager']
         },
+        "d592ea43e5484661885d1f37ffca8bfa": {
+            app_route: "main.analysis.task",
+            server_route: ['/appraise/task']
+        },
         "abd72f4e0ca649f3aad54e838f27243d": {
             app_route: "main.analysis.review",
             server_route: ['/appraise/EVALTask']
@@ -115,6 +139,10 @@
         "cb398c7d38da415f8a6af3044fbee6ce": {
             app_route: "main.analysis.keyword",
             server_route: ['/appraise/keyword']
+        },
+        "647a9be3562347af9b666f6a16a6ccf9": {
+            app_route: "main.workOrder.clickTask",
+            server_route: ['/workOrder/clickTask']
         },
         "5645127ef89f42d9b900d0411b256482": {
             app_route: "main.workOrder.createOrder",

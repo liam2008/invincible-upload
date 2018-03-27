@@ -1,7 +1,162 @@
-<div class="wrapper wrapper-content animated fadeIn">
-    <div class="p-w-md m-t-sm">
+<style>
+	.ibox-content-custom {
+		padding-top: 20px;
+	}
+	
+	.ibox-title-custom {
+		height: 70px;
+		margin-bottom: 0;
+		border: 1px #CED0D1 solid;
+	}
+	
+	.ibox-title-content-custom {
+		margin: 0;
+	}
+	
+	.ibox-content-content-custom {
+		border: 1px #CED0D1 solid;
+		border-top: 0px;
+	}
+	
+	.contentDiv {
+		width: 100%+20px;
+		height: 780px;
+		overflow-x: hidden;
+		overflow-y: scroll;
+	}
+	
+	.contentDiv::-webkit-scrollbar {
+		display: none;
+	}
+	
+	.note-resizebar {
+		display: none;
+	}
+	
+	.cursorStyle {
+		cursor: pointer;
+	}
+</style>
 
-        summary
-
-    </div>
+<div class="wrapper wrapper-content animated fadeIn" ng-if="lookUpdateLogVesselText">
+	<div class="p-w-md m-t-sm">
+		summary
+	</div>
 </div>
+<div class="row border-bottom dashboard-header contentDiv" style="height: 2px;padding-top: 9px;padding-bottom: 9px;"></div>
+<!--内容-->
+<div class="row border-bottom white-bg dashboard-header contentDiv" ng-if="lookUpdateLogVessel">
+	<div class="p-w-md m-t-sm" style="margin-top: 0;">
+		<div class="clearfix">
+			<h2 class="pull-left">更新日志</h2>
+			<button class="pull-right btn btn-primary btn-w-m" ng-click="lookUpdateLog()" ng-if="lookUpdateLogVesselButton">查看更新日志</button>
+			<button class="pull-right btn btn-white btn-w-m" ng-click="cancelLookUpdateLog()" ng-if="canceLlookUpdateLogVesselButton">返回</button>
+		</div>
+
+		<ul ng-if="updateLogDocument" class="nav nav-tabs m-b" role="tablist">
+			<li role="presentation" class="active">
+				<a href="#wordbench" aria-controls="wordbenchA" role="tab" data-toggle="tab" ng-click="toggleDisplay('5')">最新</a>
+			</li>
+			<li role="presentation">
+				<a href="#wordbench" aria-controls="wordbenchB" role="tab" data-toggle="tab" ng-click="toggleDisplay('100')">全部</a>
+			</li>
+		</ul>
+
+		<!--更新日志-->
+		<div ng-if="updateLogDocument" class="general-content">
+			<!--循环遍历后端数据-->
+			<div ng-repeat="updateItem in updateLogContentGetFromServer">
+				<div class="ibox float-e-margins ibox-content-custom">
+					<div class="ibox-title ibox-title-custom" style="height: 55px;">
+						<h3 class="pull-left ibox-title-content-custom">
+							<span ng-if="editStyle" class="fa fa-edit cursorStyle" ng-click="editLog(updateItem)"></span>
+							{{updateItem.version}}
+						</h3>
+						<h3 class="pull-right ibox-title-content-custom">{{updateItem.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</h3>
+					</div>
+					<div class="ibox-content ibox-content-content-custom" ng-bind-html="updateItem.content | trustedHtml"></div>
+				</div>
+			</div>
+
+		</div>
+		<!--/更新日志-->
+	</div>
+</div>
+<!--/内容-->
+
+<!--分割内容与脚页-->
+<div class="wrapper wrapper-content animated fadeInRight" ng-if="updateLogDocument" style="padding-bottom: 28px;"></div>
+<!--/分割内容与脚页-->
+
+<!--弹出更新框-->
+<div class="modal inmodal fade" id="updateLog" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg" style="width: 50%;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">更新日志</h4>
+			</div>
+
+			<div class="modal-body">
+				<!-- 内容 -->
+				<div>
+					<div class="ibox float-e-margins ibox-content-custom">
+						<div class="ibox-title ibox-title-custom" style="height: 55px;">
+							<h3 class="pull-left ibox-title-content-custom">{{pushLogData.version}}</h3>
+							<h3 class="pull-right ibox-title-content-custom">{{pushLogData.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</h3>
+						</div>
+						<div class="ibox-content ibox-content-content-custom" style="height: 500px;overflow: auto;overflow-y: auto;" ng-bind-html="pushLogData.content | trustedHtml"></div>
+					</div>
+				</div>
+				<!-- /内容 -->
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white btn-w-m" ng-click="closeUpdateModal(pushLogData)">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!--/弹出更新框-->
+
+<!--编辑弹窗-->
+<div class="modal inmodal fade" id="editLogContent" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg" style="width: 50%;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">编辑日志</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<form class="form-horizontal" name="formAdd" role="form" novalidate>
+						<div class="row">
+							<div class="form-group col-lg-6">
+								<label class="col-sm-3 control-label" style="margin-top: 10px;">
+                            			<span class="text-danger">*</span>
+                            			版本号
+                        			</label>
+
+								<div class="col-sm-6 control-label">
+									<input type="text" class="form-control" name="editVersionNumber" id="editVersionNumber" ng-model="editVersionNumber" placeholder="2.0.0">
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="ibox-content no-padding" style="border: 1px #DCDCDC solid;">
+							<div id="summernote" summernote class="summernote" config="options" ng-model="summernoteText"></div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<button class="pull-right btn btn-white btn-w-m" ng-click="clearContent()">清空</button>
+					<button class="pull-right btn btn-primary btn-w-m" style="margin-right: 10px;" ng-click="submitText()">提交</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+<!--编辑弹窗-->

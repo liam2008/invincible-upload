@@ -39,7 +39,6 @@
             //初始化
             function init(){
                 netManager.get('/workOrder/orderReady').then(function (res) {
-                    console.log('res', res.data);
                     $scope.teamList = res.data.team;
                 }, function (err) {
                     console.error(err);

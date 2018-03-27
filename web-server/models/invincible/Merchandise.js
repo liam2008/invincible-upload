@@ -8,6 +8,7 @@ module.exports = {
         id:             String,     // id 使用UUID
         seller_sku:     String,     // 卖家SKU
         store_sku:      String,     // 仓库SKU
+        manager: 		{ type: Schema.Types.ObjectId, ref: 'user' },       // 管理者
         product_id:     { type: Schema.Types.ObjectId, ref: 'product' },    // 产品id
         FBA:            Number,     // 是否FBA 1是 0否
         fnsku:          String,     // FNSKU

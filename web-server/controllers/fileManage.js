@@ -1,3 +1,4 @@
+const app = require('../app');
 const DB = require('../models/invincible');
 const FileManage = DB.getModel('FileManage');
 const Users = DB.getModel('user');
@@ -5,28 +6,53 @@ const mongoose = require('mongoose');
 const multiparty = require('multiparty');
 const moment = require('moment');
 const async = require('async');
-const fs = require("fs");
-const uploadDir = 'public/';
-const classifyDir = '在线学习/';
+const fs = require('fs');
+var Shared = require('../../shared/');
+var Utils = Shared.Utils;
+var UUID = require('uuid');
+var ERROR_CODE = Shared.ERROR;
 
 module.exports = {
 	name: "fileManage",
 
 	// 文件列表
 	List: function(req, res) {
-		const loginUserId = req.agent.id || '';
+		const assestManager = app.getService('AssetsManager');
+		const loginUserId = req.agent.id;
+		const isSuthorize = req.query.isSuthorize;
 		const pageSize = parseInt(req.query.pageSize) || 10;
 		const currentPage = parseInt(req.query.currentPage) || 1;
 		const where = {
-			authorize: {
-				$in: [mongoose.Types.ObjectId(loginUserId)]
-			}
+			exists: true
 		};
-		if(req.query.type) where.type = req.query.type;
+		if(req.query.type === 'doc+zip') {
+			where.$or = [{
+				type: 'doc'
+			}, {
+				type: 'zip'
+			}]
+		} else if(req.query.type) {
+			where.type = req.query.type
+		};
 		if(req.query.keyword) {
-			where.name = {
-				$regex: req.query.keyword,
-				$options: 'i'
+			where.$or = [{
+				name: {
+					$regex: req.query.keyword,
+					$options: 'i'
+				}
+			}, {
+				tips: {
+					$regex: req.query.keyword,
+					$options: 'i'
+				}
+			}]
+		};
+		if(isSuthorize) {
+			where.authorize = {
+				$in: [
+					mongoose.Types.ObjectId(loginUserId),
+					mongoose.Types.ObjectId('000000000000000000000000')
+				]
 			}
 		};
 		async.series({
@@ -43,108 +69,137 @@ module.exports = {
 				})
 			}
 		}, function(err, results) {
+			let list = [];
+			for(var i = 0; i < results.docs.length; i++) {
+				let item = results.docs[i];
+				list.push({
+					_id: item._id,
+					type: item.type,
+					name: item.name,
+					tips: item.tips,
+					size: item.size,
+					updated: item.updated,
+					authorize: item.authorize,
+					path: assestManager.getTrainingUri(item['fileId'], item['type'], true)
+
+				})
+			};
 			res.send({
 				pageSize,
 				currentPage,
-				results: results.docs,
+				results: list,
 				pageCount: Math.ceil(results.count / pageSize)
 			})
 		})
 	},
 
-	// 文件上传
-	Upload: function(req, res) {
-		const app = require('../app');
-		const assestManager = app.getService('AssetsManager');
-		const loginUserId = req.agent.id || '';
-
-		
-
-		const type = req.body.type;
-		const base64 = new Buffer(req.body.result);
-	
-		
-
-		assestManager.putTrainingFile({
-			type: type,
-			buffer: base64
-		}, function(err) {
-			console.log(err)
-		});
-
-		//		const form = new multiparty.Form({
-		//			uploadDir: uploadDir + classifyDir
-		//		});
-
-		//		form.parse(req, function(err, fields, files) {
-		//			let file = files['file'][0];
-		//			
-		//			
-		//			
-		//			
-		//			
-		//			console.log(file)
-
-		//			let filePath = file.path;
-		//			let fileName = file.originalFilename;
-		//			let fileSize = Math.round(file['size'] / 1024) + ' KB';
-		//			let fileType = fileName.substr(fileName.lastIndexOf('.') + 1, 3);
-		//			if(fs.existsSync(uploadDir + classifyDir + fileName)) {
-		//				fileName = '复件' + moment().format('YYYYMMDDhmmss') + '_' + fileName;
-		//			};
-		//			fs.rename(filePath, uploadDir + classifyDir + fileName, function(err) {
-		//				if(!err) {
-		//					new FileManage({
-		//						name: fileName,
-		//						type: fileType,
-		//						size: fileSize,
-		//						path: classifyDir + fileName,
-		//						authorize: [mongoose.Types.ObjectId(loginUserId)]
-		//					}).save(function(err, doc) {
-		//						res.send(doc)
-		//					})
-		//				} else {
-		//					fs.unlinkSync(filePath);
-		//					res.send(false)
-		//				}
-		//			})
-		//		})
+	// 文件是否存在
+	Exists: function(req, res) {
+		FileManage.findOne({
+			name: req.query.name
+		}, function(err, doc) {
+			res.send(err || doc)
+		})
 	},
 
-	// 文件更新
+	// 文件上传
+	Upload: function(req, res) {
+		let assestManager = app.getService('AssetsManager');
+		let form = new multiparty.Form({
+			uploadDir: 'public/'
+		});
+		form.parse(req, function(err, fields, files) {
+			let file = files.file[0];
+			let fileName = file['originalFilename'];
+			let filePath = file['path']
+			let fileSize = Math.round(file['size'] / 1024) + ' KB';
+			let fileType = fileName.substr(fileName.lastIndexOf('.') + 1, 3);
+			let uuid = UUID.v4();
+			let time = moment().format('YYYY-MM-DD HH:mm:ss');
+			let authorize = [mongoose.Types.ObjectId('000000000000000000000000')];
+
+			fs.readFile(filePath, function(error, data) {
+				FileManage.findOne({
+					name: fileName
+				}, function(err, doc) {
+					if(doc) {
+						assestManager.putTrainingFile({
+							data: data,
+							type: fileType,
+							uuid: doc.fileId
+						}, function(err, result) {
+							if(err) res.send(err.code);
+							if(result) {
+								doc.exists = true;
+								doc.updated = time;
+								doc.save(function(err, doc) {
+									fs.unlinkSync(filePath);
+									res.send(err || doc)
+								})
+							}
+						})
+					} else {
+						assestManager.putTrainingFile({
+							data: data,
+							type: fileType,
+							uuid: uuid
+						}, function(err, result) {
+							if(err) res.send(err.code);
+							if(result) {
+								new FileManage({
+									authorize,
+									fileId: uuid,
+									name: fileName,
+									type: fileType,
+									size: fileSize
+								}).save(function(err, doc) {
+									fs.unlinkSync(filePath);
+									res.send(err || doc)
+								})
+							}
+						})
+					}
+				})
+			})
+		})
+	},
+
+	// 文件下载
+	Download: function(req, res) {
+		var fs = require('fs');
+		var path = require('path');
+		var request = require('request');
+		var type = req.query.name.substr(req.query.name.indexOf('.'));
+		var path = path.resolve(__dirname, '../public/download');
+		var stream = fs.createWriteStream(path);
+		request(req.query.path).pipe(stream).on('close', function() {
+			res.download(path, req.query.name);
+		})
+	},
+
+	// 文件改名
 	Update: function(req, res) {
 		const id = req.body.id;
-		const oldName = req.body.oldName;
-		const newName = req.body.newName;
-		const oldPath = uploadDir + classifyDir + oldName;
-		const fileType = oldName.substr(oldName.lastIndexOf('.'));
-		const newPath = uploadDir + classifyDir + newName + fileType;
+		const name = req.body.newName;
+		const type = req.body.oldName.substr(req.body.oldName.lastIndexOf('.'));
 		FileManage.update({
 			_id: id
 		}, {
-			name: newName + fileType,
-			path: classifyDir + newName + fileType
+			name: name + type
 		}, function(err, doc) {
-			if(err) {
-				res.send(err)
-			} else {
-				fs.renameSync(oldPath, newPath);
-				res.send(doc)
-			}
+			res.send(err || name + type)
 		})
 	},
 
 	// 文件移除
 	Remove: function(req, res) {
 		const id = req.query.id;
-		FileManage.findOne({
+		FileManage.update({
 			_id: id
+		}, {
+			exists: false
 		}, function(err, doc) {
-			doc.remove(function(err) {
-				let path = uploadDir + doc.path;
-				if(fs.existsSync(path)) fs.unlinkSync(path);
-				res.send(doc)
-			})
+			res.send(err || id)
 		})
 	},
 
@@ -162,11 +217,13 @@ module.exports = {
 
 	// 文件权限
 	Authorize: function(req, res) {
-		const _id = req.body.id;
+		const _id = req.body._id;
+		const tips = req.body.tips;
 		const authorize = req.body.authorize;
 		FileManage.update({
 			_id
 		}, {
+			tips,
 			authorize
 		}, function(err, doc) {
 			res.send(doc)
